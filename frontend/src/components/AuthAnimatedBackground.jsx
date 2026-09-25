@@ -4,51 +4,51 @@ import { Sprout, Truck, ShieldCheck, Zap } from 'lucide-react';
 // Free high-quality Unsplash images — Kenyan agribusiness themed
 const BG_PHOTOS = [
   {
-    url: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&auto=format&fit=crop&q=80',
+    url: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=800&auto=format&fit=crop&q=85',
     label: 'Farmer in the field',
     position: 'top-0 left-0',
-    size: 'w-56 h-44',
-    rotate: '-rotate-1',
+    size: 'w-80 h-64',
+    rotate: '-rotate-2',
     delay: '0s'
   },
   {
-    url: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=600&auto=format&fit=crop&q=80',
+    url: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=800&auto=format&fit=crop&q=85',
     label: 'Fresh farm produce',
     position: 'top-0 right-0',
-    size: 'w-52 h-40',
-    rotate: 'rotate-1',
+    size: 'w-72 h-60',
+    rotate: 'rotate-2',
     delay: '1.5s'
   },
   {
-    url: 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=600&auto=format&fit=crop&q=80',
+    url: 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&auto=format&fit=crop&q=85',
     label: 'Fruit and vegetable market',
-    position: 'top-44 left-0',
-    size: 'w-48 h-40',
-    rotate: 'rotate-2',
+    position: 'top-64 left-0',
+    size: 'w-72 h-56',
+    rotate: 'rotate-1',
     delay: '0.7s'
   },
   {
-    url: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop&q=80',
+    url: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=85',
     label: 'Buyers at market',
-    position: 'top-44 right-0',
-    size: 'w-52 h-44',
-    rotate: '-rotate-2',
+    position: 'top-60 right-0',
+    size: 'w-72 h-60',
+    rotate: '-rotate-1',
     delay: '2.1s'
   },
   {
-    url: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=600&auto=format&fit=crop&q=80',
+    url: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&auto=format&fit=crop&q=85',
     label: 'Logistics truck on road',
     position: 'bottom-0 left-0',
-    size: 'w-60 h-44',
-    rotate: '-rotate-1',
+    size: 'w-80 h-60',
+    rotate: '-rotate-2',
     delay: '1s'
   },
   {
-    url: 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=600&auto=format&fit=crop&q=80',
+    url: 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=800&auto=format&fit=crop&q=85',
     label: 'Crops field',
     position: 'bottom-0 right-0',
-    size: 'w-56 h-44',
-    rotate: 'rotate-1',
+    size: 'w-72 h-60',
+    rotate: 'rotate-2',
     delay: '0.4s'
   }
 ];
@@ -173,8 +173,8 @@ export default function AuthAnimatedBackground() {
       {BG_PHOTOS.map((photo, idx) => (
         <div
           key={idx}
-          className={`absolute ${photo.position} ${photo.size} ${photo.rotate} animate-float-slow overflow-hidden rounded-2xl shadow-2xl`}
-          style={{ animationDelay: photo.delay, opacity: 0.18 }}
+          className={`absolute ${photo.position} ${photo.size} ${photo.rotate} animate-float-slow overflow-hidden rounded-2xl shadow-2xl border border-white/10`}
+          style={{ animationDelay: photo.delay, opacity: 0.65 }}
         >
           <img
             src={photo.url}
@@ -182,8 +182,8 @@ export default function AuthAnimatedBackground() {
             className="w-full h-full object-cover"
             loading="lazy"
           />
-          {/* Dark gradient overlay so photos don't distract from form */}
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-transparent to-slate-950/70 rounded-2xl" />
+          {/* Subtle inner shadow only at very bottom edge for blending */}
+          <div className="absolute inset-0 rounded-2xl" style={{ boxShadow: 'inset 0 -40px 40px rgba(2,6,23,0.5)' }} />
         </div>
       ))}
 
@@ -195,13 +195,13 @@ export default function AuthAnimatedBackground() {
       {/* ============================================================ */}
       {/* LAYER 3: AMBIENT GRADIENT OVERLAYS (depth & readability)    */}
       {/* ============================================================ */}
-      {/* Heavy center darkening so the login card is always readable */}
-      <div className="absolute inset-0 bg-radial-gradient"
-        style={{ background: 'radial-gradient(ellipse 60% 70% at 50% 50%, rgba(2,6,23,0.55) 0%, transparent 100%)' }}
-      />
-      {/* Edge darkening vignette */}
+      {/* Mild center darkening — keeps the login card readable without hiding photos */}
       <div className="absolute inset-0"
-        style={{ background: 'radial-gradient(ellipse 100% 100% at 50% 50%, transparent 35%, rgba(2,6,23,0.85) 100%)' }}
+        style={{ background: 'radial-gradient(ellipse 55% 60% at 50% 50%, rgba(2,6,23,0.35) 0%, transparent 100%)' }}
+      />
+      {/* Light edge vignette — just a hint, not a black wall */}
+      <div className="absolute inset-0"
+        style={{ background: 'radial-gradient(ellipse 100% 100% at 50% 50%, transparent 45%, rgba(2,6,23,0.55) 100%)' }}
       />
       {/* Soft colored aurora glows */}
       <div className="absolute -top-24 -left-24 w-80 h-80 bg-emerald-500/12 rounded-full blur-[100px] animate-pulse-soft" />
