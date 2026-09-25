@@ -1,61 +1,59 @@
-import React, { useEffect, useRef } from 'react';
-import { Sprout, Truck, ShieldCheck, Zap } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Sprout, Truck, ShieldCheck, Zap, Users, ShoppingBag } from 'lucide-react';
 
-// Free high-quality Unsplash images — Kenyan agribusiness themed
-const BG_PHOTOS = [
+// 4 Full-Screen High-Definition Agribusiness Imagery Themes
+const FULLSCREEN_SCENES = [
   {
-    url: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=800&auto=format&fit=crop&q=85',
-    label: 'Farmer in the field',
-    position: 'top-0 left-0',
-    size: 'w-80 h-64',
-    rotate: '-rotate-2',
-    delay: '0s'
+    id: 'crops',
+    title: 'Crops & Fertile Farmlands',
+    subtitle: 'Kenya’s agricultural breadbasket — Kiambu, Meru, Nakuru & Rift Valley',
+    tag: 'Fresh Harvests',
+    icon: Sprout,
+    badgeColor: 'border-emerald-500/40 text-emerald-400 bg-emerald-950/60',
+    url: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=1920&auto=format&fit=crop&q=85',
   },
   {
-    url: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=800&auto=format&fit=crop&q=85',
-    label: 'Fresh farm produce',
-    position: 'top-0 right-0',
-    size: 'w-72 h-60',
-    rotate: 'rotate-2',
-    delay: '1.5s'
+    id: 'farmers',
+    title: 'Farmers Working the Land',
+    subtitle: 'Over 450+ verified smallholder farmers harvesting Grade-A organic produce',
+    tag: 'Direct Producers',
+    icon: Users,
+    badgeColor: 'border-green-500/40 text-green-300 bg-green-950/60',
+    url: 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=1920&auto=format&fit=crop&q=85',
   },
   {
-    url: 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&auto=format&fit=crop&q=85',
-    label: 'Fruit and vegetable market',
-    position: 'top-64 left-0',
-    size: 'w-72 h-56',
-    rotate: 'rotate-1',
-    delay: '0.7s'
+    id: 'buyers',
+    title: 'Commercial Buyers & B2B Trading',
+    subtitle: 'Supermarkets, hotels and food processors sourcing directly without middlemen',
+    tag: 'Wholesale Commerce',
+    icon: ShoppingBag,
+    badgeColor: 'border-amber-500/40 text-amber-300 bg-amber-950/60',
+    url: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=1920&auto=format&fit=crop&q=85',
   },
   {
-    url: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=85',
-    label: 'Buyers at market',
-    position: 'top-60 right-0',
-    size: 'w-72 h-60',
-    rotate: '-rotate-1',
-    delay: '2.1s'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&auto=format&fit=crop&q=85',
-    label: 'Logistics truck on road',
-    position: 'bottom-0 left-0',
-    size: 'w-80 h-60',
-    rotate: '-rotate-2',
-    delay: '1s'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=800&auto=format&fit=crop&q=85',
-    label: 'Crops field',
-    position: 'bottom-0 right-0',
-    size: 'w-72 h-60',
-    rotate: 'rotate-2',
-    delay: '0.4s'
+    id: 'transporters',
+    title: 'Transporters & Logistics Cargo Fleets',
+    subtitle: 'Temperature-controlled cold chain & freight transport across East Africa',
+    tag: 'Fleet Carriers',
+    icon: Truck,
+    badgeColor: 'border-sky-500/40 text-sky-300 bg-sky-950/60',
+    url: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=1920&auto=format&fit=crop&q=85',
   }
 ];
 
 export default function AuthAnimatedBackground() {
+  const [activeSceneIndex, setActiveSceneIndex] = useState(0);
   const canvasRef = useRef(null);
 
+  // Auto-rotate full background scene every 6 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveSceneIndex((prev) => (prev + 1) % FULLSCREEN_SCENES.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Canvas particle supply chain network simulation
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -72,24 +70,24 @@ export default function AuthAnimatedBackground() {
     };
     window.addEventListener('resize', handleResize);
 
-    const nodeCount = Math.min(40, Math.floor((width * height) / 28000));
-    const colors = ['#10b981', '#34d399', '#f59e0b', '#38bdf8', '#14b8a6'];
+    const nodeCount = Math.min(35, Math.floor((width * height) / 32000));
+    const colors = ['#10b981', '#34d399', '#f59e0b', '#38bdf8', '#ffffff'];
 
     const nodes = [];
     for (let i = 0; i < nodeCount; i++) {
       nodes.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-        radius: Math.random() * 2.2 + 1.2,
+        vx: (Math.random() - 0.5) * 0.45,
+        vy: (Math.random() - 0.5) * 0.45,
+        radius: Math.random() * 2 + 1,
         color: colors[Math.floor(Math.random() * colors.length)],
         baseAlpha: Math.random() * 0.4 + 0.2
       });
     }
 
     const packets = [];
-    const maxPackets = 10;
+    const maxPackets = 8;
 
     const render = () => {
       ctx.clearRect(0, 0, width, height);
@@ -122,7 +120,7 @@ export default function AuthAnimatedBackground() {
           const dy = n2.y - n1.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < maxDist) {
-            const alpha = (1 - dist / maxDist) * 0.18;
+            const alpha = (1 - dist / maxDist) * 0.16;
             ctx.beginPath();
             ctx.moveTo(n1.x, n1.y);
             ctx.lineTo(n2.x, n2.y);
@@ -130,8 +128,17 @@ export default function AuthAnimatedBackground() {
             ctx.globalAlpha = alpha;
             ctx.lineWidth = 0.8;
             ctx.stroke();
+
             if (packets.length < maxPackets && Math.random() < 0.002) {
-              packets.push({ fromX: n1.x, fromY: n1.y, toX: n2.x, toY: n2.y, progress: 0, speed: 0.012 + Math.random() * 0.012, color: n1.color });
+              packets.push({
+                fromX: n1.x,
+                fromY: n1.y,
+                toX: n2.x,
+                toY: n2.y,
+                progress: 0,
+                speed: 0.012 + Math.random() * 0.012,
+                color: n1.color
+              });
             }
           }
         }
@@ -140,15 +147,18 @@ export default function AuthAnimatedBackground() {
       for (let p = packets.length - 1; p >= 0; p--) {
         const pkt = packets[p];
         pkt.progress += pkt.speed;
-        if (pkt.progress >= 1) { packets.splice(p, 1); continue; }
+        if (pkt.progress >= 1) {
+          packets.splice(p, 1);
+          continue;
+        }
         const currX = pkt.fromX + (pkt.toX - pkt.fromX) * pkt.progress;
         const currY = pkt.fromY + (pkt.toY - pkt.fromY) * pkt.progress;
         ctx.beginPath();
-        ctx.arc(currX, currY, 2.5, 0, Math.PI * 2);
+        ctx.arc(currX, currY, 2, 0, Math.PI * 2);
         ctx.fillStyle = '#ffffff';
-        ctx.globalAlpha = 0.85;
+        ctx.globalAlpha = 0.9;
         ctx.shadowColor = pkt.color;
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 8;
         ctx.fill();
         ctx.shadowBlur = 0;
       }
@@ -164,132 +174,101 @@ export default function AuthAnimatedBackground() {
     };
   }, []);
 
+  const activeScene = FULLSCREEN_SCENES[activeSceneIndex];
+
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
 
       {/* ============================================================ */}
-      {/* LAYER 1: REAL AGRIBUSINESS PHOTO COLLAGE (corners & edges)  */}
+      {/* LAYER 1: FULLSCREEN BACKGROUND IMAGES (CROSS-FADING)         */}
       {/* ============================================================ */}
-      {BG_PHOTOS.map((photo, idx) => (
-        <div
-          key={idx}
-          className={`absolute ${photo.position} ${photo.size} ${photo.rotate} animate-float-slow overflow-hidden rounded-2xl shadow-2xl border border-white/10`}
-          style={{ animationDelay: photo.delay, opacity: 0.65 }}
-        >
-          <img
-            src={photo.url}
-            alt={photo.label}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-          {/* Subtle inner shadow only at very bottom edge for blending */}
-          <div className="absolute inset-0 rounded-2xl" style={{ boxShadow: 'inset 0 -40px 40px rgba(2,6,23,0.5)' }} />
-        </div>
-      ))}
+      {FULLSCREEN_SCENES.map((scene, idx) => {
+        const isActive = idx === activeSceneIndex;
+        return (
+          <div
+            key={scene.id}
+            className={`absolute inset-0 w-full h-full transition-all duration-1000 ease-in-out ${
+              isActive ? 'opacity-100 scale-100' : 'opacity-0 scale-105 pointer-events-none'
+            }`}
+          >
+            <img
+              src={scene.url}
+              alt={scene.title}
+              className="w-full h-full object-cover object-center transform transition-transform duration-[6000ms] ease-out"
+              style={{ transform: isActive ? 'scale(1.04)' : 'scale(1.0)' }}
+            />
+          </div>
+        );
+      })}
 
       {/* ============================================================ */}
-      {/* LAYER 2: CANVAS PARTICLE NETWORK (live data pulses)         */}
+      {/* LAYER 2: DARK CINEMATIC OVERLAYS FOR MAXIMUM READABILITY     */}
       {/* ============================================================ */}
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-60" />
+      {/* Full screen dark tint overlay */}
+      <div className="absolute inset-0 bg-slate-950/60 transition-opacity duration-700" />
 
-      {/* ============================================================ */}
-      {/* LAYER 3: AMBIENT GRADIENT OVERLAYS (depth & readability)    */}
-      {/* ============================================================ */}
-      {/* Mild center darkening — keeps the login card readable without hiding photos */}
-      <div className="absolute inset-0"
-        style={{ background: 'radial-gradient(ellipse 55% 60% at 50% 50%, rgba(2,6,23,0.35) 0%, transparent 100%)' }}
+      {/* Vertical gradient to emphasize center form & bottom controls */}
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-slate-950/80" />
+
+      {/* Soft center glow for the form container */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(2,6,23,0.45) 0%, rgba(2,6,23,0.85) 100%)'
+        }}
       />
-      {/* Light edge vignette — just a hint, not a black wall */}
-      <div className="absolute inset-0"
-        style={{ background: 'radial-gradient(ellipse 100% 100% at 50% 50%, transparent 45%, rgba(2,6,23,0.55) 100%)' }}
-      />
-      {/* Soft colored aurora glows */}
-      <div className="absolute -top-24 -left-24 w-80 h-80 bg-emerald-500/12 rounded-full blur-[100px] animate-pulse-soft" />
-      <div className="absolute top-1/2 -right-32 w-96 h-96 bg-teal-500/8 rounded-full blur-[120px] animate-pulse-soft" />
-      <div className="absolute -bottom-24 left-1/3 w-80 h-80 bg-amber-500/8 rounded-full blur-[110px] animate-pulse-soft" />
 
       {/* ============================================================ */}
-      {/* LAYER 4: FLOATING GLASSMORPHISM FEATURE BADGES              */}
+      {/* LAYER 3: INTERACTIVE CANVAS PARTICLE MESH                    */}
       {/* ============================================================ */}
-      <div className="hidden xl:block">
-        {/* Top-Left: Farm Gate with mini crop image */}
-        <div className="absolute top-16 left-12 animate-float-slow" style={{ animationDelay: '0s' }}>
-          <div className="flex items-center gap-3 bg-slate-900/75 backdrop-blur-md border border-emerald-500/35 px-4 py-2.5 rounded-2xl shadow-xl">
-            <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-emerald-500/40 shadow-md">
-              <img
-                src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=100&auto=format&fit=crop&q=80"
-                alt="Farm crops"
-                className="w-full h-full object-cover"
-              />
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-40" />
+
+      {/* ============================================================ */}
+      {/* LAYER 4: ACTIVE SCENE ANNOUNCEMENT BADGE (TOP LEFT)         */}
+      {/* ============================================================ */}
+      <div className="hidden md:block absolute top-6 left-6 z-10 transition-all duration-500">
+        <div className="flex items-center gap-3 bg-slate-950/70 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/10 shadow-2xl">
+          <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+            <activeScene.icon className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <span className="text-[11px] font-bold text-white uppercase tracking-wider">
+                {activeScene.title}
+              </span>
             </div>
-            <div>
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                <span className="text-[11px] font-bold text-white tracking-wide uppercase">Farm Gate Direct</span>
-              </div>
-              <p className="text-[10px] text-slate-300 leading-tight">Grade-A produce from Kiambu,<br />Meru & Nakuru</p>
-            </div>
+            <p className="text-[10px] text-slate-300">
+              {activeScene.subtitle}
+            </p>
           </div>
         </div>
+      </div>
 
-        {/* Top-Right: Buyers with business image */}
-        <div className="absolute top-20 right-12 animate-float-reverse" style={{ animationDelay: '1.2s' }}>
-          <div className="flex items-center gap-3 bg-slate-900/75 backdrop-blur-md border border-amber-500/35 px-4 py-2.5 rounded-2xl shadow-xl">
-            <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-amber-500/40 shadow-md">
-              <img
-                src="https://images.unsplash.com/photo-1573497019236-61e7a0081f95?w=100&auto=format&fit=crop&q=80"
-                alt="Business buyer"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <ShieldCheck className="w-3 h-3 text-amber-400" />
-                <span className="text-[11px] font-bold text-amber-300 tracking-wide uppercase">Escrow Protected</span>
-              </div>
-              <p className="text-[10px] text-slate-300 leading-tight">Funds held securely until<br />buyer confirms quality</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom-Left: Transporter with truck image */}
-        <div className="absolute bottom-16 left-12 animate-float-reverse" style={{ animationDelay: '0.6s' }}>
-          <div className="flex items-center gap-3 bg-slate-900/75 backdrop-blur-md border border-sky-500/35 px-4 py-2.5 rounded-2xl shadow-xl">
-            <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-sky-500/40 shadow-md">
-              <img
-                src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=100&auto=format&fit=crop&q=80"
-                alt="Logistics truck"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <Truck className="w-3 h-3 text-sky-400" />
-                <span className="text-[11px] font-bold text-sky-300 tracking-wide uppercase">Cold-Chain Freight</span>
-              </div>
-              <p className="text-[10px] text-slate-300 leading-tight">3–5 tonne carriers with<br />live OTP dispatch system</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom-Right: M-Pesa with market people image */}
-        <div className="absolute bottom-20 right-12 animate-float-slow" style={{ animationDelay: '1.8s' }}>
-          <div className="flex items-center gap-3 bg-slate-900/75 backdrop-blur-md border border-emerald-500/35 px-4 py-2.5 rounded-2xl shadow-xl">
-            <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-emerald-500/40 shadow-md">
-              <img
-                src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=100&auto=format&fit=crop&q=80"
-                alt="Mobile payment"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <Zap className="w-3 h-3 text-emerald-400" />
-                <span className="text-[11px] font-bold text-emerald-300 tracking-wide uppercase">M-Pesa Instant Pay</span>
-              </div>
-              <p className="text-[10px] text-slate-300 leading-tight">Atomic disbursal directly<br />to farmer's M-Pesa wallet</p>
-            </div>
-          </div>
+      {/* ============================================================ */}
+      {/* LAYER 5: INTERACTIVE SCENE CONTROLS (BOTTOM PILLS)          */}
+      {/* ============================================================ */}
+      <div className="absolute bottom-4 inset-x-0 flex justify-center z-10 pointer-events-auto px-4">
+        <div className="bg-slate-950/80 backdrop-blur-xl border border-white/10 p-1.5 rounded-full shadow-2xl flex items-center gap-1 sm:gap-2 max-w-full overflow-x-auto">
+          {FULLSCREEN_SCENES.map((scene, idx) => {
+            const isActive = idx === activeSceneIndex;
+            const IconComp = scene.icon;
+            return (
+              <button
+                key={scene.id}
+                type="button"
+                onClick={() => setActiveSceneIndex(idx)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 ${
+                  isActive
+                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 scale-105'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <IconComp className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{scene.tag}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
