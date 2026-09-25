@@ -166,7 +166,9 @@ export default function Login({ onNavigateRegister, onNavigateAdmin, onNavigateF
             >
               Register Now
             </button>
+          </div>
         </div>
+      </div>
     </div>
   );
 }
