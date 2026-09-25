@@ -6,7 +6,14 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Seeding AgriLink database with real authenticated stakeholders and hashed passwords...');
 
-  // 1. Clean existing records
+  // 1. Check if database already has users; skip if already seeded to protect registered users
+  const existingUsers = await prisma.user.count();
+  if (existingUsers > 0 && !process.argv.includes('--force')) {
+    console.log(`ℹ️ Database already contains ${existingUsers} users. Preserving existing accounts and skipping seed.`);
+    return;
+  }
+
+  console.log('Seeding initial stakeholders...');
   await prisma.notification.deleteMany();
   await prisma.shipment.deleteMany();
   await prisma.escrowTransaction.deleteMany();
