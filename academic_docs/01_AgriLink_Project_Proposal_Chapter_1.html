@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chapter 1: Project Proposal — AgriLink BBIT Capstone Project</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 25mm 20mm 25mm 25mm;
+    }
+    body {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 12pt;
+      line-height: 1.6;
+      color: #111827;
+      margin: 0;
+      padding: 40px;
+      background: #f8fafc;
+    }
+    .page-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 60px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border-radius: 4px;
+    }
+    .no-print-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #0f172a;
+      color: white;
+      padding: 12px 24px;
+      margin: -40px -40px 30px -40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 4px 4px 0 0;
+      font-family: system-ui, sans-serif;
+      font-size: 13px;
+    }
+    .print-btn {
+      background: #16a34a;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .coversheet {
+      text-align: center;
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 30px;
+      margin-bottom: 40px;
+    }
+    .coversheet h1 {
+      font-size: 22pt;
+      margin: 10px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #0f172a;
+    }
+    .coversheet h2 {
+      font-size: 14pt;
+      font-weight: normal;
+      color: #475569;
+      margin: 5px 0 20px 0;
+    }
+    .meta-box {
+      margin-top: 25px;
+      font-size: 11pt;
+      line-height: 1.8;
+      border: 1px solid #cbd5e1;
+      padding: 15px;
+      border-radius: 6px;
+      background: #f8fafc;
+      display: inline-block;
+      text-align: left;
+    }
+    h1, h2, h3, h4 {
+      font-family: 'Times New Roman', Times, serif;
+      color: #0f172a;
+      page-break-after: avoid;
+    }
+    h1 { font-size: 16pt; margin-top: 28px; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; }
+    h2 { font-size: 14pt; margin-top: 22px; }
+    h3 { font-size: 12pt; margin-top: 16px; }
+    p { margin: 10px 0; text-align: justify; text-justify: inter-word; }
+    .academic-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 10.5pt;
+    }
+    .academic-table td, .academic-table th {
+      border: 1px solid #94a3b8;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    .academic-table tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    code {
+      font-family: 'Courier New', Courier, monospace;
+      background: #f1f5f9;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 10pt;
+    }
+    pre {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 9.5pt;
+      page-break-inside: avoid;
+    }
+    pre code { background: none; color: inherit; padding: 0; }
+    .alert {
+      padding: 12px 16px;
+      margin: 15px 0;
+      border-left: 4px solid #16a34a;
+      background: #f0fdf4;
+      font-size: 11pt;
+    }
+    @media print {
+      body { background: white; padding: 0; }
+      .page-container { box-shadow: none; padding: 0; max-width: 100%; }
+      .no-print-bar { display: none !important; }
+      .page-break { page-break-before: always; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <div class="no-print-bar">
+      <span>📄 <strong>AgriLink Academic Document</strong> — Formatted for BBIT Supervisor Review</span>
+      <button class="print-btn" onclick="window.print()">🖨️ Print to PDF / Save as PDF</button>
+    </div>
+
+    <div class="coversheet">
+      <p style="font-size: 13pt; font-weight: bold; letter-spacing: 1px; color: #15803d; margin: 0;">
+        BACHELOR OF BUSINESS INFORMATION TECHNOLOGY (BBIT)
+      </p>
+      <p style="font-size: 11pt; color: #64748b; margin: 5px 0 15px 0;">FINAL YEAR CAPSTONE PROJECT DOCUMENTATION</p>
+      <h1>Chapter 1: Project Proposal</h1>
+      <h2>Introduction, Problem Statement, Objectives, and Scope</h2>
+
+      <div class="meta-box">
+        <strong>Project Name:</strong> AgriLink Agribusiness B2B SCM Platform<br>
+        <strong>Lead Developer / Admin:</strong> Kelvin Kiriinya<br>
+        <strong>Target Sector:</strong> Agricultural Value Chain & Digital Escrow Procurement<br>
+        <strong>Academic Year:</strong> 2025 / 2026<br>
+        <strong>System Status:</strong> Fully Operational (Live Authentication & Daraja Escrow Rails)
+      </div>
+    </div>
+
+    <div class="content-body">
+      <p><h1>Project Proposal: AgriLink</h1>
+<h2>An Integrated B2B Digital Sourcing and Logistics Management System for Agricultural Value Chains</h2></p><p>---</p><p><h3>Executive Summary</h3>
+* <strong>Degree Program:</strong> Bachelor of Business Information Technology (BBIT)
+* <strong>Project Working Title:</strong> AgriLink: An Integrated B2B Digital Sourcing and Logistics Management System for Agricultural Value Chains
+* <strong>Domain:</strong> Agribusiness Supply Chain, E-Commerce, Logistics & FinTech</p><p>---</p><p><h2>1.0 Introduction & Background of the Study</h2></p><p>Agriculture remains the economic backbone of many developing and emerging economies, contributing up to 30% of GDP and employing over 60% of rural populations. In smallholder farming systems, however, the journey from harvest to consumer is plagued by fragmented supply chains, market opacity, and heavy reliance on informal brokers and intermediaries.</p><p>The Bachelor of Business Information Technology (BBIT) domain focuses on leveraging information systems to solve concrete commercial bottlenecks, optimize operational efficiency, and capture financial value. In agricultural value chains, information asymmetry is the single greatest cause of lost economic value:
+1. <strong>Farmers</strong> lack visibility into real-time market prices, buyer quality requirements, and reliable transport options.
+2. <strong>Commercial off-takers</strong> (hotels, supermarkets, institutional cafeterias, and food processors) struggle with unpredictable supply volumes, volatile pricing, and inconsistent produce quality.
+3. <strong>Logistics providers</strong> face high empty-run rates and lack route-consolidation mechanisms.</p><p>With the proliferation of mobile connectivity, cloud architectures, and mobile financial services (e.g., M-Pesa, digital banking APIs), there is a prime opportunity to engineer an integrated, multi-sided B2B platform that directly links primary producers with institutional buyers, guarantees payment settlement via an escrow mechanism, and coordinates just-in-time logistics dispatch.</p><p>---</p><p><h2>1.1 Problem Statement</h2></p><p>Despite high consumer demand for fresh agricultural produce, smallholder farmers lose an estimated 35% to 50% of their harvest value to post-harvest deterioration and predatory intermediary markups. Intermediaries routinely exploit farmers' lack of market pricing data and immediate liquidity needs, capturing between 40% and 60% of consumer market margins while transferring minimal value to primary producers.</p><p>Simultaneously, commercial food businesses spend disproportionate operational hours and financial resources manually sourcing produce from scattered markets with zero quality traceability and frequent fulfillment delays. Existing digital marketplace solutions often operate merely as passive classified advertising boards; they do not handle:
+1. <strong>Binding purchase contracts and order fulfillment verification.</strong>
+2. <strong>Integrated payment protection (escrow settlement) to mitigate counterparty default.</strong>
+3. <strong>Coordinated third-party logistics dispatch to curb transit delays and crop spoilage.</strong></p><p>Without an integrated platform that synchronizes digital ordering, quality inspection, logistics dispatch, and escrow financial settlement, agricultural value chains will remain inefficient, leading to persistent rural poverty and high food prices.</p><p>---</p><p><h2>1.2 Purpose of the Study</h2></p><p>The purpose of this project is to develop and evaluate <strong>AgriLink</strong>, an integrated B2B digital sourcing and logistics management web/mobile application that disintermediates agricultural supply chains by connecting smallholder farmers directly with commercial buyers, ensuring fair pricing, automated escrow payments, and structured logistics tracking.</p><p>---</p><p><h2>1.3 Project Objectives</h2></p><p><h3>1.3.1 General Objective</h3>
+To design, implement, and evaluate an integrated B2B digital supply chain and marketplace system that optimizes procurement, logistics, and transaction settlements between smallholder farmers and commercial off-takers.</p><p><h3>1.3.2 Specific Objectives</h3>
+1. <strong>To evaluate the functional requirements and operational bottlenecks</strong> in current agricultural produce procurement and delivery workflows through literature review and stakeholder analysis.
+2. <strong>To design a multi-tenant system architecture</strong> that incorporates a direct B2B produce catalog, dynamic purchase order workflow, and role-based access for farmers, buyers, logistics drivers, and administrators.
+3. <strong>To develop an automated milestone-driven escrow payment module</strong> using mobile money and card transaction APIs to guarantee payment upon delivery verification.
+4. <strong>To integrate an automated dispatch and route-tracking logistics module</strong> that coordinates third-party transporters to reduce transit time and post-harvest losses.
+5. <strong>To test, validate, and evaluate the performance, usability, and transactional integrity</strong> of the developed system through black-box, white-box, and User Acceptance Testing (UAT).</p><p>---</p><p><h2>1.4 Research / Project Questions</h2>
+1. What specific business and technical constraints hinder smallholder farmers from dealing directly with commercial buyers?
+2. How can an automated escrow payment mechanism be architected to establish trust between distant buyers and rural sellers?
+3. How can third-party transport and logistics be dynamically dispatched to coincide with harvest dates and produce collection schedules?
+4. What is the impact of a digital direct-procurement platform on transaction cycle time and farmer profit margins?</p><p>---</p><p><h2>1.5 Significance & Justification of the Study</h2></p><p>This project delivers substantial value across academic, commercial, and socio-economic fronts:</p><p><h3>1.5.1 For Smallholder Farmers & Cooperatives</h3>
+* <strong>Margin Reclamation:</strong> By eliminating predatory brokers, farmers capture higher farmgate prices (an estimated 20–35% increase in net earnings).
+* <strong>Guaranteed Payment:</strong> Farmers avoid delayed payments and defaults because orders are pre-funded into escrow prior to harvest harvesting and dispatch.
+* <strong>Market Access:</strong> Expands market reach beyond immediate local roadside markets to institutional, high-volume buyers.</p><p><h3>1.5.2 For Commercial Buyers (Supermarkets, Restaurants, Processors)</h3>
+* <strong>Consistent Quality & Traceability:</strong> Sourcing directly from verified producers with clear crop grading and harvest timestamping.
+* <strong>Streamlined Procurement:</strong> Replaces fragmented phone calls and manual invoicing with structured digital purchase orders (POs) and automated receipts.
+* <strong>Cost Efficiency:</strong> Reduces sourcing costs by obtaining transparent, competitive wholesale prices.</p><p><h3>1.5.3 For Logistics Operators</h3>
+* <strong>Optimized Fleet Capacity:</strong> Enables independent transporters and fleet owners to discover pre-aggregated loads, reducing deadhead miles.</p><p><h3>1.5.4 Academic and BBIT Contribution</h3>
+* Demonstrates how the intersection of <strong>Business Process Re-engineering (BPR)</strong> and <strong>Information Systems Architecture</strong> can solve structural socio-economic inefficiencies in traditional markets.</p><p>---</p><p><h2>1.6 Scope of the Project</h2></p><p><h3>1.6.1 Functional Scope</h3>
+* <strong>User Management & Authentication:</strong> Multi-role authentication (Farmer, Buyer, Transporter, Admin) with role-based dashboard views and KYC document verification.
+* <strong>Produce Listing & Catalog:</strong> Crop category filtering, quantity available (in kg/tonnes), grade standard, harvest date, and geographical location.
+* <strong>Order & Contract Management:</strong> Automated issuance of Purchase Orders (POs), acceptance/counter-offers, and order milestone state machine (Pending -> Escrow Funded -> In Transit -> Delivered -> Completed).
+* <strong>Escrow Settlement System:</strong> Simulated/Sandbox integration of Mobile Money / Payment Gateway; funds held until buyer verifies delivery acceptance.
+* <strong>Logistics Dispatch Module:</strong> Transporter notification upon order readiness, proof-of-pickup, and proof-of-delivery (PIN/OTP verification).
+* <strong>Business Analytics & Reporting:</strong> Price trend visualizer, trade volume analytics, and platform fee reconciliations for system administrators.</p><p><h3>1.6.2 Technical Scope</h3>
+* <strong>Client Interfaces:</strong> Responsive Web Application (optimized for desktop & mobile browsers).
+* <strong>Backend Architecture:</strong> RESTful API micro-services or modular monolith handling business logic, transaction locking, and notifications.
+* <strong>Database:</strong> Relational database management system (PostgreSQL/MySQL) ensuring ACID compliance for financial and inventory transactions.
+* <strong>Third-Party Integrations:</strong> Mobile money/card payment sandbox, SMS notification gateway (e.g., Africa's Talking / Twilio).</p><p><h3>1.6.3 Geographical & Operational Scope</h3>
+* Targeted initial demonstration: Horticulture (e.g., tomatoes, onions, leafy greens, avocados) and grain commodities within regional economic corridors.</p><p>---</p><p><h2>1.7 Assumptions and Limitations</h2></p><p><h3>1.7.1 Assumptions</h3>
+1. Participating farmers have access to at least a basic smartphone or SMS-capable mobile device with intermittent internet connectivity.
+2. Commercial buyers are willing to adopt digital payments and milestone escrow workflows over informal cash settlements.
+3. Third-party logistics operators operate in the target delivery corridors.</p><p><h3>1.7.2 Limitations</h3>
+1. Physical quality inspections upon delivery depend on buyer confirmation or standardized grading checklists, which may introduce disputes requiring administrative mediation.
+2. Weather extremes and seasonal road unreliability may affect delivery timelines beyond the platform's control.
+3. Regulatory constraints require utilizing payment sandbox environments rather than live commercial banking charters for academic demonstration.</p><p>---</p><p><h2>1.8 Proposed Development Methodology: Agile (Scrum)</h2></p><p>The project will follow the <strong>Agile Scrum Methodology</strong>, chosen because business workflows and user interface requirements often evolve upon receiving stakeholder feedback.</p><p><pre><code>mermaid
+flowchart LR
+    A["Sprint 0: Requirements & System Architecture"] --> B["Sprint 1: Core Auth & Catalog Management"]
+    B --> C["Sprint 2: Order Lifecycle & Escrow Logic"]
+    C --> D["Sprint 3: Logistics Dispatch & Tracking"]
+    D --> E["Sprint 4: Analytics & Admin Dashboard"]
+    E --> F["Sprint 5: UAT, Testing & Final Deployment"]
+</code></pre></p><p><h3>Justification for Agile Scrum:</h3>
+* <strong>Iterative Prototyping:</strong> Allows rapid demonstration of clickable prototypes to academic supervisors and users.
+* <strong>Modular Risk Reduction:</strong> Financial/escrow logic can be isolated, tested, and hardened independently of the UI.
+* <strong>Continuous Integration:</strong> Ensures bugs are caught early during sprint test cycles rather than at final deployment.</p><p>---</p><p><h2>1.9 High-Level Project Schedule (Gantt Chart Overview)</h2></p><p><table class="academic-table"><tr><td>Phase / Milestone</td><td>Duration</td><td>Key Deliverables</td></tr></table></p><p><table class="academic-table"><tr><td><strong>Phase 1: Proposal & Requirements Analysis</strong></td><td>Weeks 1 – 3</td><td>Approved Proposal, Software Requirements Specification (SRS).</td></tr></table>
+<table class="academic-table"><tr><td><strong>Phase 2: System Design & Prototyping</strong></td><td>Weeks 4 – 6</td><td>System Architecture, ERD, DFDs, Figma UI/UX Mockups.</td></tr></table>
+<table class="academic-table"><tr><td><strong>Phase 3: Core Development (Sprints 1–3)</strong></td><td>Weeks 7 – 12</td><td>Database schema, REST APIs, Web/Mobile UI, Escrow logic.</td></tr></table>
+<table class="academic-table"><tr><td><strong>Phase 4: Logistics & Analytics (Sprints 4–5)</strong></td><td>Weeks 13 – 15</td><td>Transporter dispatching, OTP proof-of-delivery, Analytics.</td></tr></table>
+<table class="academic-table"><tr><td><strong>Phase 5: System Testing & Evaluation</strong></td><td>Weeks 16 – 17</td><td>Test reports (Unit, Integration, UAT), Usability survey data.</td></tr></table>
+<table class="academic-table"><tr><td><strong>Phase 6: Final Documentation & Defense</strong></td><td>Weeks 18 – 20</td><td>Final Capstone Report (Chapters 1–5), Project Defense Presentation.</td></tr></table>
+</p>
+    </div>
+  </div>
+</body>
+</html>

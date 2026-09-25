@@ -1,0 +1,129 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id               String           @id @default(uuid())
+  name             String
+  email            String           @unique
+  phone            String           @unique
+  password         String           // Hashed password via bcrypt
+  role             String           // FARMER, BUYER, TRANSPORTER, ADMIN
+  kycStatus        String           @default("VERIFIED") // PENDING, VERIFIED, REJECTED
+  isEmailVerified  Boolean          @default(false)
+  verificationCode String?
+  resetCode        String?
+  resetCodeExpires DateTime?
+  location         String
+  businessName     String?
+  idNumber         String?
+  walletBalance    Float            @default(0.0)
+  createdAt        DateTime         @default(now())
+
+  listings         ProduceListing[]
+  orders           Order[]          @relation("BuyerOrders")
+  shipments        Shipment[]       @relation("TransporterShipments")
+  notifications    Notification[]
+}
+
+model ProduceListing {
+  id           String      @id @default(uuid())
+  farmerId     String
+  cropName     String
+  category     String      // HORTICULTURE, CEREAL, TUBER, LEGUME
+  availableQty Float
+  unitPrice    Float
+  grade        String      // GRADE_A, GRADE_B, STANDARD
+  harvestDate  DateTime
+  location     String
+  status       String      @default("ACTIVE") // ACTIVE, RESERVED, SOLD_OUT
+  imageUrl     String?
+  createdAt    DateTime    @default(now())
+
+  farmer       User        @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+  orderItems   OrderItem[]
+}
+
+model Order {
+  id                 String             @id @default(uuid())
+  orderNumber        String             @unique
+  buyerId            String
+  totalAmount        Float
+  transportFee       Float              @default(0.0)
+  platformFee        Float              @default(0.0)
+  grandTotal         Float
+  status             String             @default("PENDING") 
+  // Statuses: PENDING, ESCROW_FUNDED, DISPATCH_READY, IN_TRANSIT, ARRIVED, COMPLETED, CANCELLED
+  deliveryAddress    String
+  notes              String?
+  createdAt          DateTime           @default(now())
+
+  buyer              User               @relation("BuyerOrders", fields: [buyerId], references: [id])
+  items              OrderItem[]
+  escrowTransaction  EscrowTransaction?
+  shipment           Shipment?
+}
+
+model OrderItem {
+  id        String         @id @default(uuid())
+  orderId   String
+  listingId String
+  cropName  String
+  quantity  Float
+  unitPrice Float
+  subtotal  Float
+
+  order     Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  listing   ProduceListing @relation(fields: [listingId], references: [id])
+}
+
+model EscrowTransaction {
+  id                String    @id @default(uuid())
+  orderId           String    @unique
+  reference         String    @unique
+  paymentGateway    String    @default("MPESA_STK") // MPESA_STK, CARD, STRIPE
+  amountHeld        Float
+  status            String    @default("HELD") // HELD, RELEASED, REFUNDED
+  checkoutRequestId String?
+  merchantRequestId String?
+  mpesaReceipt      String?
+  fundedAt          DateTime  @default(now())
+  releasedAt        DateTime?
+
+  order             Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Shipment {
+  id              String    @id @default(uuid())
+  orderId         String    @unique
+  transporterId   String?
+  vehicleReg      String?
+  pickupLocation  String
+  dropoffLocation String
+  transitStatus   String    @default("PENDING_ASSIGNMENT") 
+  // Statuses: PENDING_ASSIGNMENT, ASSIGNED, PICKED_UP, IN_TRANSIT, ARRIVED, DELIVERED
+  confirmationOtp String
+  dispatchedAt    DateTime?
+  deliveredAt     DateTime?
+
+  order           Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  transporter     User?     @relation("TransporterShipments", fields: [transporterId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String   // EMAIL, SMS, WHATSAPP, SYSTEM
+  title     String
+  message   String
+  metadata  String?  // JSON stringified payload
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

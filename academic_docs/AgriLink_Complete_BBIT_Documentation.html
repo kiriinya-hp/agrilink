@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AgriLink: Complete BBIT Capstone Project Compendium — AgriLink BBIT Capstone Project</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 25mm 20mm 25mm 25mm;
+    }
+    body {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 12pt;
+      line-height: 1.6;
+      color: #111827;
+      margin: 0;
+      padding: 40px;
+      background: #f8fafc;
+    }
+    .page-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 60px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border-radius: 4px;
+    }
+    .no-print-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #0f172a;
+      color: white;
+      padding: 12px 24px;
+      margin: -40px -40px 30px -40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 4px 4px 0 0;
+      font-family: system-ui, sans-serif;
+      font-size: 13px;
+    }
+    .print-btn {
+      background: #16a34a;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .coversheet {
+      text-align: center;
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 30px;
+      margin-bottom: 40px;
+    }
+    .coversheet h1 {
+      font-size: 22pt;
+      margin: 10px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #0f172a;
+    }
+    .coversheet h2 {
+      font-size: 14pt;
+      font-weight: normal;
+      color: #475569;
+      margin: 5px 0 20px 0;
+    }
+    .meta-box {
+      margin-top: 25px;
+      font-size: 11pt;
+      line-height: 1.8;
+      border: 1px solid #cbd5e1;
+      padding: 15px;
+      border-radius: 6px;
+      background: #f8fafc;
+      display: inline-block;
+      text-align: left;
+    }
+    h1, h2, h3, h4 {
+      font-family: 'Times New Roman', Times, serif;
+      color: #0f172a;
+      page-break-after: avoid;
+    }
+    h1 { font-size: 16pt; margin-top: 28px; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; }
+    h2 { font-size: 14pt; margin-top: 22px; }
+    h3 { font-size: 12pt; margin-top: 16px; }
+    p { margin: 10px 0; text-align: justify; text-justify: inter-word; }
+    .academic-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 10.5pt;
+    }
+    .academic-table td, .academic-table th {
+      border: 1px solid #94a3b8;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    .academic-table tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    code {
+      font-family: 'Courier New', Courier, monospace;
+      background: #f1f5f9;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 10pt;
+    }
+    pre {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 9.5pt;
+      page-break-inside: avoid;
+    }
+    pre code { background: none; color: inherit; padding: 0; }
+    .alert {
+      padding: 12px 16px;
+      margin: 15px 0;
+      border-left: 4px solid #16a34a;
+      background: #f0fdf4;
+      font-size: 11pt;
+    }
+    @media print {
+      body { background: white; padding: 0; }
+      .page-container { box-shadow: none; padding: 0; max-width: 100%; }
+      .no-print-bar { display: none !important; }
+      .page-break { page-break-before: always; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <div class="no-print-bar">
+      <span>📄 <strong>AgriLink Academic Document</strong> — Formatted for BBIT Supervisor Review</span>
+      <button class="print-btn" onclick="window.print()">🖨️ Print to PDF / Save as PDF</button>
+    </div>
+
+    <div class="coversheet">
+      <p style="font-size: 13pt; font-weight: bold; letter-spacing: 1px; color: #15803d; margin: 0;">
+        BACHELOR OF BUSINESS INFORMATION TECHNOLOGY (BBIT)
+      </p>
+      <p style="font-size: 11pt; color: #64748b; margin: 5px 0 15px 0;">FINAL YEAR CAPSTONE PROJECT DOCUMENTATION</p>
+      <h1>AgriLink: Complete BBIT Capstone Project Compendium</h1>
+      <h2>Comprehensive Academic Report (Proposal, Design & Implementation)</h2>
+
+      <div class="meta-box">
+        <strong>Project Name:</strong> AgriLink Agribusiness B2B SCM Platform<br>
+        <strong>Lead Developer / Admin:</strong> Kelvin Kiriinya<br>
+        <strong>Target Sector:</strong> Agricultural Value Chain & Digital Escrow Procurement<br>
+        <strong>Academic Year:</strong> 2025 / 2026<br>
+        <strong>System Status:</strong> Fully Operational (Live Authentication & Daraja Escrow Rails)
+      </div>
+    </div>
+
+    <div class="content-body">
+      <p><div class="page-break"></div><h1>Chapter 1: Project Proposal</h1><h2>Introduction, Problem Statement, Objectives, and Scope</h2></p><p><h1>Project Proposal: AgriLink</h1>
+<h2>An Integrated B2B Digital Sourcing and Logistics Management System for Agricultural Value Chains</h2></p><p>---</p><p><h3>Executive Summary</h3>
+* <strong>Degree Program:</strong> Bachelor of Business Information Technology (BBIT)
+* <strong>Project Working Title:</strong> AgriLink: An Integrated B2B Digital Sourcing and Logistics Management System for Agricultural Value Chains
+* <strong>Domain:</strong> Agribusiness Supply Chain, E-Commerce, Logistics & FinTech</p><p>---</p><p><h2>1.0 Introduction & Background of the Study</h2></p><p>Agriculture remains the economic backbone of many developing and emerging economies, contributing up to 30% of GDP and employing over 60% of rural populations. In smallholder farming systems, however, the journey from harvest to consumer is plagued by fragmented supply chains, market opacity, and heavy reliance on informal brokers and intermediaries.</p><p>The Bachelor of Business Information Technology (BBIT) domain focuses on leveraging information systems to solve concrete commercial bottlenecks, optimize operational efficiency, and capture financial value. In agricultural value chains, information asymmetry is the single greatest cause of lost economic value:
+1. <strong>Farmers</strong> lack visibility into real-time market prices, buyer quality requirements, and reliable transport options.
+2. <strong>Commercial off-takers</strong> (hotels, supermarkets, institutional cafeterias, and food processors) struggle with unpredictable supply volumes, volatile pricing, and inconsistent produce quality.
+3. <strong>Logistics providers</strong> face high empty-run rates and lack route-consolidation mechanisms.</p><p>With the proliferation of mobile connectivity, cloud architectures, and mobile financial services (e.g., M-Pesa, digital banking APIs), there is a prime opportunity to engineer an integrated, multi-sided B2B platform that directly links primary producers with institutional buyers, guarantees payment settlement via an escrow mechanism, and coordinates just-in-time logistics dispatch.</p><p>---</p><p><h2>1.1 Problem Statement</h2></p><p>Despite high consumer demand for fresh agricultural produce, smallholder farmers lose an estimated 35% to 50% of their harvest value to post-harvest deterioration and predatory intermediary markups. Intermediaries routinely exploit farmers' lack of market pricing data and immediate liquidity needs, capturing between 40% and 60% of consumer market margins while transferring minimal value to primary producers.</p><p>Simultaneously, commercial food businesses spend disproportionate operational hours and financial resources manually sourcing produce from scattered markets with zero quality traceability and frequent fulfillment delays. Existing digital marketplace solutions often operate merely as passive classified advertising boards; they do not handle:
+1. <strong>Binding purchase contracts and order fulfillment verification.</strong>
+2. <strong>Integrated payment protection (escrow settlement) to mitigate counterparty default.</strong>
+3. <strong>Coordinated third-party logistics dispatch to curb transit delays and crop spoilage.</strong></p><p>Without an integrated platform that synchronizes digital ordering, quality inspection, logistics dispatch, and escrow financial settlement, agricultural value chains will remain inefficient, leading to persistent rural poverty and high food prices.</p><p>---</p><p><h2>1.2 Purpose of the Study</h2></p><p>The purpose of this project is to develop and evaluate <strong>AgriLink</strong>, an integrated B2B digital sourcing and logistics management web/mobile application that disintermediates agricultural supply chains by connecting smallholder farmers directly with commercial buyers, ensuring fair pricing, automated escrow payments, and structured logistics tracking.</p><p>---</p><p><h2>1.3 Project Objectives</h2></p><p><h3>1.3.1 General Objective</h3>
+To design, implement, and evaluate an integrated B2B digital supply chain and marketplace system that optimizes procurement, logistics, and transaction settlements between smallholder farmers and commercial off-takers.</p><p><h3>1.3.2 Specific Objectives</h3>
+1. <strong>To evaluate the functional requirements and operational bottlenecks</strong> in current agricultural produce procurement and delivery workflows through literature review and stakeholder analysis.
+2. <strong>To design a multi-tenant system architecture</strong> that incorporates a direct B2B produce catalog, dynamic purchase order workflow, and role-based access for farmers, buyers, logistics drivers, and administrators.
+3. <strong>To develop an automated milestone-driven escrow payment module</strong> using mobile money and card transaction APIs to guarantee payment upon delivery verification.
+4. <strong>To integrate an automated dispatch and route-tracking logistics module</strong> that coordinates third-party transporters to reduce transit time and post-harvest losses.
+5. <strong>To test, validate, and evaluate the performance, usability, and transactional integrity</strong> of the developed system through black-box, white-box, and User Acceptance Testing (UAT).</p><p>---</p><p><h2>1.4 Research / Project Questions</h2>
+1. What specific business and technical constraints hinder smallholder farmers from dealing directly with commercial buyers?
+2. How can an automated escrow payment mechanism be architected to establish trust between distant buyers and rural sellers?
+3. How can third-party transport and logistics be dynamically dispatched to coincide with harvest dates and produce collection schedules?
+4. What is the impact of a digital direct-procurement platform on transaction cycle time and farmer profit margins?</p><p>---</p><p><h2>1.5 Significance & Justification of the Study</h2></p><p>This project delivers substantial value across academic, commercial, and socio-economic fronts:</p><p><h3>1.5.1 For Smallholder Farmers & Cooperatives</h3>
+* <strong>Margin Reclamation:</strong> By eliminating predatory brokers, farmers capture higher farmgate prices (an estimated 20–35% increase in net earnings).
+* <strong>Guaranteed Payment:</strong> Farmers avoid delayed payments and defaults because orders are pre-funded into escrow prior to harvest harvesting and dispatch.
+* <strong>Market Access:</strong> Expands market reach beyond immediate local roadside markets to institutional, high-volume buyers.</p><p><h3>1.5.2 For Commercial Buyers (Supermarkets, Restaurants, Processors)</h3>
+* <strong>Consistent Quality & Traceability:</strong> Sourcing directly from verified producers with clear crop grading and harvest timestamping.
+* <strong>Streamlined Procurement:</strong> Replaces fragmented phone calls and manual invoicing with structured digital purchase orders (POs) and automated receipts.
+* <strong>Cost Efficiency:</strong> Reduces sourcing costs by obtaining transparent, competitive wholesale prices.</p><p><h3>1.5.3 For Logistics Operators</h3>
+* <strong>Optimized Fleet Capacity:</strong> Enables independent transporters and fleet owners to discover pre-aggregated loads, reducing deadhead miles.</p><p><h3>1.5.4 Academic and BBIT Contribution</h3>
+* Demonstrates how the intersection of <strong>Business Process Re-engineering (BPR)</strong> and <strong>Information Systems Architecture</strong> can solve structural socio-economic inefficiencies in traditional markets.</p><p>---</p><p><h2>1.6 Scope of the Project</h2></p><p><h3>1.6.1 Functional Scope</h3>
+* <strong>User Management & Authentication:</strong> Multi-role authentication (Farmer, Buyer, Transporter, Admin) with role-based dashboard views and KYC document verification.
+* <strong>Produce Listing & Catalog:</strong> Crop category filtering, quantity available (in kg/tonnes), grade standard, harvest date, and geographical location.
+* <strong>Order & Contract Management:</strong> Automated issuance of Purchase Orders (POs), acceptance/counter-offers, and order milestone state machine (Pending -> Escrow Funded -> In Transit -> Delivered -> Completed).
+* <strong>Escrow Settlement System:</strong> Simulated/Sandbox integration of Mobile Money / Payment Gateway; funds held until buyer verifies delivery acceptance.
+* <strong>Logistics Dispatch Module:</strong> Transporter notification upon order readiness, proof-of-pickup, and proof-of-delivery (PIN/OTP verification).
+* <strong>Business Analytics & Reporting:</strong> Price trend visualizer, trade volume analytics, and platform fee reconciliations for system administrators.</p><p><h3>1.6.2 Technical Scope</h3>
+* <strong>Client Interfaces:</strong> Responsive Web Application (optimized for desktop & mobile browsers).
+* <strong>Backend Architecture:</strong> RESTful API micro-services or modular monolith handling business logic, transaction locking, and notifications.
+* <strong>Database:</strong> Relational database management system (PostgreSQL/MySQL) ensuring ACID compliance for financial and inventory transactions.
+* <strong>Third-Party Integrations:</strong> Mobile money/card payment sandbox, SMS notification gateway (e.g., Africa's Talking / Twilio).</p><p><h3>1.6.3 Geographical & Operational Scope</h3>
+* Targeted initial demonstration: Horticulture (e.g., tomatoes, onions, leafy greens, avocados) and grain commodities within regional economic corridors.</p><p>---</p><p><h2>1.7 Assumptions and Limitations</h2></p><p><h3>1.7.1 Assumptions</h3>
+1. Participating farmers have access to at least a basic smartphone or SMS-capable mobile device with intermittent internet connectivity.
+2. Commercial buyers are willing to adopt digital payments and milestone escrow workflows over informal cash settlements.
+3. Third-party logistics operators operate in the target delivery corridors.</p><p><h3>1.7.2 Limitations</h3>
+1. Physical quality inspections upon delivery depend on buyer confirmation or standardized grading checklists, which may introduce disputes requiring administrative mediation.
+2. Weather extremes and seasonal road unreliability may affect delivery timelines beyond the platform's control.
+3. Regulatory constraints require utilizing payment sandbox environments rather than live commercial banking charters for academic demonstration.</p><p>---</p><p><h2>1.8 Proposed Development Methodology: Agile (Scrum)</h2></p><p>The project will follow the <strong>Agile Scrum Methodology</strong>, chosen because business workflows and user interface requirements often evolve upon receiving stakeholder feedback.</p><p><pre><code>mermaid
+flowchart LR
+    A["Sprint 0: Requirements & System Architecture"] --> B["Sprint 1: Core Auth & Catalog Management"]
+    B --> C["Sprint 2: Order Lifecycle & Escrow Logic"]
+    C --> D["Sprint 3: Logistics Dispatch & Tracking"]
+    D --> E["Sprint 4: Analytics & Admin Dashboard"]
+    E --> F["Sprint 5: UAT, Testing & Final Deployment"]
+</code></pre></p><p><h3>Justification for Agile Scrum:</h3>
+* <strong>Iterative Prototyping:</strong> Allows rapid demonstration of clickable prototypes to academic supervisors and users.
+* <strong>Modular Risk Reduction:</strong> Financial/escrow logic can be isolated, tested, and hardened independently of the UI.
+* <strong>Continuous Integration:</strong> Ensures bugs are caught early during sprint test cycles rather than at final deployment.</p><p>---</p><p><h2>1.9 High-Level Project Schedule (Gantt Chart Overview)</h2></p><p><table class="academic-table"><tr><td>Phase / Milestone</td><td>Duration</td><td>Key Deliverables</td></tr></table></p><p><table class="academic-table"><tr><td><strong>Phase 1: Proposal & Requirements Analysis</strong></td><td>Weeks 1 – 3</td><td>Approved Proposal, Software Requirements Specification (SRS).</td></tr></table>
+<table class="academic-table"><tr><td><strong>Phase 2: System Design & Prototyping</strong></td><td>Weeks 4 – 6</td><td>System Architecture, ERD, DFDs, Figma UI/UX Mockups.</td></tr></table>
+<table class="academic-table"><tr><td><strong>Phase 3: Core Development (Sprints 1–3)</strong></td><td>Weeks 7 – 12</td><td>Database schema, REST APIs, Web/Mobile UI, Escrow logic.</td></tr></table>
+<table class="academic-table"><tr><td><strong>Phase 4: Logistics & Analytics (Sprints 4–5)</strong></td><td>Weeks 13 – 15</td><td>Transporter dispatching, OTP proof-of-delivery, Analytics.</td></tr></table>
+<table class="academic-table"><tr><td><strong>Phase 5: System Testing & Evaluation</strong></td><td>Weeks 16 – 17</td><td>Test reports (Unit, Integration, UAT), Usability survey data.</td></tr></table>
+<table class="academic-table"><tr><td><strong>Phase 6: Final Documentation & Defense</strong></td><td>Weeks 18 – 20</td><td>Final Capstone Report (Chapters 1–5), Project Defense Presentation.</td></tr></table></p><p>
+<div class="page-break"></div><h1>Chapter 3: System Modeling & Architecture Design</h1><h2>3-Tier SCM Architecture, 3NF Relational ERD, DFDs, and Escrow Sequence Models</h2></p><p><h1>System Modeling & Architectural Design Specification</h1>
+<h2>AgriLink: Integrated B2B Agribusiness Supply Chain & Direct Marketplace</h2></p><p>---</p><p><h2>1. High-Level System Architecture</h2></p><p>AgriLink adopts a <strong>Three-Tier Service Architecture</strong> designed to separate presentation, business logic, and transactional data persistence. This ensures scalability, security of financial transactions, and responsive client interactions across mobile and desktop devices.</p><p><pre><code>mermaid
+flowchart TD
+    subgraph ClientTier["Presentation Layer (Client Tier)"]
+        A["Commercial Buyer Web App (React / Next.js)"]
+        B["Farmer Mobile / PWA Interface (Responsive Web / Flutter)"]
+        C["Transporter Driver PWA"]
+        D["System Admin Analytics Dashboard"]
+    end</p><p>    subgraph GatewayTier["API Gateway & Security"]
+        GW["API Gateway (Reverse Proxy, JWT Auth & Rate Limiting)"]
+    end</p><p>    subgraph ServiceTier["Application & Business Logic Layer"]
+        S1["User & KYC Management Service"]
+        S2["Produce Catalog & Search Engine"]
+        S3["Order & Escrow State Machine"]
+        S4["Logistics Dispatch & Tracking Service"]
+        S5["Notification Service (SMS & Email)"]
+    end</p><p>    subgraph DataTier["Data & Persistence Layer"]
+        DB[("Relational Database (PostgreSQL - ACID Compliant)")]
+        Cache[("Redis Cache (Sessions & Price Indices)")]
+        Storage["Cloud Object Storage (KYC Docs & Produce Photos)"]
+    end</p><p>    subgraph ExternalTier["External Integrations"]
+        PG["Mobile Money / Payment Gateway (e.g., M-Pesa Daraja, Paystack)"]
+        SMS["Telephony & SMS Gateway (e.g., Africa's Talking, Twilio)"]
+    end</p><p>    ClientTier --> GW
+    GW --> ServiceTier
+    ServiceTier --> DataTier
+    S3 <--> PG
+    S5 <--> SMS
+</code></pre></p><p>---</p><p><h2>2. Use Case Modeling</h2></p><p><h3>2.1 Use Case Summary Diagram</h3></p><p>The system involves four primary actors: <strong>Farmer</strong>, <strong>Commercial Buyer</strong>, <strong>Transporter</strong>, and <strong>System Administrator</strong>.</p><p><pre><code>mermaid
+flowchart LR
+    subgraph Actors
+        F["Farmer / Cooperative"]
+        B["Commercial Buyer"]
+        T["Transporter / Driver"]
+        A["System Admin"]
+    end</p><p>    subgraph UseCases["AgriLink Core System Capabilities"]
+        UC1["Register & Submit KYC"]
+        UC2["List Produce & Set Pricing"]
+        UC3["Search & Filter Produce Catalog"]
+        UC4["Issue Purchase Order (PO)"]
+        UC5["Deposit Funds into Escrow"]
+        UC6["Accept Order & Schedule Dispatch"]
+        UC7["Claim Dispatch Job & Update Status"]
+        UC8["Inspect Produce & Confirm Receipt"]
+        UC9["Release Escrow Payout"]
+        UC10["File Quality / Quantity Dispute"]
+        UC11["Monitor Analytics & Reconcile Platform Fees"]
+    end</p><p>    F --> UC1
+    F --> UC2
+    F --> UC6
+    F --> UC10</p><p>    B --> UC1
+    B --> UC3
+    B --> UC4
+    B --> UC5
+    B --> UC8
+    B --> UC10</p><p>    T --> UC1
+    T --> UC7</p><p>    A --> UC1
+    A --> UC10
+    A --> UC11
+    UC8 -.-><table class="academic-table"><tr><td>triggers</td></tr></table> UC9
+    UC5 -.-><table class="academic-table"><tr><td>pre-requisite for</td></tr></table> UC6
+</code></pre></p><p><h3>2.2 Critical Use Case Specifications</h3></p><p>#### Use Case UC-04 & UC-05: Create Order & Fund Escrow
+* <strong>Primary Actor:</strong> Commercial Buyer
+* <strong>Pre-condition:</strong> Buyer is authenticated and has verified KYC status. Produce listing is active and available in requested quantity.
+* <strong>Main Flow:</strong>
+  1. Buyer selects produce listing, specifies quantity (kg/tonnes), and target delivery date/location.
+  2. System calculates total order cost = $(Quantity \times Unit Price) + Estimated Transport Fee + Platform Fee$.
+  3. System prompts Buyer to initiate escrow deposit via Mobile Money or Card.
+  4. Payment Gateway processes transaction; sends callback webhook to AgriLink.
+  5. System creates an <code>ESCROW_HOLD</code> transaction and transitions Order status to <code>ESCROW_FUNDED</code>.
+  6. Farmer receives an automated SMS and in-app notification of the funded order.
+* <strong>Post-condition:</strong> Funds are secured in escrow; inventory quantity is reserved.</p><p>#### Use Case UC-08 & UC-09: Inspect Delivery & Release Escrow
+* <strong>Primary Actor:</strong> Commercial Buyer & Farmer
+* <strong>Pre-condition:</strong> Transporter marks status as <code>ARRIVED_AT_DESTINATION</code>.
+* <strong>Main Flow:</strong>
+  1. Buyer inspects received produce against agreed grade and weight specifications.
+  2. Buyer enters delivery confirmation OTP or signs off digitally on the platform.
+  3. System transitions Order state to <code>COMPLETED</code>.
+  4. Escrow module automatically triggers payout:
+<li>Net Produce Amount $\rightarrow$ Disbursed to Farmer's registered wallet.</li>
+<li>Transport Fee $\rightarrow$ Disbursed to Transporter's wallet.</li>
+<li>Platform Commission $\rightarrow$ Credited to AgriLink revenue account.</li>
+  5. Both parties receive settlement receipts via SMS/Email.</p><p>---</p><p><h2>3. Data Flow Diagrams (DFD)</h2></p><p><h3>3.1 DFD Level 0: Context Diagram</h3>
+The Context Diagram establishes the environmental boundaries of AgriLink and its data exchange with external entities.</p><p><pre><code>mermaid
+flowchart TD
+    Farmer["Farmer / Cooperative"]
+    Buyer["Commercial Buyer"]
+    Transporter["Logistics Provider"]
+    Admin["System Administrator"]
+    PG["Payment Gateway (Mobile Money / Bank)"]
+    
+    System["0.0<br>AgriLink Platform Core"]</p><p>    Farmer -- "Produce listings, harvest dates, payout details" --> System
+    System -- "Order alerts, dispatch schedules, payment disbursements" --> Farmer</p><p>    Buyer -- "Search queries, purchase orders, escrow payments, delivery confirmation" --> System
+    System -- "Catalog listings, order invoices, delivery updates, receipts" --> Buyer</p><p>    Transporter -- "Vehicle details, job acceptance, delivery status updates" --> System
+    System -- "Available dispatch routes, cargo specifications, freight payouts" --> Transporter</p><p>    Admin -- "KYC approvals, dispute arbitration, commission configurations" --> System
+    System -- "Transaction logs, audit trails, BI analytics reports" --> Admin</p><p>    System -- "Payment initiation requests, settlement triggers" --> PG
+    PG -- "Transaction status webhooks, settlement confirmations" --> PG
+    PG --> System
+</code></pre></p><p><h3>3.2 DFD Level 1: Decomposition of Core Business Processes</h3></p><p><pre><code>mermaid
+flowchart TD
+    Buyer["Commercial Buyer"]
+    Farmer["Farmer"]
+    Transporter["Transporter"]
+    
+    subgraph DataStores["Data Stores"]
+        D1[("D1: Users & KYC")]
+        D2[("D2: Produce Listings")]
+        D3[("D3: Orders & Escrow")]
+        D4[("D4: Shipments & Logistics")]
+    end</p><p>    %% Process 1: User Management
+    P1["1.0<br>Manage Auth & KYC"]
+    Buyer --><table class="academic-table"><tr><td>Registration Data</td></tr></table> P1
+    Farmer --><table class="academic-table"><tr><td>Registration Data</td></tr></table> P1
+    P1 --><table class="academic-table"><tr><td>Store Verified Profile</td></tr></table> D1</p><p>    %% Process 2: Produce Catalog
+    P2["2.0<br>Manage Produce Listings"]
+    Farmer --><table class="academic-table"><tr><td>Add/Update Produce Specs</td></tr></table> P2
+    P2 --><table class="academic-table"><tr><td>Save Listing Record</td></tr></table> D2
+    D2 --><table class="academic-table"><tr><td>Produce Catalog Data</td></tr></table> P3["3.0<br>Order & Escrow Processing"]</p><p>    %% Process 3: Ordering & Escrow
+    Buyer --><table class="academic-table"><tr><td>Submit Purchase Order & Payment</td></tr></table> P3
+    P3 --><table class="academic-table"><tr><td>Store Order & Escrow Record</td></tr></table> D3
+    P3 --><table class="academic-table"><tr><td>Trigger Logistics Request</td></tr></table> P4["4.0<br>Logistics Dispatch"]</p><p>    %% Process 4: Logistics
+    P4 --><table class="academic-table"><tr><td>Create Shipment</td></tr></table> D4
+    Transporter --><table class="academic-table"><tr><td>Accept Job & Update Transit</td></tr></table> P4
+    D4 --><table class="academic-table"><tr><td>Delivery Confirmation</td></tr></table> P5["5.0<br>Verification & Settlement"]</p><p>    %% Process 5: Settlement
+    Buyer --><table class="academic-table"><tr><td>Approve Inspection / OTP</td></tr></table> P5
+    D3 <--><table class="academic-table"><tr><td>Verify Escrow State</td></tr></table> P5
+    P5 --><table class="academic-table"><tr><td>Disburse Earnings</td></tr></table> Farmer
+    P5 --><table class="academic-table"><tr><td>Disburse Freight Fee</td></tr></table> Transporter
+</code></pre></p><p>---</p><p><h2>4. Entity-Relationship Diagram (ERD)</h2></p><p>The database design adheres to <strong>Third Normal Form (3NF)</strong> to ensure transactional integrity, eliminate redundancy, and support auditability required in commercial BBIT projects.</p><p><pre><code>mermaid
+erDiagram
+    USERS ||--o{ PRODUCE_LISTINGS : "publishes"
+    USERS ||--o{ ORDERS : "places as buyer"
+    USERS ||--o{ SHIPMENTS : "delivers as transporter"
+    USERS ||--o{ REVIEWS : "writes_or_receives"</p><p>    PRODUCE_LISTINGS ||--o{ ORDER_ITEMS : "catalogued_in"
+    ORDERS <table class="academic-table"><tr><td>--</td></tr></table>{ ORDER_ITEMS : "contains"
+    ORDERS <table class="academic-table"><tr><td>--</td></tr></table> ESCROW_TRANSACTIONS : "secured_by"
+    ORDERS <table class="academic-table"><tr><td>--o</td></tr></table> SHIPMENTS : "fulfilled_by"
+    ORDERS ||--o{ DISPUTES : "subject_to"</p><p>    USERS {
+        uuid id PK
+        string full_name
+        string email UK
+        string phone_number UK
+        string role "FARMER <table class="academic-table"><tr><td>BUYER</td><td>TRANSPORTER</td></tr></table> ADMIN"
+        string kyc_status "PENDING <table class="academic-table"><tr><td>VERIFIED</td></tr></table> REJECTED"
+        string location_county
+        timestamp created_at
+    }</p><p>    PRODUCE_LISTINGS {
+        uuid id PK
+        uuid farmer_id FK
+        string crop_name
+        string category "CEREAL <table class="academic-table"><tr><td>HORTICULTURE</td><td>TUBER</td></tr></table> LEGUME"
+        float available_quantity_kg
+        float unit_price_per_kg
+        string grade "GRADE_A <table class="academic-table"><tr><td>GRADE_B</td></tr></table> STANDARD"
+        date harvest_date
+        string location_subcounty
+        string status "ACTIVE <table class="academic-table"><tr><td>RESERVED</td></tr></table> SOLD_OUT"
+        timestamp created_at
+    }</p><p>    ORDERS {
+        uuid id PK
+        uuid buyer_id FK
+        string order_number UK
+        float total_produce_amount
+        float transport_fee
+        float platform_fee
+        float grand_total
+        string status "PENDING <table class="academic-table"><tr><td>ESCROW_FUNDED</td><td>IN_TRANSIT</td><td>DELIVERED</td><td>COMPLETED</td></tr></table> CANCELLED"
+        string delivery_address
+        timestamp created_at
+    }</p><p>    ORDER_ITEMS {
+        uuid id PK
+        uuid order_id FK
+        uuid listing_id FK
+        float quantity_kg
+        float unit_price_at_order
+        float subtotal
+    }</p><p>    ESCROW_TRANSACTIONS {
+        uuid id PK
+        uuid order_id FK
+        string transaction_reference UK
+        string payment_gateway "MPESA <table class="academic-table"><tr><td>PAYSTACK</td></tr></table> STRIPE"
+        float amount_held
+        string escrow_status "HELD <table class="academic-table"><tr><td>RELEASED_TO_SELLER</td></tr></table> REFUNDED_TO_BUYER"
+        timestamp funded_at
+        timestamp released_at
+    }</p><p>    SHIPMENTS {
+        uuid id PK
+        uuid order_id FK
+        uuid transporter_id FK
+        string vehicle_registration
+        string pickup_location
+        string dropoff_location
+        string transit_status "ASSIGNED <table class="academic-table"><tr><td>PICKED_UP</td><td>IN_TRANSIT</td><td>ARRIVED</td></tr></table> CONFIRMED"
+        string confirmation_otp
+        timestamp dispatched_at
+        timestamp delivered_at
+    }</p><p>    DISPUTES {
+        uuid id PK
+        uuid order_id FK
+        uuid raised_by_user_id FK
+        string dispute_type "QUALITY_REJECTED <table class="academic-table"><tr><td>QUANTITY_SHORTAGE</td></tr></table> TRANSIT_DAMAGE"
+        string description
+        string resolution_status "OPEN <table class="academic-table"><tr><td>UNDER_REVIEW</td><td>RESOLVED_REFUND</td></tr></table> RESOLVED_DISMISSED"
+        timestamp created_at
+    }</p><p>    REVIEWS {
+        uuid id PK
+        uuid order_id FK
+        uuid reviewer_id FK
+        uuid reviewee_id FK
+        int rating "1 to 5 Stars"
+        text comment
+        timestamp created_at
+    }
+</code></pre></p><p>---</p><p><h2>5. Order & Escrow State Transition Lifecycle (Sequence Diagram)</h2></p><p>This diagram illustrates how trust is established between a distant commercial buyer and a rural farmer through milestone-based escrow locks.</p><p><pre><code>mermaid
+sequenceDiagram
+    autonumber
+    actor Buyer as Commercial Buyer
+    participant App as AgriLink System
+    participant PG as Payment Gateway
+    actor Farmer as Farmer
+    actor Transporter as Transporter</p><p>    Buyer->>App: 1. Place Purchase Order (Select produce & volume)
+    App->>Buyer: 2. Return Order Invoice & Escrow Deposit Prompt
+    Buyer->>PG: 3. Authorize Escrow Payment (e.g., M-Pesa STK Push / Card)
+    PG-->>App: 4. Payment Callback (Transaction Successful)
+    App->>App: 5. Lock funds in Escrow; Set Status = ESCROW_FUNDED
+    App-->>Farmer: 6. SMS/Push Alert: "Order #1024 Funded. Ready to Pack."
+    App-->>Transporter: 7. Dispatch Notification: Cargo ready for pickup</p><p>    Transporter->>Farmer: 8. Arrive at farm, inspect & load produce
+    Transporter->>App: 9. Confirm Cargo Pickup; Status = IN_TRANSIT
+    App-->>Buyer: 10. Notification: "Produce is In Transit"</p><p>    Transporter->>Buyer: 11. Arrive at Buyer facility; Provide Delivery OTP
+    Buyer->>App: 12. Inspect produce & submit confirmation OTP
+    App->>App: 13. Verify OTP & set Status = COMPLETED
+    
+    par Automated Settlement
+        App->>PG: 14a. Release produce payout to Farmer's Account
+        App->>PG: 14b. Release freight payment to Transporter
+        App->>App: 14c. Record AgriLink platform commission
+    end
+    
+    App-->>Farmer: 15. SMS: Payment received for Order #1024
+    App-->>Buyer: 16. Final Receipt & Review prompt
+</code></pre></p><p>
+<div class="page-break"></div><h1>System Implementation & Technical Specifications</h1><h2>Full-Stack Enterprise Architecture, M-Pesa Integration, and Multi-Channel Verification</h2></p><p><h1>Implementation Plan: AgriLink Enterprise Upgrade</h1></p><p>Upgrade AgriLink to an enterprise-grade, mobile-ready agricultural supply chain platform featuring email verification, farmer produce image upload/URL options, real-time driver availability counters, multi-channel disbursement notifications (Email/SMS/WhatsApp), professional UI components, Google Play Store PWA readiness, and academic PDF generation.</p><p>---</p><p><h2>User Review Required</h2></p><p><div class="alert alert-IMPORTANT"><strong>IMPORTANT:</strong> <strong>Email & SMS Service Provider Integration:</strong></div>
+<blockquote>For local demonstration and offline defense, the system will include a built-in <strong>Notification Dispatch Service</strong> with support for:</blockquote>
+<blockquote>1. Real SMTP (e.g. Gmail / SendGrid via Nodemailer in <code>backend/.env</code>) with automatic fallback to an on-screen <strong>Live Notification Drawer</strong> and console log so you can view verification codes and disbursement receipts immediately without needing a paid email subscription.</blockquote>
+<blockquote>2. SMS & WhatsApp notifications formatted for Africa's Talking / Twilio and direct <code>https://wa.me/</code> one-click WhatsApp receipt dispatch.</blockquote></p><p><div class="alert alert-TIP"><strong>TIP:</strong> <strong>Play Store / Mobile App Approach:</strong></div>
+<blockquote>We will configure standard PWA (Progressive Web App) manifest, service worker, and app icons. This allows the site to be installed on any Android device immediately like a native app, and provides the exact config files needed to build a signed Google Play Store APK/AAB via Google's official <strong>Bubblewrap / Trusted Web Activity (TWA)</strong> or <strong>Capacitor</strong>.</blockquote></p><p>---</p><p><h2>Proposed Upgrades & File Architecture</h2></p><p><pre><code>
+agrilink/
+├── backend/
+│   ├── prisma/
+│   │   ├── schema.prisma        # Added isEmailVerified, verificationCode, driver count relations
+│   │   └── seed.js              # Seed data with verified emails & transporters
+│   ├── src/
+│   │   ├── services/
+│   │   │   ├── notificationService.js  # [NEW] Email (Nodemailer), SMS, WhatsApp receipt generator
+│   │   │   └── mpesaService.js         # Existing Daraja STK Push
+│   │   ├── routes/
+│   │   │   └── api.js           # Email verification endpoints, transporter count, notification hooks
+│   │   └── server.js
+│   └── scripts/
+│       └── generate-pdfs.js     # [NEW] Automated PDF/HTML generator for Proposal, System Design, Plan
+└── frontend/
+    ├── public/
+    │   ├── manifest.json        # [NEW] PWA manifest for Android & Play Store
+    │   └── sw.js                # [NEW] Service worker for offline & mobile caching
+    ├── src/
+    │   ├── components/
+    │   │   ├── EmailVerificationBanner.jsx # [NEW] Verification modal & badge
+    │   │   ├── NotificationDrawer.jsx      # [NEW] Live alerts drawer (SMS/Email/WhatsApp logs)
+    │   │   ├── ReceiptModal.jsx            # [NEW] Printable Escrow Settlement Receipt & Invoice
+    │   │   └── ImagePickerModal.jsx        # [NEW] Agribusiness preset images & URL preview
+    │   ├── pages/
+    │   │   ├── Login.jsx
+    │   │   ├── Register.jsx
+    │   │   └── AdminLogin.jsx
+    │   ├── App.jsx              # Upgraded with professional components, driver counter, and PWA prompts
+    │   └── main.jsx             # PWA service worker registration
+    └── index.html               # Mobile meta tags, Apple/Android touch icons, PWA links
+</code></pre></p><p>---</p><p><h2>Detailed Component Specifications</h2></p><p><h3>1. Email Verification System</h3>
+<li><strong>Database (<code>schema.prisma</code>):</strong></li>
+<li>Add <code>isEmailVerified Boolean @default(false)</code></li>
+<li>Add <code>verificationCode String?</code></li>
+<li><strong>Backend API (<code>api.js</code>):</strong></li>
+<li><code>POST /api/auth/send-verification</code>: Generates a secure 6-digit OTP code, saves to user record, sends email.</li>
+<li><code>POST /api/auth/verify-email</code>: Validates entered OTP code; marks <code>isEmailVerified = true</code>.</li>
+<li><strong>Frontend UI:</strong></li>
+<li>Status banner when unverified: "✉️ Your email is unverified. Click to verify your account."</li>
+<li>Interactive 6-digit verification code modal with resend timer.</li></p><p><h3>2. Farmer Produce Image URL & Interactive Image Selector</h3>
+<li><strong>Farmer Portal (<code>App.jsx</code>):</strong></li>
+<li>Image input with:</li>
+    1. Custom URL paste box with instant real-time thumbnail preview.
+    2. Curated gallery of verified Kenyan fresh produce photos (Tomatoes, Red Onions, Hass Avocados, Irish Potatoes, White Maize, Cabbage, Spinach, Carrots, Capsicum) that farmers can select with 1 click.
+<li>Image validation to ensure images render cleanly on the marketplace cards.</li></p><p><h3>3. Real-Time Available Transporters Count for Buyers</h3>
+<li><strong>Backend API:</strong></li>
+<li><code>GET /api/transporters/count</code>: Returns count of active, verified logistics drivers registered in the system (e.g., in the corridor or nationwide).</li>
+<li><strong>Marketplace & Checkout UI:</strong></li>
+<li>Badge on each produce card: <code>"🚚 4 Transporters Active"</code></li>
+<li>Checkout Drawer: Prominent green logistics assurance indicator:</li>
+    > <em>"🚚 4 Verified Transporters available in this corridor ready for dispatch upon escrow confirmation."</em></p><p><h3>4. Multi-Channel Disbursement Notification (Email, SMS & WhatsApp)</h3>
+<li><strong>Notification Engine (<code>notificationService.js</code>):</strong></li>
+<li>Triggered atomically when delivery is confirmed via OTP and funds are disbursed:</li>
+<li><strong>Email Receipt:</strong> Formatted HTML invoice with transaction reference, crop details, kilogram volume, breakdown (Farmer payout, freight, platform fee).</li>
+<li><strong>SMS Dispatch Message:</strong> Concise text message confirming settlement sent to buyer and farmer's phones.</li>
+<li><strong>WhatsApp Direct Link:</strong> <code>https://wa.me/<phone>?text=...</code> allowing 1-click sharing of the disbursement receipt directly to WhatsApp.</li>
+<li>Live in-app <strong>Notification Drawer</strong> (bell icon in header) so users can inspect real-time SMS & email messages dispatched by the system.</li></p><p><h3>5. Professional UI Overhaul & Deliverables</h3>
+<li><strong>Interactive Settlement Receipt / Invoice Modal:</strong></li>
+<li>Professional invoice view for completed orders with official AgriLink stamp, breakdown, download/print buttons.</li>
+<li><strong>Visual Order Milestone Tracker:</strong></li>
+<li>Step-by-step progress bar (<code>Escrow Locked</code> $\rightarrow$ <code>Cargo Dispatched</code> $\rightarrow$ <code>In Transit</code> $\rightarrow$ <code>Delivered & Settled</code>).</li>
+<li><strong>Market Price Intelligence Widget:</strong></li>
+<li>Live benchmark index ticker (prevailing farmgate vs retail prices) for agricultural commodities.</li></p><p><h3>6. Google Play Store & Android Mobile Application Package</h3>
+<li><strong>PWA Configuration (<code>manifest.json</code>):</strong></li>
+<li>Standalone display mode, theme colors (<code>#16a34a</code>), high-resolution icons (192x192, 512x512).</li>
+<li>Service worker caching (<code>sw.js</code>) for rapid loading on Android devices.</li>
+<li><strong>Google Play Store Setup Guide (<code>PLAYSTORE_GUIDE.md</code>):</strong></li>
+<li>Complete step-by-step instructions to convert the AgriLink PWA into an Android App Bundle (<code>.aab</code> / <code>.apk</code>) ready for the Google Play Store using <strong>Google Bubblewrap</strong> or <strong>Capacitor</strong>.</li></p><p><h3>7. Academic PDF Generator Script</h3>
+<li>Node.js script (<code>scripts/generate-academic-docs.js</code>) that renders:</li>
+  1. <code>project_proposal_chapter_1.md</code>
+  2. <code>system_modeling_and_design.md</code>
+  3. <code>implementation_plan.md</code>
+  into clean, beautifully styled printable HTML/PDF documents with formal university coversheets and page numbers.</p><p>---</p><p><h2>Verification Plan</h2></p><p><h3>Automated Endpoint & Service Tests</h3>
+1. <strong>Email Verification Flow:</strong>
+<li>Register a new test user $\rightarrow$ call <code>/api/auth/send-verification</code> $\rightarrow$ verify 6-digit code via <code>/api/auth/verify-email</code> $\rightarrow$ assert <code>isEmailVerified === true</code>.</li>
+2. <strong>Transporter Count Endpoint:</strong>
+<li>Query <code>/api/transporters/count</code> $\rightarrow$ verify integer count matches database verified transporters.</li>
+3. <strong>Disbursement Notification Trigger:</strong>
+<li>Complete an order via OTP $\rightarrow$ check that notification logs record Email, SMS, and WhatsApp receipts.</li></p><p><h3>Manual End-to-End Walkthrough</h3>
+1. <strong>Farmer Scenario:</strong> Farmer logs in $\rightarrow$ uses image picker to select or paste produce photo $\rightarrow$ publishes listing.
+2. <strong>Buyer Scenario:</strong> Buyer browses catalog $\rightarrow$ sees live transporter count badge $\rightarrow$ checks out with M-Pesa.
+3. <strong>Delivery & Settlement:</strong> Driver provides OTP $\rightarrow$ Buyer confirms $\rightarrow$ views instant disbursement receipt modal and WhatsApp share link.
+4. <strong>Mobile / PWA Check:</strong> Open app in browser $\rightarrow$ check that "Install AgriLink App" prompt is available.</p><p>
+</p>
+    </div>
+  </div>
+</body>
+</html>

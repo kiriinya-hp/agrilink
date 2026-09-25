@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>System Implementation & Technical Specifications — AgriLink BBIT Capstone Project</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 25mm 20mm 25mm 25mm;
+    }
+    body {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 12pt;
+      line-height: 1.6;
+      color: #111827;
+      margin: 0;
+      padding: 40px;
+      background: #f8fafc;
+    }
+    .page-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 60px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border-radius: 4px;
+    }
+    .no-print-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #0f172a;
+      color: white;
+      padding: 12px 24px;
+      margin: -40px -40px 30px -40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 4px 4px 0 0;
+      font-family: system-ui, sans-serif;
+      font-size: 13px;
+    }
+    .print-btn {
+      background: #16a34a;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .coversheet {
+      text-align: center;
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 30px;
+      margin-bottom: 40px;
+    }
+    .coversheet h1 {
+      font-size: 22pt;
+      margin: 10px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #0f172a;
+    }
+    .coversheet h2 {
+      font-size: 14pt;
+      font-weight: normal;
+      color: #475569;
+      margin: 5px 0 20px 0;
+    }
+    .meta-box {
+      margin-top: 25px;
+      font-size: 11pt;
+      line-height: 1.8;
+      border: 1px solid #cbd5e1;
+      padding: 15px;
+      border-radius: 6px;
+      background: #f8fafc;
+      display: inline-block;
+      text-align: left;
+    }
+    h1, h2, h3, h4 {
+      font-family: 'Times New Roman', Times, serif;
+      color: #0f172a;
+      page-break-after: avoid;
+    }
+    h1 { font-size: 16pt; margin-top: 28px; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; }
+    h2 { font-size: 14pt; margin-top: 22px; }
+    h3 { font-size: 12pt; margin-top: 16px; }
+    p { margin: 10px 0; text-align: justify; text-justify: inter-word; }
+    .academic-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 10.5pt;
+    }
+    .academic-table td, .academic-table th {
+      border: 1px solid #94a3b8;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    .academic-table tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    code {
+      font-family: 'Courier New', Courier, monospace;
+      background: #f1f5f9;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 10pt;
+    }
+    pre {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 9.5pt;
+      page-break-inside: avoid;
+    }
+    pre code { background: none; color: inherit; padding: 0; }
+    .alert {
+      padding: 12px 16px;
+      margin: 15px 0;
+      border-left: 4px solid #16a34a;
+      background: #f0fdf4;
+      font-size: 11pt;
+    }
+    @media print {
+      body { background: white; padding: 0; }
+      .page-container { box-shadow: none; padding: 0; max-width: 100%; }
+      .no-print-bar { display: none !important; }
+      .page-break { page-break-before: always; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <div class="no-print-bar">
+      <span>📄 <strong>AgriLink Academic Document</strong> — Formatted for BBIT Supervisor Review</span>
+      <button class="print-btn" onclick="window.print()">🖨️ Print to PDF / Save as PDF</button>
+    </div>
+
+    <div class="coversheet">
+      <p style="font-size: 13pt; font-weight: bold; letter-spacing: 1px; color: #15803d; margin: 0;">
+        BACHELOR OF BUSINESS INFORMATION TECHNOLOGY (BBIT)
+      </p>
+      <p style="font-size: 11pt; color: #64748b; margin: 5px 0 15px 0;">FINAL YEAR CAPSTONE PROJECT DOCUMENTATION</p>
+      <h1>System Implementation & Technical Specifications</h1>
+      <h2>Full-Stack Enterprise Architecture, M-Pesa Integration, and Multi-Channel Verification</h2>
+
+      <div class="meta-box">
+        <strong>Project Name:</strong> AgriLink Agribusiness B2B SCM Platform<br>
+        <strong>Lead Developer / Admin:</strong> Kelvin Kiriinya<br>
+        <strong>Target Sector:</strong> Agricultural Value Chain & Digital Escrow Procurement<br>
+        <strong>Academic Year:</strong> 2025 / 2026<br>
+        <strong>System Status:</strong> Fully Operational (Live Authentication & Daraja Escrow Rails)
+      </div>
+    </div>
+
+    <div class="content-body">
+      <p><h1>Implementation Plan: AgriLink Enterprise Upgrade</h1></p><p>Upgrade AgriLink to an enterprise-grade, mobile-ready agricultural supply chain platform featuring email verification, farmer produce image upload/URL options, real-time driver availability counters, multi-channel disbursement notifications (Email/SMS/WhatsApp), professional UI components, Google Play Store PWA readiness, and academic PDF generation.</p><p>---</p><p><h2>User Review Required</h2></p><p><div class="alert alert-IMPORTANT"><strong>IMPORTANT:</strong> <strong>Email & SMS Service Provider Integration:</strong></div>
+<blockquote>For local demonstration and offline defense, the system will include a built-in <strong>Notification Dispatch Service</strong> with support for:</blockquote>
+<blockquote>1. Real SMTP (e.g. Gmail / SendGrid via Nodemailer in <code>backend/.env</code>) with automatic fallback to an on-screen <strong>Live Notification Drawer</strong> and console log so you can view verification codes and disbursement receipts immediately without needing a paid email subscription.</blockquote>
+<blockquote>2. SMS & WhatsApp notifications formatted for Africa's Talking / Twilio and direct <code>https://wa.me/</code> one-click WhatsApp receipt dispatch.</blockquote></p><p><div class="alert alert-TIP"><strong>TIP:</strong> <strong>Play Store / Mobile App Approach:</strong></div>
+<blockquote>We will configure standard PWA (Progressive Web App) manifest, service worker, and app icons. This allows the site to be installed on any Android device immediately like a native app, and provides the exact config files needed to build a signed Google Play Store APK/AAB via Google's official <strong>Bubblewrap / Trusted Web Activity (TWA)</strong> or <strong>Capacitor</strong>.</blockquote></p><p>---</p><p><h2>Proposed Upgrades & File Architecture</h2></p><p><pre><code>
+agrilink/
+├── backend/
+│   ├── prisma/
+│   │   ├── schema.prisma        # Added isEmailVerified, verificationCode, driver count relations
+│   │   └── seed.js              # Seed data with verified emails & transporters
+│   ├── src/
+│   │   ├── services/
+│   │   │   ├── notificationService.js  # [NEW] Email (Nodemailer), SMS, WhatsApp receipt generator
+│   │   │   └── mpesaService.js         # Existing Daraja STK Push
+│   │   ├── routes/
+│   │   │   └── api.js           # Email verification endpoints, transporter count, notification hooks
+│   │   └── server.js
+│   └── scripts/
+│       └── generate-pdfs.js     # [NEW] Automated PDF/HTML generator for Proposal, System Design, Plan
+└── frontend/
+    ├── public/
+    │   ├── manifest.json        # [NEW] PWA manifest for Android & Play Store
+    │   └── sw.js                # [NEW] Service worker for offline & mobile caching
+    ├── src/
+    │   ├── components/
+    │   │   ├── EmailVerificationBanner.jsx # [NEW] Verification modal & badge
+    │   │   ├── NotificationDrawer.jsx      # [NEW] Live alerts drawer (SMS/Email/WhatsApp logs)
+    │   │   ├── ReceiptModal.jsx            # [NEW] Printable Escrow Settlement Receipt & Invoice
+    │   │   └── ImagePickerModal.jsx        # [NEW] Agribusiness preset images & URL preview
+    │   ├── pages/
+    │   │   ├── Login.jsx
+    │   │   ├── Register.jsx
+    │   │   └── AdminLogin.jsx
+    │   ├── App.jsx              # Upgraded with professional components, driver counter, and PWA prompts
+    │   └── main.jsx             # PWA service worker registration
+    └── index.html               # Mobile meta tags, Apple/Android touch icons, PWA links
+</code></pre></p><p>---</p><p><h2>Detailed Component Specifications</h2></p><p><h3>1. Email Verification System</h3>
+<li><strong>Database (<code>schema.prisma</code>):</strong></li>
+<li>Add <code>isEmailVerified Boolean @default(false)</code></li>
+<li>Add <code>verificationCode String?</code></li>
+<li><strong>Backend API (<code>api.js</code>):</strong></li>
+<li><code>POST /api/auth/send-verification</code>: Generates a secure 6-digit OTP code, saves to user record, sends email.</li>
+<li><code>POST /api/auth/verify-email</code>: Validates entered OTP code; marks <code>isEmailVerified = true</code>.</li>
+<li><strong>Frontend UI:</strong></li>
+<li>Status banner when unverified: "✉️ Your email is unverified. Click to verify your account."</li>
+<li>Interactive 6-digit verification code modal with resend timer.</li></p><p><h3>2. Farmer Produce Image URL & Interactive Image Selector</h3>
+<li><strong>Farmer Portal (<code>App.jsx</code>):</strong></li>
+<li>Image input with:</li>
+    1. Custom URL paste box with instant real-time thumbnail preview.
+    2. Curated gallery of verified Kenyan fresh produce photos (Tomatoes, Red Onions, Hass Avocados, Irish Potatoes, White Maize, Cabbage, Spinach, Carrots, Capsicum) that farmers can select with 1 click.
+<li>Image validation to ensure images render cleanly on the marketplace cards.</li></p><p><h3>3. Real-Time Available Transporters Count for Buyers</h3>
+<li><strong>Backend API:</strong></li>
+<li><code>GET /api/transporters/count</code>: Returns count of active, verified logistics drivers registered in the system (e.g., in the corridor or nationwide).</li>
+<li><strong>Marketplace & Checkout UI:</strong></li>
+<li>Badge on each produce card: <code>"🚚 4 Transporters Active"</code></li>
+<li>Checkout Drawer: Prominent green logistics assurance indicator:</li>
+    > <em>"🚚 4 Verified Transporters available in this corridor ready for dispatch upon escrow confirmation."</em></p><p><h3>4. Multi-Channel Disbursement Notification (Email, SMS & WhatsApp)</h3>
+<li><strong>Notification Engine (<code>notificationService.js</code>):</strong></li>
+<li>Triggered atomically when delivery is confirmed via OTP and funds are disbursed:</li>
+<li><strong>Email Receipt:</strong> Formatted HTML invoice with transaction reference, crop details, kilogram volume, breakdown (Farmer payout, freight, platform fee).</li>
+<li><strong>SMS Dispatch Message:</strong> Concise text message confirming settlement sent to buyer and farmer's phones.</li>
+<li><strong>WhatsApp Direct Link:</strong> <code>https://wa.me/<phone>?text=...</code> allowing 1-click sharing of the disbursement receipt directly to WhatsApp.</li>
+<li>Live in-app <strong>Notification Drawer</strong> (bell icon in header) so users can inspect real-time SMS & email messages dispatched by the system.</li></p><p><h3>5. Professional UI Overhaul & Deliverables</h3>
+<li><strong>Interactive Settlement Receipt / Invoice Modal:</strong></li>
+<li>Professional invoice view for completed orders with official AgriLink stamp, breakdown, download/print buttons.</li>
+<li><strong>Visual Order Milestone Tracker:</strong></li>
+<li>Step-by-step progress bar (<code>Escrow Locked</code> $\rightarrow$ <code>Cargo Dispatched</code> $\rightarrow$ <code>In Transit</code> $\rightarrow$ <code>Delivered & Settled</code>).</li>
+<li><strong>Market Price Intelligence Widget:</strong></li>
+<li>Live benchmark index ticker (prevailing farmgate vs retail prices) for agricultural commodities.</li></p><p><h3>6. Google Play Store & Android Mobile Application Package</h3>
+<li><strong>PWA Configuration (<code>manifest.json</code>):</strong></li>
+<li>Standalone display mode, theme colors (<code>#16a34a</code>), high-resolution icons (192x192, 512x512).</li>
+<li>Service worker caching (<code>sw.js</code>) for rapid loading on Android devices.</li>
+<li><strong>Google Play Store Setup Guide (<code>PLAYSTORE_GUIDE.md</code>):</strong></li>
+<li>Complete step-by-step instructions to convert the AgriLink PWA into an Android App Bundle (<code>.aab</code> / <code>.apk</code>) ready for the Google Play Store using <strong>Google Bubblewrap</strong> or <strong>Capacitor</strong>.</li></p><p><h3>7. Academic PDF Generator Script</h3>
+<li>Node.js script (<code>scripts/generate-academic-docs.js</code>) that renders:</li>
+  1. <code>project_proposal_chapter_1.md</code>
+  2. <code>system_modeling_and_design.md</code>
+  3. <code>implementation_plan.md</code>
+  into clean, beautifully styled printable HTML/PDF documents with formal university coversheets and page numbers.</p><p>---</p><p><h2>Verification Plan</h2></p><p><h3>Automated Endpoint & Service Tests</h3>
+1. <strong>Email Verification Flow:</strong>
+<li>Register a new test user $\rightarrow$ call <code>/api/auth/send-verification</code> $\rightarrow$ verify 6-digit code via <code>/api/auth/verify-email</code> $\rightarrow$ assert <code>isEmailVerified === true</code>.</li>
+2. <strong>Transporter Count Endpoint:</strong>
+<li>Query <code>/api/transporters/count</code> $\rightarrow$ verify integer count matches database verified transporters.</li>
+3. <strong>Disbursement Notification Trigger:</strong>
+<li>Complete an order via OTP $\rightarrow$ check that notification logs record Email, SMS, and WhatsApp receipts.</li></p><p><h3>Manual End-to-End Walkthrough</h3>
+1. <strong>Farmer Scenario:</strong> Farmer logs in $\rightarrow$ uses image picker to select or paste produce photo $\rightarrow$ publishes listing.
+2. <strong>Buyer Scenario:</strong> Buyer browses catalog $\rightarrow$ sees live transporter count badge $\rightarrow$ checks out with M-Pesa.
+3. <strong>Delivery & Settlement:</strong> Driver provides OTP $\rightarrow$ Buyer confirms $\rightarrow$ views instant disbursement receipt modal and WhatsApp share link.
+4. <strong>Mobile / PWA Check:</strong> Open app in browser $\rightarrow$ check that "Install AgriLink App" prompt is available.
+</p>
+    </div>
+  </div>
+</body>
+</html>

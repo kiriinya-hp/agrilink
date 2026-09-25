@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: agrilink
+    env: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm run build && cd backend && npx prisma db push && npm run db:seed
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GMAIL_USER
+        sync: false
+      - key: GMAIL_APP_PASSWORD
+        sync: false
+      - key: DARAJA_CONSUMER_KEY
+        sync: false
+      - key: DARAJA_CONSUMER_SECRET
+        sync: false
+      - key: DARAJA_PASSKEY
+        sync: false
+      - key: DARAJA_SHORTCODE
+        value: "174379"
+      - key: DARAJA_ENVIRONMENT
+        value: sandbox

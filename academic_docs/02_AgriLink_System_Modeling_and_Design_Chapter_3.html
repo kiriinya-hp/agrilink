@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chapter 3: System Modeling & Architecture Design — AgriLink BBIT Capstone Project</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 25mm 20mm 25mm 25mm;
+    }
+    body {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 12pt;
+      line-height: 1.6;
+      color: #111827;
+      margin: 0;
+      padding: 40px;
+      background: #f8fafc;
+    }
+    .page-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 60px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border-radius: 4px;
+    }
+    .no-print-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #0f172a;
+      color: white;
+      padding: 12px 24px;
+      margin: -40px -40px 30px -40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 4px 4px 0 0;
+      font-family: system-ui, sans-serif;
+      font-size: 13px;
+    }
+    .print-btn {
+      background: #16a34a;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .coversheet {
+      text-align: center;
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 30px;
+      margin-bottom: 40px;
+    }
+    .coversheet h1 {
+      font-size: 22pt;
+      margin: 10px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #0f172a;
+    }
+    .coversheet h2 {
+      font-size: 14pt;
+      font-weight: normal;
+      color: #475569;
+      margin: 5px 0 20px 0;
+    }
+    .meta-box {
+      margin-top: 25px;
+      font-size: 11pt;
+      line-height: 1.8;
+      border: 1px solid #cbd5e1;
+      padding: 15px;
+      border-radius: 6px;
+      background: #f8fafc;
+      display: inline-block;
+      text-align: left;
+    }
+    h1, h2, h3, h4 {
+      font-family: 'Times New Roman', Times, serif;
+      color: #0f172a;
+      page-break-after: avoid;
+    }
+    h1 { font-size: 16pt; margin-top: 28px; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; }
+    h2 { font-size: 14pt; margin-top: 22px; }
+    h3 { font-size: 12pt; margin-top: 16px; }
+    p { margin: 10px 0; text-align: justify; text-justify: inter-word; }
+    .academic-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 10.5pt;
+    }
+    .academic-table td, .academic-table th {
+      border: 1px solid #94a3b8;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    .academic-table tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    code {
+      font-family: 'Courier New', Courier, monospace;
+      background: #f1f5f9;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 10pt;
+    }
+    pre {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 9.5pt;
+      page-break-inside: avoid;
+    }
+    pre code { background: none; color: inherit; padding: 0; }
+    .alert {
+      padding: 12px 16px;
+      margin: 15px 0;
+      border-left: 4px solid #16a34a;
+      background: #f0fdf4;
+      font-size: 11pt;
+    }
+    @media print {
+      body { background: white; padding: 0; }
+      .page-container { box-shadow: none; padding: 0; max-width: 100%; }
+      .no-print-bar { display: none !important; }
+      .page-break { page-break-before: always; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <div class="no-print-bar">
+      <span>📄 <strong>AgriLink Academic Document</strong> — Formatted for BBIT Supervisor Review</span>
+      <button class="print-btn" onclick="window.print()">🖨️ Print to PDF / Save as PDF</button>
+    </div>
+
+    <div class="coversheet">
+      <p style="font-size: 13pt; font-weight: bold; letter-spacing: 1px; color: #15803d; margin: 0;">
+        BACHELOR OF BUSINESS INFORMATION TECHNOLOGY (BBIT)
+      </p>
+      <p style="font-size: 11pt; color: #64748b; margin: 5px 0 15px 0;">FINAL YEAR CAPSTONE PROJECT DOCUMENTATION</p>
+      <h1>Chapter 3: System Modeling & Architecture Design</h1>
+      <h2>3-Tier SCM Architecture, 3NF Relational ERD, DFDs, and Escrow Sequence Models</h2>
+
+      <div class="meta-box">
+        <strong>Project Name:</strong> AgriLink Agribusiness B2B SCM Platform<br>
+        <strong>Lead Developer / Admin:</strong> Kelvin Kiriinya<br>
+        <strong>Target Sector:</strong> Agricultural Value Chain & Digital Escrow Procurement<br>
+        <strong>Academic Year:</strong> 2025 / 2026<br>
+        <strong>System Status:</strong> Fully Operational (Live Authentication & Daraja Escrow Rails)
+      </div>
+    </div>
+
+    <div class="content-body">
+      <p><h1>System Modeling & Architectural Design Specification</h1>
+<h2>AgriLink: Integrated B2B Agribusiness Supply Chain & Direct Marketplace</h2></p><p>---</p><p><h2>1. High-Level System Architecture</h2></p><p>AgriLink adopts a <strong>Three-Tier Service Architecture</strong> designed to separate presentation, business logic, and transactional data persistence. This ensures scalability, security of financial transactions, and responsive client interactions across mobile and desktop devices.</p><p><pre><code>mermaid
+flowchart TD
+    subgraph ClientTier["Presentation Layer (Client Tier)"]
+        A["Commercial Buyer Web App (React / Next.js)"]
+        B["Farmer Mobile / PWA Interface (Responsive Web / Flutter)"]
+        C["Transporter Driver PWA"]
+        D["System Admin Analytics Dashboard"]
+    end</p><p>    subgraph GatewayTier["API Gateway & Security"]
+        GW["API Gateway (Reverse Proxy, JWT Auth & Rate Limiting)"]
+    end</p><p>    subgraph ServiceTier["Application & Business Logic Layer"]
+        S1["User & KYC Management Service"]
+        S2["Produce Catalog & Search Engine"]
+        S3["Order & Escrow State Machine"]
+        S4["Logistics Dispatch & Tracking Service"]
+        S5["Notification Service (SMS & Email)"]
+    end</p><p>    subgraph DataTier["Data & Persistence Layer"]
+        DB[("Relational Database (PostgreSQL - ACID Compliant)")]
+        Cache[("Redis Cache (Sessions & Price Indices)")]
+        Storage["Cloud Object Storage (KYC Docs & Produce Photos)"]
+    end</p><p>    subgraph ExternalTier["External Integrations"]
+        PG["Mobile Money / Payment Gateway (e.g., M-Pesa Daraja, Paystack)"]
+        SMS["Telephony & SMS Gateway (e.g., Africa's Talking, Twilio)"]
+    end</p><p>    ClientTier --> GW
+    GW --> ServiceTier
+    ServiceTier --> DataTier
+    S3 <--> PG
+    S5 <--> SMS
+</code></pre></p><p>---</p><p><h2>2. Use Case Modeling</h2></p><p><h3>2.1 Use Case Summary Diagram</h3></p><p>The system involves four primary actors: <strong>Farmer</strong>, <strong>Commercial Buyer</strong>, <strong>Transporter</strong>, and <strong>System Administrator</strong>.</p><p><pre><code>mermaid
+flowchart LR
+    subgraph Actors
+        F["Farmer / Cooperative"]
+        B["Commercial Buyer"]
+        T["Transporter / Driver"]
+        A["System Admin"]
+    end</p><p>    subgraph UseCases["AgriLink Core System Capabilities"]
+        UC1["Register & Submit KYC"]
+        UC2["List Produce & Set Pricing"]
+        UC3["Search & Filter Produce Catalog"]
+        UC4["Issue Purchase Order (PO)"]
+        UC5["Deposit Funds into Escrow"]
+        UC6["Accept Order & Schedule Dispatch"]
+        UC7["Claim Dispatch Job & Update Status"]
+        UC8["Inspect Produce & Confirm Receipt"]
+        UC9["Release Escrow Payout"]
+        UC10["File Quality / Quantity Dispute"]
+        UC11["Monitor Analytics & Reconcile Platform Fees"]
+    end</p><p>    F --> UC1
+    F --> UC2
+    F --> UC6
+    F --> UC10</p><p>    B --> UC1
+    B --> UC3
+    B --> UC4
+    B --> UC5
+    B --> UC8
+    B --> UC10</p><p>    T --> UC1
+    T --> UC7</p><p>    A --> UC1
+    A --> UC10
+    A --> UC11
+    UC8 -.-><table class="academic-table"><tr><td>triggers</td></tr></table> UC9
+    UC5 -.-><table class="academic-table"><tr><td>pre-requisite for</td></tr></table> UC6
+</code></pre></p><p><h3>2.2 Critical Use Case Specifications</h3></p><p>#### Use Case UC-04 & UC-05: Create Order & Fund Escrow
+* <strong>Primary Actor:</strong> Commercial Buyer
+* <strong>Pre-condition:</strong> Buyer is authenticated and has verified KYC status. Produce listing is active and available in requested quantity.
+* <strong>Main Flow:</strong>
+  1. Buyer selects produce listing, specifies quantity (kg/tonnes), and target delivery date/location.
+  2. System calculates total order cost = $(Quantity \times Unit Price) + Estimated Transport Fee + Platform Fee$.
+  3. System prompts Buyer to initiate escrow deposit via Mobile Money or Card.
+  4. Payment Gateway processes transaction; sends callback webhook to AgriLink.
+  5. System creates an <code>ESCROW_HOLD</code> transaction and transitions Order status to <code>ESCROW_FUNDED</code>.
+  6. Farmer receives an automated SMS and in-app notification of the funded order.
+* <strong>Post-condition:</strong> Funds are secured in escrow; inventory quantity is reserved.</p><p>#### Use Case UC-08 & UC-09: Inspect Delivery & Release Escrow
+* <strong>Primary Actor:</strong> Commercial Buyer & Farmer
+* <strong>Pre-condition:</strong> Transporter marks status as <code>ARRIVED_AT_DESTINATION</code>.
+* <strong>Main Flow:</strong>
+  1. Buyer inspects received produce against agreed grade and weight specifications.
+  2. Buyer enters delivery confirmation OTP or signs off digitally on the platform.
+  3. System transitions Order state to <code>COMPLETED</code>.
+  4. Escrow module automatically triggers payout:
+<li>Net Produce Amount $\rightarrow$ Disbursed to Farmer's registered wallet.</li>
+<li>Transport Fee $\rightarrow$ Disbursed to Transporter's wallet.</li>
+<li>Platform Commission $\rightarrow$ Credited to AgriLink revenue account.</li>
+  5. Both parties receive settlement receipts via SMS/Email.</p><p>---</p><p><h2>3. Data Flow Diagrams (DFD)</h2></p><p><h3>3.1 DFD Level 0: Context Diagram</h3>
+The Context Diagram establishes the environmental boundaries of AgriLink and its data exchange with external entities.</p><p><pre><code>mermaid
+flowchart TD
+    Farmer["Farmer / Cooperative"]
+    Buyer["Commercial Buyer"]
+    Transporter["Logistics Provider"]
+    Admin["System Administrator"]
+    PG["Payment Gateway (Mobile Money / Bank)"]
+    
+    System["0.0<br>AgriLink Platform Core"]</p><p>    Farmer -- "Produce listings, harvest dates, payout details" --> System
+    System -- "Order alerts, dispatch schedules, payment disbursements" --> Farmer</p><p>    Buyer -- "Search queries, purchase orders, escrow payments, delivery confirmation" --> System
+    System -- "Catalog listings, order invoices, delivery updates, receipts" --> Buyer</p><p>    Transporter -- "Vehicle details, job acceptance, delivery status updates" --> System
+    System -- "Available dispatch routes, cargo specifications, freight payouts" --> Transporter</p><p>    Admin -- "KYC approvals, dispute arbitration, commission configurations" --> System
+    System -- "Transaction logs, audit trails, BI analytics reports" --> Admin</p><p>    System -- "Payment initiation requests, settlement triggers" --> PG
+    PG -- "Transaction status webhooks, settlement confirmations" --> PG
+    PG --> System
+</code></pre></p><p><h3>3.2 DFD Level 1: Decomposition of Core Business Processes</h3></p><p><pre><code>mermaid
+flowchart TD
+    Buyer["Commercial Buyer"]
+    Farmer["Farmer"]
+    Transporter["Transporter"]
+    
+    subgraph DataStores["Data Stores"]
+        D1[("D1: Users & KYC")]
+        D2[("D2: Produce Listings")]
+        D3[("D3: Orders & Escrow")]
+        D4[("D4: Shipments & Logistics")]
+    end</p><p>    %% Process 1: User Management
+    P1["1.0<br>Manage Auth & KYC"]
+    Buyer --><table class="academic-table"><tr><td>Registration Data</td></tr></table> P1
+    Farmer --><table class="academic-table"><tr><td>Registration Data</td></tr></table> P1
+    P1 --><table class="academic-table"><tr><td>Store Verified Profile</td></tr></table> D1</p><p>    %% Process 2: Produce Catalog
+    P2["2.0<br>Manage Produce Listings"]
+    Farmer --><table class="academic-table"><tr><td>Add/Update Produce Specs</td></tr></table> P2
+    P2 --><table class="academic-table"><tr><td>Save Listing Record</td></tr></table> D2
+    D2 --><table class="academic-table"><tr><td>Produce Catalog Data</td></tr></table> P3["3.0<br>Order & Escrow Processing"]</p><p>    %% Process 3: Ordering & Escrow
+    Buyer --><table class="academic-table"><tr><td>Submit Purchase Order & Payment</td></tr></table> P3
+    P3 --><table class="academic-table"><tr><td>Store Order & Escrow Record</td></tr></table> D3
+    P3 --><table class="academic-table"><tr><td>Trigger Logistics Request</td></tr></table> P4["4.0<br>Logistics Dispatch"]</p><p>    %% Process 4: Logistics
+    P4 --><table class="academic-table"><tr><td>Create Shipment</td></tr></table> D4
+    Transporter --><table class="academic-table"><tr><td>Accept Job & Update Transit</td></tr></table> P4
+    D4 --><table class="academic-table"><tr><td>Delivery Confirmation</td></tr></table> P5["5.0<br>Verification & Settlement"]</p><p>    %% Process 5: Settlement
+    Buyer --><table class="academic-table"><tr><td>Approve Inspection / OTP</td></tr></table> P5
+    D3 <--><table class="academic-table"><tr><td>Verify Escrow State</td></tr></table> P5
+    P5 --><table class="academic-table"><tr><td>Disburse Earnings</td></tr></table> Farmer
+    P5 --><table class="academic-table"><tr><td>Disburse Freight Fee</td></tr></table> Transporter
+</code></pre></p><p>---</p><p><h2>4. Entity-Relationship Diagram (ERD)</h2></p><p>The database design adheres to <strong>Third Normal Form (3NF)</strong> to ensure transactional integrity, eliminate redundancy, and support auditability required in commercial BBIT projects.</p><p><pre><code>mermaid
+erDiagram
+    USERS ||--o{ PRODUCE_LISTINGS : "publishes"
+    USERS ||--o{ ORDERS : "places as buyer"
+    USERS ||--o{ SHIPMENTS : "delivers as transporter"
+    USERS ||--o{ REVIEWS : "writes_or_receives"</p><p>    PRODUCE_LISTINGS ||--o{ ORDER_ITEMS : "catalogued_in"
+    ORDERS <table class="academic-table"><tr><td>--</td></tr></table>{ ORDER_ITEMS : "contains"
+    ORDERS <table class="academic-table"><tr><td>--</td></tr></table> ESCROW_TRANSACTIONS : "secured_by"
+    ORDERS <table class="academic-table"><tr><td>--o</td></tr></table> SHIPMENTS : "fulfilled_by"
+    ORDERS ||--o{ DISPUTES : "subject_to"</p><p>    USERS {
+        uuid id PK
+        string full_name
+        string email UK
+        string phone_number UK
+        string role "FARMER <table class="academic-table"><tr><td>BUYER</td><td>TRANSPORTER</td></tr></table> ADMIN"
+        string kyc_status "PENDING <table class="academic-table"><tr><td>VERIFIED</td></tr></table> REJECTED"
+        string location_county
+        timestamp created_at
+    }</p><p>    PRODUCE_LISTINGS {
+        uuid id PK
+        uuid farmer_id FK
+        string crop_name
+        string category "CEREAL <table class="academic-table"><tr><td>HORTICULTURE</td><td>TUBER</td></tr></table> LEGUME"
+        float available_quantity_kg
+        float unit_price_per_kg
+        string grade "GRADE_A <table class="academic-table"><tr><td>GRADE_B</td></tr></table> STANDARD"
+        date harvest_date
+        string location_subcounty
+        string status "ACTIVE <table class="academic-table"><tr><td>RESERVED</td></tr></table> SOLD_OUT"
+        timestamp created_at
+    }</p><p>    ORDERS {
+        uuid id PK
+        uuid buyer_id FK
+        string order_number UK
+        float total_produce_amount
+        float transport_fee
+        float platform_fee
+        float grand_total
+        string status "PENDING <table class="academic-table"><tr><td>ESCROW_FUNDED</td><td>IN_TRANSIT</td><td>DELIVERED</td><td>COMPLETED</td></tr></table> CANCELLED"
+        string delivery_address
+        timestamp created_at
+    }</p><p>    ORDER_ITEMS {
+        uuid id PK
+        uuid order_id FK
+        uuid listing_id FK
+        float quantity_kg
+        float unit_price_at_order
+        float subtotal
+    }</p><p>    ESCROW_TRANSACTIONS {
+        uuid id PK
+        uuid order_id FK
+        string transaction_reference UK
+        string payment_gateway "MPESA <table class="academic-table"><tr><td>PAYSTACK</td></tr></table> STRIPE"
+        float amount_held
+        string escrow_status "HELD <table class="academic-table"><tr><td>RELEASED_TO_SELLER</td></tr></table> REFUNDED_TO_BUYER"
+        timestamp funded_at
+        timestamp released_at
+    }</p><p>    SHIPMENTS {
+        uuid id PK
+        uuid order_id FK
+        uuid transporter_id FK
+        string vehicle_registration
+        string pickup_location
+        string dropoff_location
+        string transit_status "ASSIGNED <table class="academic-table"><tr><td>PICKED_UP</td><td>IN_TRANSIT</td><td>ARRIVED</td></tr></table> CONFIRMED"
+        string confirmation_otp
+        timestamp dispatched_at
+        timestamp delivered_at
+    }</p><p>    DISPUTES {
+        uuid id PK
+        uuid order_id FK
+        uuid raised_by_user_id FK
+        string dispute_type "QUALITY_REJECTED <table class="academic-table"><tr><td>QUANTITY_SHORTAGE</td></tr></table> TRANSIT_DAMAGE"
+        string description
+        string resolution_status "OPEN <table class="academic-table"><tr><td>UNDER_REVIEW</td><td>RESOLVED_REFUND</td></tr></table> RESOLVED_DISMISSED"
+        timestamp created_at
+    }</p><p>    REVIEWS {
+        uuid id PK
+        uuid order_id FK
+        uuid reviewer_id FK
+        uuid reviewee_id FK
+        int rating "1 to 5 Stars"
+        text comment
+        timestamp created_at
+    }
+</code></pre></p><p>---</p><p><h2>5. Order & Escrow State Transition Lifecycle (Sequence Diagram)</h2></p><p>This diagram illustrates how trust is established between a distant commercial buyer and a rural farmer through milestone-based escrow locks.</p><p><pre><code>mermaid
+sequenceDiagram
+    autonumber
+    actor Buyer as Commercial Buyer
+    participant App as AgriLink System
+    participant PG as Payment Gateway
+    actor Farmer as Farmer
+    actor Transporter as Transporter</p><p>    Buyer->>App: 1. Place Purchase Order (Select produce & volume)
+    App->>Buyer: 2. Return Order Invoice & Escrow Deposit Prompt
+    Buyer->>PG: 3. Authorize Escrow Payment (e.g., M-Pesa STK Push / Card)
+    PG-->>App: 4. Payment Callback (Transaction Successful)
+    App->>App: 5. Lock funds in Escrow; Set Status = ESCROW_FUNDED
+    App-->>Farmer: 6. SMS/Push Alert: "Order #1024 Funded. Ready to Pack."
+    App-->>Transporter: 7. Dispatch Notification: Cargo ready for pickup</p><p>    Transporter->>Farmer: 8. Arrive at farm, inspect & load produce
+    Transporter->>App: 9. Confirm Cargo Pickup; Status = IN_TRANSIT
+    App-->>Buyer: 10. Notification: "Produce is In Transit"</p><p>    Transporter->>Buyer: 11. Arrive at Buyer facility; Provide Delivery OTP
+    Buyer->>App: 12. Inspect produce & submit confirmation OTP
+    App->>App: 13. Verify OTP & set Status = COMPLETED
+    
+    par Automated Settlement
+        App->>PG: 14a. Release produce payout to Farmer's Account
+        App->>PG: 14b. Release freight payment to Transporter
+        App->>App: 14c. Record AgriLink platform commission
+    end
+    
+    App-->>Farmer: 15. SMS: Payment received for Order #1024
+    App-->>Buyer: 16. Final Receipt & Review prompt
+</code></pre>
+</p>
+    </div>
+  </div>
+</body>
+</html>
