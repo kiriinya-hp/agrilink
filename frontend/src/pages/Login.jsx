@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Sprout, Lock, Mail, ArrowRight, ShieldCheck, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import AuthAnimatedBackground from '../components/AuthAnimatedBackground';
 
 export default function Login({ onNavigateRegister, onNavigateAdmin, onNavigateForgotPassword }) {
   const { login } = useAuth();
@@ -32,9 +33,9 @@ export default function Login({ onNavigateRegister, onNavigateAdmin, onNavigateF
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background Glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-600/20 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Animated Agribusiness & Escrow Network Background */}
+      <AuthAnimatedBackground />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         <div className="flex justify-center">
@@ -51,7 +52,7 @@ export default function Login({ onNavigateRegister, onNavigateAdmin, onNavigateF
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4">
-        <div className="bg-white py-8 px-6 shadow-2xl rounded-2xl sm:px-10 border border-slate-100">
+        <div className="bg-white/95 backdrop-blur-xl py-8 px-6 shadow-2xl rounded-2xl sm:px-10 border border-slate-100/80">
           <form className="space-y-5" onSubmit={handleSubmit}>
             {error && (
               <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg text-xs flex items-center gap-2">

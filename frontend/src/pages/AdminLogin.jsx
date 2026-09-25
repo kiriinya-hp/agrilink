@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Lock, Mail, ArrowRight, AlertCircle, Eye, EyeOff, KeyRound, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import AuthAnimatedBackground from '../components/AuthAnimatedBackground';
 
 export default function AdminLogin({ onNavigateUserLogin }) {
   const { adminLogin } = useAuth();
@@ -26,6 +27,7 @@ export default function AdminLogin({ onNavigateUserLogin }) {
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <AuthAnimatedBackground />
       {/* Background Grid & Cyber Glow */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-25" />
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[30rem] h-[30rem] bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />

@@ -17,6 +17,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import AuthAnimatedBackground from '../components/AuthAnimatedBackground';
 
 export default function Register({ onNavigateLogin }) {
   const { register, verifyRegistration } = useAuth();
@@ -139,8 +140,8 @@ export default function Register({ onNavigateLogin }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 py-12 px-4 sm:px-6 lg:px-8 flex flex-col justify-center relative overflow-hidden">
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-600/15 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-slate-950 py-12 px-4 sm:px-6 lg:px-8 flex flex-col justify-center relative overflow-hidden">
+      <AuthAnimatedBackground />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-lg relative z-10">
         <div className="flex justify-center">
