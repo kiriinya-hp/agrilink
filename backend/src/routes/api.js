@@ -675,7 +675,25 @@ router.post('/escrow/deposit', async (req, res) => {
         });
       }
 
-      return tx.order.update({
+      // Deduct buyer's account balance directly in the database
+      let updatedBuyer = null;
+      if (order.buyerId) {
+        updatedBuyer = await tx.user.update({
+          where: { id: order.buyerId },
+          data: { walletBalance: { decrement: order.grandTotal } }
+        });
+
+        await tx.notification.create({
+          data: {
+            userId: order.buyerId,
+            type: 'WALLET_DEBIT',
+            title: 'Payment Deducted & Locked in Escrow',
+            message: `KSh / $${order.grandTotal.toFixed(2)} has been deducted from your account and locked in AgriLink Smart Escrow for Order #${order.orderNumber}. Available balance: $${updatedBuyer.walletBalance.toFixed(2)}.`
+          }
+        });
+      }
+
+      const finalizedOrder = await tx.order.update({
         where: { id: order.id },
         data: { status: 'ESCROW_FUNDED' },
         include: {
@@ -684,17 +702,53 @@ router.post('/escrow/deposit', async (req, res) => {
           items: true
         }
       });
+
+      return { finalizedOrder, newBuyerBalance: updatedBuyer ? updatedBuyer.walletBalance : null };
     });
 
     res.json({
       success: true,
       message: stkResult.customerMessage,
       stkDetails: stkResult,
-      order: updatedOrder,
-      confirmationOtp
+      order: updatedOrder.finalizedOrder,
+      confirmationOtp,
+      newBuyerBalance: updatedOrder.newBuyerBalance
     });
   } catch (error) {
     console.error('Escrow deposit error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// User Wallet Top-Up via M-Pesa / Card
+router.post('/wallet/topup', async (req, res) => {
+  try {
+    const { userId, amount, paymentMethod = 'MPESA' } = req.body;
+    const addAmt = parseFloat(amount);
+    if (!userId || isNaN(addAmt) || addAmt <= 0) {
+      return res.status(400).json({ success: false, error: 'Valid user ID and positive top-up amount required' });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { walletBalance: { increment: addAmt } }
+    });
+
+    await prisma.notification.create({
+      data: {
+        userId,
+        type: 'WALLET_TOPUP',
+        title: 'Wallet Top-up Confirmed',
+        message: `Your AgriLink balance has been credited with $${addAmt.toFixed(2)} via ${paymentMethod}. New balance: $${updatedUser.walletBalance.toFixed(2)}.`
+      }
+    });
+
+    res.json({
+      success: true,
+      message: `Successfully topped up $${addAmt.toFixed(2)} to your account!`,
+      walletBalance: updatedUser.walletBalance
+    });
+  } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 });

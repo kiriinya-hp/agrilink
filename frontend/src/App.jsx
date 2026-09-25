@@ -40,6 +40,8 @@ import ImagePickerModal from './components/ImagePickerModal';
 import ReceiptModal from './components/ReceiptModal';
 import NotificationDrawer from './components/NotificationDrawer';
 import EmailVerificationBanner from './components/EmailVerificationBanner';
+import KilimoAIAssistant from './components/KilimoAIAssistant';
+import WalletTopUpModal from './components/WalletTopUpModal';
 
 const API_BASE = '/api';
 
@@ -80,6 +82,7 @@ function MainApp() {
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [selectedReceiptOrder, setSelectedReceiptOrder] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
+  const [showTopUpModal, setShowTopUpModal] = useState(false);
 
   // Farmer New Listing Form State
   const [newListing, setNewListing] = useState({
@@ -266,8 +269,12 @@ function MainApp() {
       const escrowData = await resEscrow.json();
       if (!escrowData.success) throw new Error(escrowData.error);
 
+      if (escrowData.newBuyerBalance !== undefined && escrowData.newBuyerBalance !== null) {
+        user.walletBalance = escrowData.newBuyerBalance;
+      }
+
       showNotification(
-        `📱 M-PESA STK PUSH: ${escrowData.message} (Delivery Inspection OTP: ${escrowData.confirmationOtp})`
+        `💳 PAYMENT CONFIRMED: $${orderData.order.grandTotal.toFixed(2)} deducted and locked in Escrow! Remaining Balance: $${(escrowData.newBuyerBalance ?? (user.walletBalance || 0)).toFixed(2)}. (Inspection OTP: ${escrowData.confirmationOtp})`
       );
       setOrderModalListing(null);
       setActiveTab('orders');
@@ -532,11 +539,19 @@ function MainApp() {
                 </div>
               </div>
 
-              {/* Wallet */}
-              <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-xs">
-                <Wallet className="w-3.5 h-3.5 text-emerald-600" />
+              {/* Wallet Button with Top-up */}
+              <button
+                type="button"
+                onClick={() => setShowTopUpModal(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-xs transition-colors shadow-sm cursor-pointer"
+                title="Click to view balance and top up"
+              >
+                <Wallet className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                 <span>${(user.walletBalance || 0).toFixed(2)}</span>
-              </div>
+                <span className="hidden sm:inline text-[9px] text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider">
+                  Top Up
+                </span>
+              </button>
 
               {/* Sign Out Button */}
               <button
@@ -643,7 +658,7 @@ function MainApp() {
       {/* ========================================================= */}
       {/* ROLE-SPECIFIC CONTENT VIEWS                               */}
       {/* ========================================================= */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 pb-24 sm:pb-8">
         
         {/* BUYER VIEW: B2B MARKETPLACE */}
         {user.role === 'BUYER' && activeTab === 'marketplace' && (
@@ -1559,6 +1574,121 @@ function MainApp() {
         onClose={() => setShowNotificationDrawer(false)}
         notifications={notificationsList}
         onMarkAllRead={handleMarkAllNotificationsRead}
+      />
+
+      {/* ========================================================= */}
+      {/* MOBILE BOTTOM NAVIGATION BAR (Visible on mobile only)     */}
+      {/* ========================================================= */}
+      <nav aria-label="Mobile Navigation" className="sm:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-slate-200 z-30 flex justify-around items-center py-2 px-1 shadow-2xl">
+        {user.role === 'BUYER' && (
+          <>
+            <button
+              onClick={() => setActiveTab('marketplace')}
+              className={`flex flex-col items-center gap-0.5 text-[10px] font-bold py-1 px-2.5 rounded-xl transition-colors ${
+                activeTab === 'marketplace' ? 'text-emerald-600' : 'text-slate-500'
+              }`}
+            >
+              <ShoppingBag className="w-5 h-5" />
+              <span>Market</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('orders')}
+              className={`flex flex-col items-center gap-0.5 text-[10px] font-bold py-1 px-2.5 rounded-xl transition-colors ${
+                activeTab === 'orders' ? 'text-emerald-600' : 'text-slate-500'
+              }`}
+            >
+              <Lock className="w-5 h-5" />
+              <span>Orders ({orders.length})</span>
+            </button>
+          </>
+        )}
+
+        {user.role === 'FARMER' && (
+          <button
+            onClick={() => setActiveTab('farmer')}
+            className="flex flex-col items-center gap-0.5 text-[10px] font-bold py-1 px-3 text-emerald-600"
+          >
+            <Sprout className="w-5 h-5" />
+            <span>Farm Catalog</span>
+          </button>
+        )}
+
+        {user.role === 'TRANSPORTER' && (
+          <button
+            onClick={() => setActiveTab('logistics')}
+            className="flex flex-col items-center gap-0.5 text-[10px] font-bold py-1 px-3 text-emerald-600"
+          >
+            <Truck className="w-5 h-5" />
+            <span>Cargo Jobs</span>
+          </button>
+        )}
+
+        {user.role === 'ADMIN' && (
+          <>
+            <button
+              onClick={() => setActiveTab('analytics')}
+              className={`flex flex-col items-center gap-0.5 text-[10px] font-bold py-1 px-2.5 ${
+                activeTab === 'analytics' ? 'text-indigo-600' : 'text-slate-500'
+              }`}
+            >
+              <BarChart3 className="w-5 h-5" />
+              <span>KPIs</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('admin-users')}
+              className={`flex flex-col items-center gap-0.5 text-[10px] font-bold py-1 px-2.5 ${
+                activeTab === 'admin-users' ? 'text-indigo-600' : 'text-slate-500'
+              }`}
+            >
+              <User className="w-5 h-5" />
+              <span>Directory</span>
+            </button>
+          </>
+        )}
+
+        <button
+          onClick={() => setShowTopUpModal(true)}
+          className="flex flex-col items-center gap-0.5 text-[10px] font-bold py-1 px-2.5 text-slate-700"
+        >
+          <Wallet className="w-5 h-5 text-emerald-600" />
+          <span>${(user.walletBalance || 0).toFixed(0)}</span>
+        </button>
+
+        <button
+          onClick={() => setShowNotificationDrawer(true)}
+          className="flex flex-col items-center gap-0.5 text-[10px] font-bold py-1 px-2.5 text-slate-500 relative"
+        >
+          <Bell className="w-5 h-5" />
+          {unreadNotifCount > 0 && (
+            <span className="absolute top-0 right-2 w-2 h-2 rounded-full bg-rose-500" />
+          )}
+          <span>Alerts</span>
+        </button>
+      </nav>
+
+      {/* ========================================================= */}
+      {/* KILIMO AI DIGITAL VOICE & NAVIGATION ASSISTANT           */}
+      {/* ========================================================= */}
+      <KilimoAIAssistant
+        user={user}
+        activeTab={activeTab}
+        onNavigateTab={(tab) => setActiveTab(tab)}
+        onOpenTopUp={() => setShowTopUpModal(true)}
+      />
+
+      {/* ========================================================= */}
+      {/* ESCROW WALLET TOP-UP MODAL                               */}
+      {/* ========================================================= */}
+      <WalletTopUpModal
+        isOpen={showTopUpModal}
+        onClose={() => setShowTopUpModal(false)}
+        user={user}
+        onBalanceUpdated={(newBal) => {
+          user.walletBalance = newBal;
+          refreshUser();
+          loadRoleData();
+          showNotification(`Wallet credited successfully! New balance: $${newBal.toFixed(2)}`);
+        }}
       />
     </div>
   );
