@@ -166,20 +166,7 @@ export default function Login({ onNavigateRegister, onNavigateAdmin, onNavigateF
             >
               Register Now
             </button>
-          </div>
         </div>
-
-        {/* Separate Admin Portal Link */}
-        <div className="mt-6 text-center">
-          <button
-            onClick={onNavigateAdmin}
-            className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-emerald-400 transition-colors py-1 px-3 rounded-full hover:bg-slate-800/60"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Are you an Administrator? <strong>Access Admin Portal</strong></span>
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

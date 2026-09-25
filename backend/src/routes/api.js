@@ -9,6 +9,40 @@ const router = express.Router();
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'agrilink_secret_jwt_key_2026';
 
+// ==========================================
+// ADMIN PROTECTION MIDDLEWARE
+// Verifies Bearer JWT AND enforces role = ADMIN.
+// All routes using requireAdmin will return 401/403
+// if the caller is not a verified administrator.
+// ==========================================
+function requireAdmin(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        error: 'Administrator authentication required. Please log in at the Admin Portal.'
+      });
+    }
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    if (decoded.role !== 'ADMIN') {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied. This section is restricted to AgriLink Administrators only.'
+      });
+    }
+    req.admin = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({
+      success: false,
+      error: 'Invalid or expired administrator session. Please log in again.'
+    });
+  }
+}
+
 // Helper: Generate JWT token
 function generateToken(user) {
   return jwt.sign(
@@ -379,8 +413,8 @@ router.get('/auth/me', async (req, res) => {
   }
 });
 
-// Admin: Fetch all users
-router.get('/admin/users', async (req, res) => {
+// Admin: Fetch all users (ADMIN ONLY — protected by requireAdmin)
+router.get('/admin/users', requireAdmin, async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       select: {
@@ -404,8 +438,8 @@ router.get('/admin/users', async (req, res) => {
   }
 });
 
-// Admin: Update user / stakeholder record in database
-router.put('/admin/users/:id', async (req, res) => {
+// Admin: Update user / stakeholder record (ADMIN ONLY)
+router.put('/admin/users/:id', requireAdmin, async (req, res) => {
   try {
     const { name, email, phone, role, businessName, location, kycStatus, isEmailVerified, walletBalance } = req.body;
     const userId = req.params.id;
@@ -433,8 +467,8 @@ router.put('/admin/users/:id', async (req, res) => {
   }
 });
 
-// Admin: Delete user from database
-router.delete('/admin/users/:id', async (req, res) => {
+// Admin: Delete user from database (ADMIN ONLY)
+router.delete('/admin/users/:id', requireAdmin, async (req, res) => {
   try {
     const userId = req.params.id;
     await prisma.user.delete({ where: { id: userId } });
@@ -1053,9 +1087,9 @@ router.post('/notifications/read-all', async (req, res) => {
 });
 
 // ==========================================
-// 5. EXECUTIVE BI ANALYTICS (ADMIN)
+// 5. EXECUTIVE BI ANALYTICS (ADMIN ONLY)
 // ==========================================
-router.get('/analytics', async (req, res) => {
+router.get('/analytics', requireAdmin, async (req, res) => {
   try {
     const orders = await prisma.order.findMany({
       include: { items: true, escrowTransaction: true }

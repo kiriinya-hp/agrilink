@@ -47,7 +47,11 @@ const API_BASE = '/api';
 
 function MainApp() {
   const { user, token, logout, refreshUser } = useAuth();
-  const [authPage, setAuthPage] = useState('login'); // 'login', 'register', 'admin-login'
+
+  // Admin login is accessible ONLY via secret URL: /?admin=1
+  // It is not linked from anywhere in the regular user interface.
+  const isAdminRoute = new URLSearchParams(window.location.search).get('admin') === '1';
+  const [authPage, setAuthPage] = useState(isAdminRoute ? 'admin-login' : 'login');
 
   // Navigation Tabs for active role
   const [activeTab, setActiveTab] = useState('main'); // 'main', 'orders', 'admin-users'
@@ -207,11 +211,13 @@ function MainApp() {
       } 
       
       if (user.role === 'ADMIN') {
-        const aRes = await fetch(`${API_BASE}/analytics`);
+        const authHeaders = { 'Authorization': `Bearer ${token}` };
+
+        const aRes = await fetch(`${API_BASE}/analytics`, { headers: authHeaders });
         const aData = await aRes.json();
         if (aData.success) setAnalytics(aData.analytics);
 
-        const uRes = await fetch(`${API_BASE}/admin/users`);
+        const uRes = await fetch(`${API_BASE}/admin/users`, { headers: authHeaders });
         const uData = await uRes.json();
         if (uData.success) setAllUsers(uData.users);
       }
@@ -371,7 +377,10 @@ function MainApp() {
     try {
       const res = await fetch(`${API_BASE}/admin/users/${editingUser.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(editingUser)
       });
       const data = await res.json();
@@ -392,7 +401,8 @@ function MainApp() {
     if (!window.confirm(`Are you sure you want to permanently delete "${userName}" from the database?`)) return;
     try {
       const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
       if (data.success) {
@@ -659,7 +669,34 @@ function MainApp() {
       {/* ROLE-SPECIFIC CONTENT VIEWS                               */}
       {/* ========================================================= */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 pb-24 sm:pb-8">
-        
+
+        {/* ======================================================== */}
+        {/* ADMIN ROLE GUARD: Block non-admins from admin-only views  */}
+        {/* ======================================================== */}
+        {(activeTab === 'analytics' || activeTab === 'admin-users') && user.role !== 'ADMIN' && (
+          <div className="min-h-[60vh] flex items-center justify-center">
+            <div className="text-center max-w-sm mx-auto">
+              <div className="w-16 h-16 bg-rose-100 border-2 border-rose-300 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Lock className="w-8 h-8 text-rose-500" />
+              </div>
+              <h2 className="text-xl font-black text-slate-900 mb-2">Access Restricted</h2>
+              <p className="text-sm text-slate-500 mb-6">
+                The Administration Panel is only accessible to <strong>AgriLink System Administrators</strong>. You do not have permission to view this section.
+              </p>
+              <button
+                onClick={() => {
+                  if (user.role === 'BUYER') setActiveTab('marketplace');
+                  else if (user.role === 'FARMER') setActiveTab('farmer');
+                  else if (user.role === 'TRANSPORTER') setActiveTab('logistics');
+                }}
+                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-sm transition-colors"
+              >
+                ← Back to My Dashboard
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* BUYER VIEW: B2B MARKETPLACE */}
         {user.role === 'BUYER' && activeTab === 'marketplace' && (
           <div>
