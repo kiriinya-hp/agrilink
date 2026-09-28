@@ -1194,10 +1194,12 @@ function MainApp() {
               </div>
             </div>
 
-            {/* Live Geographic Freight Map (100% Free OpenStreetMap Leaflet Radar) */}
+            {/* Live Geographic Freight Map (Real Buyer Transportation Orders & OpenStreetMap) */}
             <DriverLiveMap 
-              activeShipment={orders.find(o => o.shipment?.transporterId === user.id)?.shipment}
+              activeOrders={orders.filter(o => o.shipment?.transporterId === user.id)}
               availableShipments={availableShipments}
+              onAcceptShipment={handleAcceptShipment}
+              onUpdateTransitStatus={handleUpdateTransitStatus}
               user={user}
             />
 
@@ -1807,6 +1809,7 @@ function MainApp() {
         activeTab={activeTab}
         onNavigateTab={(tab) => setActiveTab(tab)}
         onOpenTopUp={() => setShowTopUpModal(true)}
+        onOpenWithdraw={() => setShowWithdrawModal(true)}
       />
 
       {/* ========================================================= */}
