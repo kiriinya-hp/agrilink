@@ -65,12 +65,13 @@ function MainApp() {
   const [authPage, setAuthPage] = useState(isAdminRoute ? 'admin-login' : 'login');
 
   // Navigation Tabs for active role
-  const [activeTab, setActiveTab] = useState('main'); // 'main', 'orders', 'admin-users'
+  const [activeTab, setActiveTab] = useState('marketplace'); // 'marketplace', 'farmer', 'logistics', 'orders', 'analytics', 'admin-users'
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState(null);
 
   // Data States
   const [listings, setListings] = useState([]);
+  const [farmerListings, setFarmerListings] = useState([]);
   const [orders, setOrders] = useState([]);
   const [availableShipments, setAvailableShipments] = useState([]);
   const [analytics, setAnalytics] = useState(null);
@@ -157,7 +158,7 @@ function MainApp() {
     if (user) {
       loadRoleData();
     }
-  }, [activeTab]);
+  }, [activeTab, selectedCategory, search]);
 
   const showNotification = (msg, type = 'success') => {
     setNotification({ msg, type });
@@ -188,27 +189,26 @@ function MainApp() {
         })
         .catch(() => {});
 
-      // 3. Role-specific queries
-      if (user.role === 'BUYER' || activeTab === 'marketplace') {
-        const query = new URLSearchParams();
-        if (selectedCategory !== 'ALL') query.append('category', selectedCategory);
-        if (search) query.append('search', search);
-        const res = await fetch(`${API_BASE}/listings?${query.toString()}`);
-        const data = await res.json();
-        if (data.success) setListings(data.listings);
+      // 3. Always fetch all public marketplace produce listings
+      const query = new URLSearchParams();
+      if (selectedCategory !== 'ALL') query.append('category', selectedCategory);
+      if (search) query.append('search', search);
+      const res = await fetch(`${API_BASE}/listings?${query.toString()}`);
+      const data = await res.json();
+      if (data.success) {
+        setListings(data.listings || []);
+        if (user.role === 'FARMER') {
+          setFarmerListings((data.listings || []).filter(l => l.farmerId === user.id));
+        }
+      }
 
+      if (user.role === 'BUYER') {
         const oRes = await fetch(`${API_BASE}/orders?userId=${user.id}&role=BUYER`);
         const oData = await oRes.json();
         if (oData.success) setOrders(oData.orders);
       } 
       
       if (user.role === 'FARMER') {
-        const lRes = await fetch(`${API_BASE}/listings`);
-        const lData = await lRes.json();
-        if (lData.success) {
-          setListings(lData.listings.filter(l => l.farmerId === user.id));
-        }
-
         const oRes = await fetch(`${API_BASE}/orders?userId=${user.id}&role=FARMER`);
         const oData = await oRes.json();
         if (oData.success) setOrders(oData.orders);
@@ -637,23 +637,49 @@ function MainApp() {
             )}
 
             {user.role === 'FARMER' && (
-              <button
-                onClick={() => setActiveTab('farmer')}
-                className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-sm"
-              >
-                <Sprout className="w-3.5 h-3.5" />
-                Farmer Harvest & Inventory Dashboard
-              </button>
+              <>
+                <button
+                  onClick={() => setActiveTab('farmer')}
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    activeTab === 'farmer' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  <Sprout className="w-3.5 h-3.5" />
+                  Farmer Harvest Dashboard
+                </button>
+                <button
+                  onClick={() => setActiveTab('marketplace')}
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    activeTab === 'marketplace' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                  B2B Marketplace ({listings.length})
+                </button>
+              </>
             )}
 
             {user.role === 'TRANSPORTER' && (
-              <button
-                onClick={() => setActiveTab('logistics')}
-                className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-sm"
-              >
-                <Truck className="w-3.5 h-3.5" />
-                Logistics Dispatch Board ({availableShipments.length} Available Jobs)
-              </button>
+              <>
+                <button
+                  onClick={() => setActiveTab('logistics')}
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    activeTab === 'logistics' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  <Truck className="w-3.5 h-3.5" />
+                  Logistics Dispatch Board ({availableShipments.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab('marketplace')}
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    activeTab === 'marketplace' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                  B2B Marketplace ({listings.length})
+                </button>
+              </>
             )}
 
             {user.role === 'ADMIN' && (
@@ -665,7 +691,7 @@ function MainApp() {
                   }`}
                 >
                   <BarChart3 className="w-3.5 h-3.5" />
-                  Executive BI & Platform Analytics
+                  Executive BI & Analytics
                 </button>
                 <button
                   onClick={() => setActiveTab('admin-users')}
@@ -674,7 +700,16 @@ function MainApp() {
                   }`}
                 >
                   <User className="w-3.5 h-3.5" />
-                  Registered Stakeholders Directory ({allUsers.length})
+                  Stakeholders Directory ({allUsers.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab('marketplace')}
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    activeTab === 'marketplace' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                  B2B Marketplace ({listings.length})
                 </button>
               </>
             )}
@@ -731,8 +766,8 @@ function MainApp() {
           </div>
         )}
 
-        {/* BUYER VIEW: B2B MARKETPLACE */}
-        {user.role === 'BUYER' && activeTab === 'marketplace' && (
+        {/* B2B MARKETPLACE VIEW */}
+        {activeTab === 'marketplace' && (
           <div>
             {/* Live Kenya Wholesale Price Index & Market Ticker */}
             <CommodityPriceTicker />

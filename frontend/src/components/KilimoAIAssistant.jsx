@@ -215,7 +215,8 @@ export default function KilimoAIAssistant({
   const handleExecuteAction = (actionKey) => {
     switch (actionKey) {
       case 'navigate_main':
-        if (onNavigateTab) onNavigateTab('main');
+      case 'navigate_marketplace':
+        if (onNavigateTab) onNavigateTab('marketplace');
         setIsOpen(false);
         break;
       case 'navigate_farmer':
@@ -227,7 +228,8 @@ export default function KilimoAIAssistant({
         setIsOpen(false);
         break;
       case 'navigate_transporter':
-        if (onNavigateTab) onNavigateTab('transporter');
+      case 'navigate_logistics':
+        if (onNavigateTab) onNavigateTab('logistics');
         setIsOpen(false);
         break;
       case 'open_topup':
