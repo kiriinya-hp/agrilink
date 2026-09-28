@@ -29,7 +29,12 @@ import {
   Check,
   Edit3,
   Trash2,
-  Database
+  Database,
+  ArrowUpRight,
+  Handshake,
+  ShieldAlert,
+  Scale,
+  CloudSun
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
@@ -42,6 +47,11 @@ import NotificationDrawer from './components/NotificationDrawer';
 import EmailVerificationBanner from './components/EmailVerificationBanner';
 import KilimoAIAssistant from './components/KilimoAIAssistant';
 import WalletTopUpModal from './components/WalletTopUpModal';
+import WalletWithdrawModal from './components/WalletWithdrawModal';
+import CommodityPriceTicker from './components/CommodityPriceTicker';
+import KilimoWeatherAdvisory from './components/KilimoWeatherAdvisory';
+import MakeOfferModal from './components/MakeOfferModal';
+import DisputeModal from './components/DisputeModal';
 
 const API_BASE = '/api';
 
@@ -87,6 +97,9 @@ function MainApp() {
   const [selectedReceiptOrder, setSelectedReceiptOrder] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
   const [showTopUpModal, setShowTopUpModal] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [negotiatingListing, setNegotiatingListing] = useState(null);
+  const [disputingOrder, setDisputingOrder] = useState(null);
 
   // Farmer New Listing Form State
   const [newListing, setNewListing] = useState({
@@ -549,19 +562,39 @@ function MainApp() {
                 </div>
               </div>
 
-              {/* Wallet Button with Top-up */}
-              <button
-                type="button"
-                onClick={() => setShowTopUpModal(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-xs transition-colors shadow-sm cursor-pointer"
-                title="Click to view balance and top up"
-              >
-                <Wallet className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span>${(user.walletBalance || 0).toFixed(2)}</span>
-                <span className="hidden sm:inline text-[9px] text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider">
-                  Top Up
-                </span>
-              </button>
+              {/* Dual Financial Actions Hub: Top Up & Withdraw */}
+              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100/80 border border-slate-200">
+                <div 
+                  onClick={() => setShowTopUpModal(true)}
+                  className="flex items-center gap-1.5 px-2.5 py-1 text-slate-900 font-extrabold text-xs cursor-pointer hover:text-emerald-700 transition-colors"
+                  title="Your Available Wallet Balance"
+                >
+                  <Wallet className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span className="font-mono">${(user.walletBalance || 0).toFixed(2)}</span>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowTopUpModal(true)}
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shadow-sm transition-all"
+                    title="Deposit funds via M-Pesa or Card"
+                  >
+                    <PlusCircle className="w-3 h-3" />
+                    <span className="hidden sm:inline">Top Up</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowWithdrawModal(true)}
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 hover:text-amber-800 font-bold text-[11px] shadow-sm transition-all"
+                    title="Withdraw funds to M-Pesa or Bank"
+                  >
+                    <ArrowUpRight className="w-3 h-3 text-amber-600" />
+                    <span className="hidden sm:inline">Withdraw</span>
+                  </button>
+                </div>
+              </div>
 
               {/* Sign Out Button */}
               <button
@@ -700,6 +733,12 @@ function MainApp() {
         {/* BUYER VIEW: B2B MARKETPLACE */}
         {user.role === 'BUYER' && activeTab === 'marketplace' && (
           <div>
+            {/* Live Kenya Wholesale Price Index & Market Ticker */}
+            <CommodityPriceTicker />
+
+            {/* Kilimo Smart Agro-Climate & Harvest Advisory */}
+            <KilimoWeatherAdvisory />
+
             {/* Header Banner */}
             <div className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-slate-900 text-white rounded-2xl p-6 sm:p-8 mb-6 shadow-lg relative overflow-hidden">
               <div className="max-w-2xl relative z-10">
@@ -796,22 +835,34 @@ function MainApp() {
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                       <div>
                         <span className="text-[10px] text-slate-400 block">Available Volume</span>
                         <span className="text-xs font-bold text-slate-800">{item.availableQty.toLocaleString()} kg</span>
                       </div>
 
-                      <button
-                        onClick={() => {
-                          setOrderModalListing(item);
-                          setOrderQty(Math.min(200, item.availableQty));
-                        }}
-                        className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors"
-                      >
-                        <Lock className="w-3.5 h-3.5" />
-                        Order with Escrow
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setNegotiatingListing(item)}
+                          className="flex items-center gap-1 px-2.5 py-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 text-xs font-bold transition-colors"
+                          title="Propose bulk wholesale discount to farmer"
+                        >
+                          <Handshake className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Offer</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setOrderModalListing(item);
+                            setOrderQty(Math.min(200, item.availableQty));
+                          }}
+                          className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors"
+                        >
+                          <Lock className="w-3.5 h-3.5" />
+                          Order with Escrow
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -893,7 +944,18 @@ function MainApp() {
                                 Release Escrow
                               </button>
                             </div>
-                            <p className="text-[10px] text-slate-400 italic">(Driver will provide OTP: <strong>{shipment?.confirmationOtp}</strong>)</p>
+                            <div className="flex items-center justify-between text-[10px] pt-1">
+                              <span className="text-slate-400 italic">Driver OTP: <strong>{shipment?.confirmationOtp}</strong></span>
+                              <button
+                                type="button"
+                                onClick={() => setDisputingOrder(order)}
+                                className="text-rose-600 hover:text-rose-700 font-bold flex items-center gap-0.5"
+                                title="Report damaged or substandard produce to hold escrow"
+                              >
+                                <ShieldAlert className="w-3 h-3" />
+                                <span>Report Quality Issue</span>
+                              </button>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -907,7 +969,12 @@ function MainApp() {
 
         {/* FARMER VIEW: HARVEST PORTAL */}
         {user.role === 'FARMER' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="space-y-6">
+            {/* Live Commodity Wholesale Index & Agro-Climate Advisory */}
+            <CommodityPriceTicker />
+            <KilimoWeatherAdvisory />
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Add Produce Form with Image Selector */}
             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
               <h3 className="font-bold text-sm text-slate-900 mb-3 flex items-center gap-2 pb-2 border-b">
@@ -1052,14 +1119,17 @@ function MainApp() {
                 <div>
                   <span className="text-xs text-emerald-200">Farmer Wallet Balance (Escrow Settlements)</span>
                   <h2 className="text-3xl font-black mt-1">${(user.walletBalance || 0).toFixed(2)}</h2>
-                  <p className="text-[10px] text-emerald-200/80 mt-1">Direct M-Pesa payout to registered number: {user.phone}</p>
+                  <p className="text-[10px] text-emerald-200/80 mt-1">Direct M-Pesa or Bank payout to: {user.phone}</p>
                 </div>
-                <button
-                  onClick={() => showNotification(`Initiated M-Pesa withdrawal to ${user.phone}!`)}
-                  className="bg-white text-emerald-900 font-bold px-4 py-2 rounded-lg text-xs shadow hover:bg-emerald-50"
-                >
-                  Withdraw to M-Pesa
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowWithdrawModal(true)}
+                    className="bg-white text-emerald-900 font-extrabold px-4 py-2.5 rounded-xl text-xs shadow-md hover:bg-emerald-50 flex items-center gap-1.5 transition-all"
+                  >
+                    <ArrowUpRight className="w-4 h-4 text-amber-600" />
+                    <span>Withdraw Funds</span>
+                  </button>
+                </div>
               </div>
 
               {/* Listings Table */}
@@ -1095,14 +1165,32 @@ function MainApp() {
               </div>
             </div>
           </div>
+          </div>
         )}
 
         {/* TRANSPORTER VIEW: LOGISTICS BOARD */}
         {user.role === 'TRANSPORTER' && (
           <div className="space-y-6">
-            <div className="bg-white p-6 rounded-xl border border-slate-200">
-              <h2 className="text-lg font-bold text-slate-900">AgriLink Freight & Dispatch Dispatcher</h2>
-              <p className="text-xs text-slate-500 mt-1">Claim pending cargo shipments, advance transit milestones, and provide the Delivery OTP to the recipient buyer.</p>
+            <div className="bg-white p-6 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">AgriLink Freight & Dispatch Dispatcher</h2>
+                <p className="text-xs text-slate-500 mt-1">Claim pending cargo shipments, advance transit milestones, and provide the Delivery OTP to the recipient buyer.</p>
+              </div>
+
+              {/* Transporter Wallet Balance */}
+              <div className="flex items-center gap-3 p-3 bg-slate-900 text-white rounded-xl shadow-inner">
+                <div>
+                  <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider block">Freight Earnings</span>
+                  <span className="text-lg font-black font-mono">${(user.walletBalance || 0).toFixed(2)}</span>
+                </div>
+                <button
+                  onClick={() => setShowWithdrawModal(true)}
+                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow transition-colors flex items-center gap-1"
+                >
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                  <span>Withdraw</span>
+                </button>
+              </div>
             </div>
 
             {/* Available Jobs */}
@@ -1725,6 +1813,49 @@ function MainApp() {
           refreshUser();
           loadRoleData();
           showNotification(`Wallet credited successfully! New balance: $${newBal.toFixed(2)}`);
+        }}
+      />
+
+      {/* ========================================================= */}
+      {/* WALLET WITHDRAWAL MODAL (M-PESA / BANK / AIRTEL)         */}
+      {/* ========================================================= */}
+      <WalletWithdrawModal
+        isOpen={showWithdrawModal}
+        onClose={() => setShowWithdrawModal(false)}
+        user={user}
+        onBalanceUpdated={(newBal) => {
+          user.walletBalance = newBal;
+          refreshUser();
+          loadRoleData();
+          showNotification(`Withdrawal processed! New balance: $${newBal.toFixed(2)}`);
+        }}
+      />
+
+      {/* ========================================================= */}
+      {/* BULK PRICE NEGOTIATION / RFQ OFFER MODAL                 */}
+      {/* ========================================================= */}
+      <MakeOfferModal
+        isOpen={Boolean(negotiatingListing)}
+        onClose={() => setNegotiatingListing(null)}
+        listing={negotiatingListing}
+        user={user}
+        onOfferSubmitted={(data) => {
+          showNotification(data.message);
+          loadRoleData();
+        }}
+      />
+
+      {/* ========================================================= */}
+      {/* ESCROW QUALITY INSPECTION & DISPUTE MODAL                */}
+      {/* ========================================================= */}
+      <DisputeModal
+        isOpen={Boolean(disputingOrder)}
+        onClose={() => setDisputingOrder(null)}
+        order={disputingOrder}
+        user={user}
+        onDisputeFiled={(data) => {
+          showNotification(data.message, 'warning');
+          loadRoleData();
         }}
       />
     </div>
