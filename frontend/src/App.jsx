@@ -52,6 +52,7 @@ import CommodityPriceTicker from './components/CommodityPriceTicker';
 import KilimoWeatherAdvisory from './components/KilimoWeatherAdvisory';
 import MakeOfferModal from './components/MakeOfferModal';
 import DisputeModal from './components/DisputeModal';
+import DriverLiveMap from './components/DriverLiveMap';
 
 const API_BASE = '/api';
 
@@ -1192,6 +1193,13 @@ function MainApp() {
                 </button>
               </div>
             </div>
+
+            {/* Live Geographic Freight Map (100% Free OpenStreetMap Leaflet Radar) */}
+            <DriverLiveMap 
+              activeShipment={orders.find(o => o.shipment?.transporterId === user.id)?.shipment}
+              availableShipments={availableShipments}
+              user={user}
+            />
 
             {/* Available Jobs */}
             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
