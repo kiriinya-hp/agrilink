@@ -532,6 +532,9 @@ router.post('/listings', async (req, res) => {
       }
     });
 
+    // Check active alerts and notify subscribed buyers
+    notifySubscribersOnNewListing(listing).catch(() => {});
+
     res.status(201).json({ success: true, listing });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -1357,4 +1360,512 @@ router.get('/analytics', requireAdmin, async (req, res) => {
   }
 });
 
+// ==========================================
+// 6. FREIGHT MILEAGE & INSTANT COST CALCULATOR
+// ==========================================
+const KENYA_LOGISTICS_HUBS = {
+  nairobi: { name: 'Nairobi Central Wholesale Depot', lat: -1.286389, lng: 36.817223 },
+  mombasa: { name: 'Mombasa Kongowea Wholesale Hub', lat: -4.0435, lng: 39.6682 },
+  kisumu: { name: 'Kisumu Jubilee Produce Market', lat: -0.0917, lng: 34.7680 },
+  nakuru: { name: 'Nakuru Agri SCM Center', lat: -0.3031, lng: 36.0800 },
+  eldoret: { name: 'Eldoret Grain Terminal', lat: 0.5143, lng: 35.2698 },
+  meru: { name: 'Meru Horticultural Hub', lat: 0.0463, lng: 37.6559 },
+  nyandarua: { name: 'Nyandarua Potato Hub (Ol Kalou)', lat: -0.2700, lng: 36.3800 },
+  kirinyaga: { name: 'Kirinyaga Rice & Tomato Depot', lat: -0.5000, lng: 37.2800 },
+  machakos: { name: 'Machakos Dryland Hub', lat: -1.5177, lng: 37.2634 },
+  naivasha: { name: 'Naivasha Horticultural Sacco', lat: -0.7167, lng: 36.4333 },
+  kitale: { name: 'Kitale Maize & Cereal Depot', lat: 1.0167, lng: 35.0000 },
+  narok: { name: 'Narok Wheat & Barley Silo', lat: -1.0833, lng: 35.8667 },
+  thika: { name: 'Thika SCM Agro-Industrial Park', lat: -1.0333, lng: 37.0694 },
+  embu: { name: 'Embu Highlands Collection Center', lat: -0.5333, lng: 37.4500 }
+};
+
+function getHubCoords(queryStr, defaultKey = 'nairobi') {
+  if (!queryStr) return [KENYA_LOGISTICS_HUBS[defaultKey].lat, KENYA_LOGISTICS_HUBS[defaultKey].lng];
+  const q = queryStr.toLowerCase();
+  for (const [key, loc] of Object.entries(KENYA_LOGISTICS_HUBS)) {
+    if (q.includes(key)) return [loc.lat, loc.lng];
+  }
+  return [KENYA_LOGISTICS_HUBS[defaultKey].lat, KENYA_LOGISTICS_HUBS[defaultKey].lng];
+}
+
+function calculateHaversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Earth radius km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const roadTortuosityFactor = 1.25; // Highway winding ratio
+  return Math.max(15, Math.round(R * c * roadTortuosityFactor));
+}
+
+router.post('/logistics/quote', async (req, res) => {
+  try {
+    const { origin, destination, weightKg = 500, vehicleType = 'CANTER', coldChain = false } = req.body;
+
+    const [origLat, origLng] = getHubCoords(origin, 'kirinyaga');
+    const [destLat, destLng] = getHubCoords(destination, 'nairobi');
+    const distanceKm = calculateHaversineKm(origLat, origLng, destLat, destLng);
+
+    // Vehicle specifications & rates
+    const VEHICLE_RATES = {
+      BODA: { name: 'Motorcycle Boda (up to 100 kg)', maxWeight: 100, baseKes: 350, perKmKes: 25, speedKmh: 45 },
+      PICKUP: { name: 'Pick-up / Tuk-tuk (up to 1,200 kg)', maxWeight: 1200, baseKes: 1400, perKmKes: 38, speedKmh: 55 },
+      CANTER: { name: '3.5-Ton Canter Truck', maxWeight: 4000, baseKes: 3500, perKmKes: 55, speedKmh: 50 },
+      LORRY_10T: { name: '10-Ton Commercial Lorry', maxWeight: 10000, baseKes: 7500, perKmKes: 85, speedKmh: 45 },
+      SEMI_28T: { name: '28-Ton Articulated Semi-Trailer', maxWeight: 28000, baseKes: 16000, perKmKes: 140, speedKmh: 40 }
+    };
+
+    const selectedVehicle = VEHICLE_RATES[vehicleType] || VEHICLE_RATES.CANTER;
+    const baseFeeKes = selectedVehicle.baseKes;
+    const mileageFeeKes = Math.round(distanceKm * selectedVehicle.perKmKes);
+    const weightFeeKes = Math.round((parseFloat(weightKg) / 1000) * (distanceKm * 2.5));
+    const coldChainFeeKes = coldChain ? Math.round((baseFeeKes + mileageFeeKes) * 0.22) : 0;
+
+    const totalFeeKes = baseFeeKes + mileageFeeKes + weightFeeKes + coldChainFeeKes;
+    const USD_RATE = 130.0;
+    const totalFeeUsd = parseFloat((totalFeeKes / USD_RATE).toFixed(2));
+
+    const estimatedHours = parseFloat((distanceKm / selectedVehicle.speedKmh + 0.75).toFixed(1));
+
+    res.json({
+      success: true,
+      quote: {
+        origin: origin || 'Kirinyaga Wang’uru Ag-Hub',
+        destination: destination || 'Nairobi Central Wholesale Depot',
+        distanceKm,
+        estimatedHours,
+        cargoWeightKg: parseFloat(weightKg),
+        vehicle: selectedVehicle.name,
+        coldChain,
+        breakdownKes: {
+          baseFee: baseFeeKes,
+          mileageFee: mileageFeeKes,
+          weightFee: weightFeeKes,
+          coldChainFee: coldChainFeeKes,
+          total: totalFeeKes
+        },
+        breakdownUsd: {
+          total: totalFeeUsd,
+          exchangeRate: USD_RATE
+        },
+        recommendedHighway: distanceKm > 100 ? 'A2 / Thika Superhighway Corridor' : 'County Arterial Feeder Road',
+        carbonSavedKg: Math.round(distanceKm * 0.42)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ==========================================
+// 7. PRODUCE AGGREGATION & CHAMA POOLING
+// ==========================================
+let CHAMA_POOLS = [
+  {
+    id: 'pool-1',
+    title: 'Kirinyaga Tomato Farmers Cooperative Pool',
+    cropName: 'Roma Plum Tomatoes (Ranger F1)',
+    category: 'HORTICULTURE',
+    grade: 'GRADE_A',
+    targetVolumeKg: 6000,
+    currentVolumeKg: 4600,
+    unitPriceKes: 95,
+    unitPriceUsd: 0.73,
+    hubLocation: 'Wang’uru Wholesale Depot, Kirinyaga',
+    destinationHub: 'Nairobi Wakulima Marikiti',
+    dispatchDate: new Date(Date.now() + 3 * 86400000).toISOString(),
+    organizerFarmer: 'Mwea Horticulture Sacco Group',
+    contributorsCount: 8,
+    status: 'OPEN',
+    minContributionKg: 100,
+    description: 'Smallholders pooling 8 tons of export-grade tomatoes to split a 10-ton Canter freight fee to Nairobi, saving 35% on transport.'
+  },
+  {
+    id: 'pool-2',
+    title: 'Kinangop High-Altitude Shangi Potato Pool',
+    cropName: 'Shangi Irish Potatoes',
+    category: 'TUBER',
+    grade: 'GRADE_A',
+    targetVolumeKg: 10000,
+    currentVolumeKg: 7800,
+    unitPriceKes: 52,
+    unitPriceUsd: 0.40,
+    hubLocation: 'Engineer Town Center, Nyandarua',
+    destinationHub: 'Mombasa Kongowea Wholesale Hub',
+    dispatchDate: new Date(Date.now() + 5 * 86400000).toISOString(),
+    organizerFarmer: 'Kinangop Potato Growers Sacco',
+    contributorsCount: 14,
+    status: 'OPEN',
+    minContributionKg: 200,
+    description: 'Direct consolidated shipment from farm gate to coastal retail buyers. Inspected for uniform size and low moisture.'
+  },
+  {
+    id: 'pool-3',
+    title: 'Meru Central Hass Avocado Export Consignment',
+    cropName: 'Hass Avocados (Export Quality)',
+    category: 'HORTICULTURE',
+    grade: 'EXPORT_GRADE',
+    targetVolumeKg: 8000,
+    currentVolumeKg: 6400,
+    unitPriceKes: 125,
+    unitPriceUsd: 0.96,
+    hubLocation: 'Nkubu Collection Shed, Meru',
+    destinationHub: 'JKIA Cargo Terminal, Nairobi',
+    dispatchDate: new Date(Date.now() + 4 * 86400000).toISOString(),
+    organizerFarmer: 'Mount Kenya Organic Avocado Chama',
+    contributorsCount: 19,
+    status: 'OPEN',
+    minContributionKg: 150,
+    description: 'Dry matter content certified >23%. Cold-chain refrigerated truck booked for direct packhouse delivery.'
+  },
+  {
+    id: 'pool-4',
+    title: 'Narok Red Bulb Onion Bulk Truckload',
+    cropName: 'Red Bulb Onions',
+    category: 'HORTICULTURE',
+    grade: 'GRADE_A',
+    targetVolumeKg: 5000,
+    currentVolumeKg: 2100,
+    unitPriceKes: 78,
+    unitPriceUsd: 0.60,
+    hubLocation: 'Narok Central Aggregation Shed',
+    destinationHub: 'Nakuru Top Market',
+    dispatchDate: new Date(Date.now() + 6 * 86400000).toISOString(),
+    organizerFarmer: 'Mara Basin Vegetable Collective',
+    contributorsCount: 6,
+    status: 'OPEN',
+    minContributionKg: 100,
+    description: 'Well-cured red creole onions. Pooling to bypass local brokers and deliver directly to supermarket buyers in Nakuru.'
+  }
+];
+
+router.get('/chama/pools', (req, res) => {
+  res.json({ success: true, pools: CHAMA_POOLS });
+});
+
+router.post('/chama/pools', async (req, res) => {
+  try {
+    const { title, cropName, category, grade, targetVolumeKg, unitPriceKes, hubLocation, destinationHub, dispatchDays = 4, organizerFarmer, minContributionKg = 100, description } = req.body;
+
+    if (!title || !cropName || !targetVolumeKg || !unitPriceKes) {
+      return res.status(400).json({ success: false, error: 'Please provide all required Chama pool details' });
+    }
+
+    const newPool = {
+      id: `pool-${Date.now()}`,
+      title,
+      cropName,
+      category: category || 'HORTICULTURE',
+      grade: grade || 'GRADE_A',
+      targetVolumeKg: parseFloat(targetVolumeKg),
+      currentVolumeKg: 0,
+      unitPriceKes: parseFloat(unitPriceKes),
+      unitPriceUsd: parseFloat((parseFloat(unitPriceKes) / 130).toFixed(2)),
+      hubLocation: hubLocation || 'Regional AgriLink Hub',
+      destinationHub: destinationHub || 'Nairobi Central Wholesale Depot',
+      dispatchDate: new Date(Date.now() + parseInt(dispatchDays) * 86400000).toISOString(),
+      organizerFarmer: organizerFarmer || 'Verified Farmer Collective',
+      contributorsCount: 1,
+      status: 'OPEN',
+      minContributionKg: parseFloat(minContributionKg),
+      description: description || 'Smallholder farmer cooperative consignment.'
+    };
+
+    CHAMA_POOLS.unshift(newPool);
+    res.status(201).json({ success: true, pool: newPool });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.post('/chama/pools/:id/contribute', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { farmerId, farmerName, quantityKg, phone } = req.body;
+
+    const pool = CHAMA_POOLS.find(p => p.id === id);
+    if (!pool) return res.status(404).json({ success: false, error: 'Chama pool not found' });
+
+    const qty = parseFloat(quantityKg);
+    if (!qty || qty < (pool.minContributionKg || 50)) {
+      return res.status(400).json({ success: false, error: `Minimum contribution is ${pool.minContributionKg || 50} kg` });
+    }
+
+    pool.currentVolumeKg += qty;
+    pool.contributorsCount += 1;
+    if (pool.currentVolumeKg >= pool.targetVolumeKg) {
+      pool.status = 'FULLY_SUBSCRIBED';
+    }
+
+    if (farmerId) {
+      await prisma.notification.create({
+        data: {
+          userId: farmerId,
+          type: 'CHAMA_CONTRIBUTION',
+          title: `Chama Pool Contribution Confirmed`,
+          message: `Your harvest contribution of ${qty} kg of ${pool.cropName} has been locked into "${pool.title}". Collective dispatch scheduled for ${new Date(pool.dispatchDate).toLocaleDateString()}.`
+        }
+      }).catch(() => {});
+    }
+
+    res.json({
+      success: true,
+      message: `Successfully contributed ${qty} kg to ${pool.title}!`,
+      pool
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ==========================================
+// 8. DUAL CURRENCY & PACKAGING UNITS
+// ==========================================
+router.get('/system/exchange-rates', (req, res) => {
+  res.json({
+    success: true,
+    baseCurrency: 'USD',
+    rates: {
+      KES: 130.0,
+      USD: 1.0,
+      EUR: 0.92,
+      GBP: 0.78
+    },
+    packagingUnits: {
+      kg: { label: 'Per Kilogram (kg)', multiplier: 1.0, icon: 'Scale' },
+      bag50: { label: '50kg Standard Bag', multiplier: 50.0, icon: 'Package' },
+      bag90: { label: '90kg Gunny Bag (Cereals)', multiplier: 90.0, icon: 'Layers' },
+      crate25: { label: 'Wooden Crate (25kg Horticulture)', multiplier: 25.0, icon: 'Box' }
+    }
+  });
+});
+
+// ==========================================
+// 9. AGRONOMY PRODUCTION COST BENCHMARKS
+// ==========================================
+router.get('/agronomy/production-benchmarks', (req, res) => {
+  const CROPS_BENCHMARKS = [
+    {
+      cropKey: 'tomatoes',
+      cropName: 'Tomatoes (Ranger F1 / Anna F1)',
+      category: 'HORTICULTURE',
+      avgYieldKgPerAcre: 8500,
+      costsPerAcreKes: {
+        seedsAndSeedlings: 14000,
+        landPreparation: 8500,
+        plantingFertilizer: 22000,
+        topdressingFertilizer: 14000,
+        fungicidesAndPesticides: 18500,
+        irrigationAndFuel: 16000,
+        laborWeedingHarvesting: 24000
+      },
+      currentMarketKesPerKg: 115,
+      profitabilityTip: 'Using drip lines and copper fungicides for blight saves 30% on spraying and boosts marketable fruit yield by 2.5 tons.'
+    },
+    {
+      cropKey: 'onions',
+      cropName: 'Red Bulb Onions (Red Creole)',
+      category: 'HORTICULTURE',
+      avgYieldKgPerAcre: 9000,
+      costsPerAcreKes: {
+        seedsAndSeedlings: 18000,
+        landPreparation: 7500,
+        plantingFertilizer: 19000,
+        topdressingFertilizer: 12500,
+        fungicidesAndPesticides: 13000,
+        irrigationAndFuel: 14000,
+        laborWeedingHarvesting: 19500
+      },
+      currentMarketKesPerKg: 88,
+      profitabilityTip: 'Proper 2-week field curing before bagging prevents neck rot and increases shelf life in transit by 6 weeks.'
+    },
+    {
+      cropKey: 'potatoes',
+      cropName: 'Shangi Irish Potatoes',
+      category: 'TUBER',
+      avgYieldKgPerAcre: 12000,
+      costsPerAcreKes: {
+        seedsAndSeedlings: 36000,
+        landPreparation: 9000,
+        plantingFertilizer: 24000,
+        topdressingFertilizer: 15000,
+        fungicidesAndPesticides: 14500,
+        irrigationAndFuel: 6000,
+        laborWeedingHarvesting: 18000
+      },
+      currentMarketKesPerKg: 64, // ~KES 3,200 per 50kg bag
+      profitabilityTip: 'Planting certified Apical Root Cuttings (ARC) doubles yield and avoids bacterial wilt in subsequent ratoon crops.'
+    },
+    {
+      cropKey: 'maize',
+      cropName: 'White Maize (Dry Grain)',
+      category: 'CEREAL',
+      avgYieldKgPerAcre: 3200, // ~35 bags (90kg)
+      costsPerAcreKes: {
+        seedsAndSeedlings: 5500,
+        landPreparation: 6000,
+        plantingFertilizer: 14000,
+        topdressingFertilizer: 11000,
+        fungicidesAndPesticides: 4500,
+        irrigationAndFuel: 0,
+        laborWeedingHarvesting: 11000
+      },
+      currentMarketKesPerKg: 45, // ~KES 4,100 per 90kg bag
+      profitabilityTip: 'Targeting moisture content below 13.5% with hermetic bags eliminates weevil damage and qualifies for NCPB warehouse receipts.'
+    },
+    {
+      cropKey: 'avocado',
+      cropName: 'Hass Avocado (Export Grade A)',
+      category: 'HORTICULTURE',
+      avgYieldKgPerAcre: 5500,
+      costsPerAcreKes: {
+        seedsAndSeedlings: 24000, // Grafted seedlings
+        landPreparation: 10000,
+        plantingFertilizer: 16000,
+        topdressingFertilizer: 10000,
+        fungicidesAndPesticides: 8000,
+        irrigationAndFuel: 9000,
+        laborWeedingHarvesting: 15000
+      },
+      currentMarketKesPerKg: 140,
+      profitabilityTip: 'Harvesting during the early window (March–May) before Peru floods European markets secures top wholesale prices.'
+    },
+    {
+      cropKey: 'cabbage',
+      cropName: 'Cabbages (Gloria F1)',
+      category: 'HORTICULTURE',
+      avgYieldKgPerAcre: 16000,
+      costsPerAcreKes: {
+        seedsAndSeedlings: 6500,
+        landPreparation: 6000,
+        plantingFertilizer: 17000,
+        topdressingFertilizer: 11000,
+        fungicidesAndPesticides: 9000,
+        irrigationAndFuel: 8000,
+        laborWeedingHarvesting: 13500
+      },
+      currentMarketKesPerKg: 28,
+      profitabilityTip: 'Staggered planting every 3 weeks prevents seasonal glut and ensures steady weekly cash flow.'
+    }
+  ];
+
+  res.json({ success: true, benchmarks: CROPS_BENCHMARKS });
+});
+
+// ==========================================
+// 10. SMS & EMAIL ALERT SUBSCRIPTIONS
+// ==========================================
+let ALERT_SUBSCRIPTIONS = [
+  {
+    id: 'alt-1',
+    userId: 'demo-buyer',
+    cropName: 'Tomatoes',
+    alertType: 'PRICE_DROP',
+    targetPriceKes: 90,
+    channel: 'SMS',
+    phone: '+254712345678',
+    email: 'buyer@agrilink.co.ke',
+    active: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'alt-2',
+    userId: 'demo-buyer',
+    cropName: 'Hass Avocados',
+    alertType: 'NEW_HARVEST',
+    targetPriceKes: 130,
+    channel: 'WHATSAPP',
+    phone: '+254712345678',
+    email: 'buyer@agrilink.co.ke',
+    active: true,
+    createdAt: new Date().toISOString()
+  }
+];
+
+// Helper: Notify matching alert subscribers when new harvest is posted
+async function notifySubscribersOnNewListing(listing) {
+  try {
+    const matching = ALERT_SUBSCRIPTIONS.filter(sub => 
+      sub.active && 
+      listing.cropName.toLowerCase().includes(sub.cropName.toLowerCase())
+    );
+
+    for (const sub of matching) {
+      if (sub.userId) {
+        await prisma.notification.create({
+          data: {
+            userId: sub.userId,
+            type: 'HARVEST_ALERT',
+            title: `🔔 Alert Triggered: Fresh ${listing.cropName} Listed!`,
+            message: `A new harvest of ${listing.cropName} (${listing.availableQty} kg) was listed at KES ${Math.round(listing.unitPrice * 130)}/kg ($${listing.unitPrice.toFixed(2)}) in ${listing.location}. Sent via ${sub.channel}.`
+          }
+        }).catch(() => {});
+      }
+    }
+  } catch (err) {
+    console.warn('Alert notification error:', err);
+  }
+}
+
+router.get('/alerts', (req, res) => {
+  const { userId } = req.query;
+  const userAlerts = userId ? ALERT_SUBSCRIPTIONS.filter(a => a.userId === userId) : ALERT_SUBSCRIPTIONS;
+  res.json({ success: true, alerts: userAlerts });
+});
+
+router.post('/alerts/subscribe', async (req, res) => {
+  try {
+    const { userId, cropName, alertType = 'PRICE_DROP', targetPriceKes, channel = 'SMS', phone, email } = req.body;
+
+    if (!cropName) {
+      return res.status(400).json({ success: false, error: 'Crop name is required for alerts' });
+    }
+
+    const newAlert = {
+      id: `alt-${Date.now()}`,
+      userId: userId || 'anonymous',
+      cropName: cropName.trim(),
+      alertType,
+      targetPriceKes: targetPriceKes ? parseFloat(targetPriceKes) : null,
+      channel,
+      phone: phone || '+254700000000',
+      email: email || '',
+      active: true,
+      createdAt: new Date().toISOString()
+    };
+
+    ALERT_SUBSCRIPTIONS.unshift(newAlert);
+
+    if (userId) {
+      await prisma.notification.create({
+        data: {
+          userId,
+          type: 'ALERT_CREATED',
+          title: `🔔 Alert Activated: ${newAlert.cropName}`,
+          message: `You will receive instant ${channel} updates when ${newAlert.cropName} prices drop or new harvests are listed.`
+        }
+      }).catch(() => {});
+    }
+
+    res.status(201).json({
+      success: true,
+      message: `Alert subscription for ${newAlert.cropName} activated via ${channel}!`,
+      alert: newAlert
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.delete('/alerts/:id', (req, res) => {
+  const { id } = req.params;
+  ALERT_SUBSCRIPTIONS = ALERT_SUBSCRIPTIONS.filter(a => a.id !== id);
+  res.json({ success: true, message: 'Alert subscription cancelled successfully' });
+});
+
 export default router;
+

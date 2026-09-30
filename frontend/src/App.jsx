@@ -53,11 +53,19 @@ import KilimoWeatherAdvisory from './components/KilimoWeatherAdvisory';
 import MakeOfferModal from './components/MakeOfferModal';
 import DisputeModal from './components/DisputeModal';
 import DriverLiveMap from './components/DriverLiveMap';
+import { CurrencyUnitProvider, CurrencyUnitBar, useCurrency, USD_TO_KES } from './components/CurrencyUnitContext';
+import FreightCalculatorModal from './components/FreightCalculatorModal';
+import ChamaAggregationModal from './components/ChamaAggregationModal';
+import FarmerProfitCalculatorModal from './components/FarmerProfitCalculatorModal';
+import AlertsSubscriptionModal from './components/AlertsSubscriptionModal';
+
 
 const API_BASE = '/api';
 
 function MainApp() {
   const { user, token, logout, refreshUser } = useAuth();
+  const { formatMoney, currency } = useCurrency();
+
 
   // Admin login is accessible ONLY via secret URL: /?admin=1
   // It is not linked from anywhere in the regular user interface.
@@ -102,6 +110,16 @@ function MainApp() {
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [negotiatingListing, setNegotiatingListing] = useState(null);
   const [disputingOrder, setDisputingOrder] = useState(null);
+
+  // New Feature Modals State
+  const [showFreightCalculator, setShowFreightCalculator] = useState(false);
+  const [showChamaAggregation, setShowChamaAggregation] = useState(false);
+  const [showProfitCalculator, setShowProfitCalculator] = useState(false);
+  const [showAlertsModal, setShowAlertsModal] = useState(false);
+  const [alertsDefaultCrop, setAlertsDefaultCrop] = useState('Tomatoes');
+  const [freightOrigin, setFreightOrigin] = useState('');
+  const [freightDestination, setFreightDestination] = useState('Nairobi Central Wholesale Depot');
+
 
   // Farmer New Listing Form State
   const [newListing, setNewListing] = useState({
@@ -571,7 +589,8 @@ function MainApp() {
                   title="Your Available Wallet Balance"
                 >
                   <Wallet className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span className="font-mono">${(user.walletBalance || 0).toFixed(2)}</span>
+                  <span className="font-mono">{formatMoney(user.walletBalance || 0)}</span>
+
                 </div>
 
                 <div className="flex items-center gap-1">
@@ -713,9 +732,49 @@ function MainApp() {
                 </button>
               </>
             )}
+
+            {/* Spacer to push feature tools to the right */}
+            <div className="flex-1" />
+
+            {/* Quick-Access Feature Tool Buttons (always visible) */}
+            <button
+              type="button"
+              onClick={() => setShowFreightCalculator(true)}
+              title="Instant Freight & Mileage Calculator"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-amber-50 hover:text-amber-800 border border-transparent hover:border-amber-200 transition-all"
+            >
+              <Truck className="w-3.5 h-3.5 text-amber-600" />
+              <span className="hidden md:inline">Freight Quote</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowChamaAggregation(true)}
+              title="Chama / Cooperative Produce Pooling"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-purple-50 hover:text-purple-800 border border-transparent hover:border-purple-200 transition-all"
+            >
+              <Handshake className="w-3.5 h-3.5 text-purple-600" />
+              <span className="hidden md:inline">Chama Pool</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowAlertsModal(true)}
+              title="Set Price Drop & Harvest SMS / WhatsApp Alerts"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-sky-50 hover:text-sky-800 border border-transparent hover:border-sky-200 transition-all"
+            >
+              <Bell className="w-3.5 h-3.5 text-sky-600" />
+              <span className="hidden md:inline">Alerts</span>
+            </button>
+
+            {/* KES/USD & Packaging Unit Switcher */}
+            <div className="ml-1 pl-2 border-l border-slate-200">
+              <CurrencyUnitBar />
+            </div>
           </div>
         </div>
       </header>
+
 
       {/* Email Verification Banner */}
       <EmailVerificationBanner />
@@ -851,10 +910,23 @@ function MainApp() {
                     <div>
                       <div className="flex justify-between items-start">
                         <h3 className="font-bold text-base text-slate-900">{item.cropName}</h3>
-                        <p className="text-base font-extrabold text-emerald-600">
-                          ${item.unitPrice.toFixed(2)} <span className="text-[10px] text-slate-400 font-normal">/ kg</span>
-                        </p>
+                        <div className="text-right">
+                          <p className="text-base font-extrabold text-emerald-600">
+                            {(() => {
+                              const { formatUnitRate } = window.__currencyCtx || { formatUnitRate: () => ({ amount: `$${item.unitPrice.toFixed(2)}`, suffix: '/ kg' }) };
+                              // We use formatMoney-equivalent inline since context is at module level
+                              if (currency === 'KES') {
+                                return <><span>KES {Math.round(item.unitPrice * 130).toLocaleString()}</span><span className="text-[10px] text-slate-400 font-normal"> / kg</span></>;
+                              }
+                              return <><span>${item.unitPrice.toFixed(2)}</span><span className="text-[10px] text-slate-400 font-normal"> / kg</span></>;
+                            })()}
+                          </p>
+                          {currency === 'KES' && (
+                            <span className="text-[10px] text-slate-400">${item.unitPrice.toFixed(2)} / kg</span>
+                          )}
+                        </div>
                       </div>
+
 
                       <div className="mt-3 space-y-1 text-xs text-slate-600">
                         <p className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-slate-400" /> {item.location}</p>
@@ -878,6 +950,32 @@ function MainApp() {
                       </div>
 
                       <div className="flex items-center gap-1.5">
+                        {/* Set Price Alert Bell Button */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAlertsDefaultCrop(item.cropName);
+                            setShowAlertsModal(true);
+                          }}
+                          className="p-2 rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-700 transition-colors"
+                          title={`Set SMS/WhatsApp alert for ${item.cropName}`}
+                        >
+                          <Bell className="w-3.5 h-3.5" />
+                        </button>
+
+                        {/* Freight Quote Button */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFreightOrigin(item.location || '');
+                            setShowFreightCalculator(true);
+                          }}
+                          className="p-2 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 transition-colors"
+                          title="Calculate transport cost for this produce"
+                        >
+                          <Truck className="w-3.5 h-3.5" />
+                        </button>
+
                         <button
                           type="button"
                           onClick={() => setNegotiatingListing(item)}
@@ -899,6 +997,7 @@ function MainApp() {
                           Order with Escrow
                         </button>
                       </div>
+
                     </div>
                   </div>
                 </div>
@@ -1140,12 +1239,29 @@ function MainApp() {
                   )}
                 </div>
 
+                {/* Agronomy Profit Calculator Quick Launch */}
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold text-emerald-900">💡 Not sure what price to set?</p>
+                    <p className="text-[11px] text-emerald-700">Use the Break-Even Calculator to find your fair minimum selling price</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowProfitCalculator(true)}
+                    className="ml-2 shrink-0 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-sm transition-colors flex items-center gap-1"
+                  >
+                    <Scale className="w-3.5 h-3.5" />
+                    <span>Calculate</span>
+                  </button>
+                </div>
+
                 <button
                   type="submit"
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-xs mt-2 transition-colors"
                 >
                   Publish to B2B Catalog
                 </button>
+
               </form>
             </div>
 
@@ -1904,6 +2020,47 @@ function MainApp() {
           loadRoleData();
         }}
       />
+
+      {/* ========================================================= */}
+      {/* 🚚 INSTANT FREIGHT & MILEAGE CALCULATOR MODAL            */}
+      {/* ========================================================= */}
+      <FreightCalculatorModal
+        isOpen={showFreightCalculator}
+        onClose={() => setShowFreightCalculator(false)}
+        defaultOrigin={freightOrigin}
+        defaultDestination={freightDestination}
+      />
+
+      {/* ========================================================= */}
+      {/* 👥 PRODUCE AGGREGATION & CHAMA COOPERATIVE POOLING       */}
+      {/* ========================================================= */}
+      <ChamaAggregationModal
+        isOpen={showChamaAggregation}
+        onClose={() => setShowChamaAggregation(false)}
+        user={user}
+      />
+
+      {/* ========================================================= */}
+      {/* 🧮 FARMER BREAK-EVEN & PROFIT MARGIN CALCULATOR          */}
+      {/* ========================================================= */}
+      <FarmerProfitCalculatorModal
+        isOpen={showProfitCalculator}
+        onClose={() => setShowProfitCalculator(false)}
+        onApplyPriceToListing={({ unitPrice }) => {
+          setNewListing(prev => ({ ...prev, unitPrice: unitPrice.toFixed(2) }));
+          showNotification(`✅ Recommended price applied: $${unitPrice.toFixed(2)}/kg`);
+        }}
+      />
+
+      {/* ========================================================= */}
+      {/* 🔔 SMS & WHATSAPP PRICE/HARVEST ALERT SUBSCRIPTIONS      */}
+      {/* ========================================================= */}
+      <AlertsSubscriptionModal
+        isOpen={showAlertsModal}
+        onClose={() => setShowAlertsModal(false)}
+        user={user}
+        defaultCrop={alertsDefaultCrop}
+      />
     </div>
   );
 }
@@ -1911,7 +2068,10 @@ function MainApp() {
 export default function App() {
   return (
     <AuthProvider>
-      <MainApp />
+      <CurrencyUnitProvider>
+        <MainApp />
+      </CurrencyUnitProvider>
     </AuthProvider>
   );
 }
+
