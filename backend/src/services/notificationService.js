@@ -73,28 +73,83 @@ export function sanitizePhone(phone) {
  * Send 6-digit Email Verification OTP
  */
 export async function sendVerificationEmail(email, code, userName = 'Valued Partner') {
-  const subject = `AgriLink Security: Your Email Verification Code is ${code}`;
+  const subject = `🔐 AgriLink Security: ${code} is your Account Verification Code`;
+  const text = `AgriLink Security Verification Code: ${code}\n\nHello ${userName},\n\nUse this 6-digit code to verify your AgriLink account: ${code}\nThis code expires in 15 minutes. Never share this code with anyone.\n\n© 2026 AgriLink Agribusiness SCM Platform`;
+  
   const html = `
-    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-      <div style="background: linear-gradient(135deg, #15803d, #166534); padding: 24px; text-align: center; color: #ffffff;">
-        <h1 style="margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">AgriLink</h1>
-        <p style="margin: 4px 0 0; font-size: 13px; opacity: 0.9;">Integrated B2B Agribusiness SCM Platform</p>
-      </div>
-      <div style="padding: 32px 24px; color: #1e293b;">
-        <h2 style="font-size: 18px; margin-top: 0; color: #0f172a;">Verify Your Email Address</h2>
-        <p style="font-size: 14px; line-height: 1.6; color: #475569;">Hello <strong>${userName}</strong>,</p>
-        <p style="font-size: 14px; line-height: 1.6; color: #475569;">Thank you for registering on AgriLink. Please use the 6-digit verification code below to verify your email address and activate your verified badge:</p>
-        <div style="text-align: center; margin: 28px 0;">
-          <div style="display: inline-block; padding: 14px 28px; background-color: #f0fdf4; border: 2px dashed #22c55e; border-radius: 8px; font-size: 28px; font-family: monospace; font-weight: bold; letter-spacing: 6px; color: #15803d;">
-            ${code}
-          </div>
-        </div>
-        <p style="font-size: 12px; color: #94a3b8; line-height: 1.5;">This code will expire in 15 minutes. If you did not create an account on AgriLink, please disregard this email.</p>
-      </div>
-      <div style="background-color: #f8fafc; padding: 16px 24px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 11px; color: #64748b;">
-        © 2026 AgriLink Agribusiness SCM Platform. All rights reserved.
-      </div>
-    </div>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Verify Your AgriLink Account</title>
+    </head>
+    <body style="margin: 0; padding: 24px 12px; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 580px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+        <!-- Top Branded Banner -->
+        <tr>
+          <td style="background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #022c22 100%); padding: 32px 28px; text-align: center;">
+            <div style="display: inline-block; padding: 6px 16px; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 9999px; margin-bottom: 12px;">
+              <span style="color: #6ee7b7; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;">Official Security Portal</span>
+            </div>
+            <h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">Agri<span style="color: #34d399;">Link</span></h1>
+            <p style="margin: 6px 0 0; color: #a7f3d0; font-size: 13px; font-weight: 500;">Direct B2B Agribusiness SCM & Safaricom Daraja Escrow</p>
+          </td>
+        </tr>
+
+        <!-- Main Body Content -->
+        <tr>
+          <td style="padding: 36px 32px; color: #1e293b;">
+            <h2 style="margin: 0 0 16px; font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: -0.3px;">
+              Verify Your Email Address
+            </h2>
+            <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.6; color: #475569;">
+              Hello <strong style="color: #0f172a;">${userName}</strong>,
+            </p>
+            <p style="margin: 0 0 24px; font-size: 14px; line-height: 1.6; color: #475569;">
+              Thank you for registering on AgriLink. To finalize your account setup and activate your verified badge, enter this 6-digit one-time authorization code:
+            </p>
+
+            <!-- OTP Code Display Card -->
+            <div style="margin: 28px 0; padding: 24px; background: #f0fdf4; border: 2px dashed #10b981; border-radius: 14px; text-align: center;">
+              <span style="display: block; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: #065f46; margin-bottom: 8px;">
+                Your One-Time Passcode (OTP)
+              </span>
+              <div style="font-family: 'SF Mono', Monaco, 'Courier New', Courier, monospace; font-size: 36px; font-weight: 900; letter-spacing: 10px; color: #047857; padding: 4px 0;">
+                ${code}
+              </div>
+              <span style="display: block; font-size: 11px; color: #059669; margin-top: 8px; font-weight: 600;">
+                ⏱ Valid for 15 minutes • Single-use only
+              </span>
+            </div>
+
+            <!-- Security Advisory Strip -->
+            <div style="background-color: #f8fafc; border-left: 4px solid #059669; padding: 14px 16px; border-radius: 0 8px 8px 0; margin-bottom: 24px;">
+              <p style="margin: 0; font-size: 12px; color: #334155; line-height: 1.5;">
+                <strong style="color: #0f172a;">Security Advisory:</strong> AgriLink support agents will never call or message asking for your password, M-Pesa PIN, or this OTP code.
+              </p>
+            </div>
+
+            <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #64748b;">
+              If you did not initiate this registration request, please disregard this email or contact security at <a href="mailto:agrilink287@gmail.com" style="color: #059669; text-decoration: none; font-weight: bold;">agrilink287@gmail.com</a>.
+            </p>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="background-color: #f1f5f9; padding: 20px 32px; border-top: 1px solid #e2e8f0; text-align: center;">
+            <p style="margin: 0 0 6px; font-size: 12px; font-weight: 700; color: #475569;">
+              AgriLink B2B Agribusiness SCM Platform
+            </p>
+            <p style="margin: 0; font-size: 11px; color: #94a3b8; line-height: 1.4;">
+              Nairobi, Kenya • Automated Notification Dispatcher • Ref: ${Math.random().toString(36).substring(2, 9).toUpperCase()}
+            </p>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
   `;
 
   console.log(`\n======================================================`);
@@ -109,6 +164,7 @@ export async function sendVerificationEmail(email, code, userName = 'Valued Part
         from: getSenderAddress(),
         to: email,
         subject,
+        text,
         html
       });
       console.log(`✓ Verification email sent via Google Mailer! Message ID: ${info.messageId}`);
@@ -125,28 +181,78 @@ export async function sendVerificationEmail(email, code, userName = 'Valued Part
  * Send 6-digit Password Reset OTP
  */
 export async function sendPasswordResetEmail(email, code, userName = 'Valued Partner') {
-  const subject = `AgriLink Password Reset: Your Security Code is ${code}`;
+  const subject = `🔒 AgriLink Security: ${code} is your Password Recovery Code`;
+  const text = `AgriLink Password Recovery Code: ${code}\n\nHello ${userName},\n\nUse this 6-digit code to reset your AgriLink password: ${code}\nValid for 15 minutes. If you did not request this, secure your account immediately.\n\n© 2026 AgriLink Agribusiness SCM Platform`;
+  
   const html = `
-    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-      <div style="background: linear-gradient(135deg, #0f172a, #1e293b); padding: 24px; text-align: center; color: #ffffff;">
-        <h1 style="margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">Agri<span style="color: #4ade80;">Link</span></h1>
-        <p style="margin: 4px 0 0; font-size: 13px; opacity: 0.9;">Account Security & Credential Recovery</p>
-      </div>
-      <div style="padding: 32px 24px; color: #1e293b;">
-        <h2 style="font-size: 18px; margin-top: 0; color: #0f172a;">Password Reset Request</h2>
-        <p style="font-size: 14px; line-height: 1.6; color: #475569;">Hello <strong>${userName}</strong>,</p>
-        <p style="font-size: 14px; line-height: 1.6; color: #475569;">We received a request to reset the password for your AgriLink account. Use the 6-digit authorization code below to choose a new password:</p>
-        <div style="text-align: center; margin: 28px 0;">
-          <div style="display: inline-block; padding: 14px 28px; background-color: #fef2f2; border: 2px dashed #ef4444; border-radius: 8px; font-size: 28px; font-family: monospace; font-weight: bold; letter-spacing: 6px; color: #b91c1c;">
-            ${code}
-          </div>
-        </div>
-        <p style="font-size: 12px; color: #94a3b8; line-height: 1.5;">This password reset code is valid for 15 minutes. If you did not request a password reset, please secure your account immediately.</p>
-      </div>
-      <div style="background-color: #f8fafc; padding: 16px 24px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 11px; color: #64748b;">
-        © 2026 AgriLink Agribusiness SCM Platform. All rights reserved.
-      </div>
-    </div>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Password Recovery</title>
+    </head>
+    <body style="margin: 0; padding: 24px 12px; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 580px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+        <!-- Top Branded Banner -->
+        <tr>
+          <td style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #020617 100%); padding: 32px 28px; text-align: center;">
+            <div style="display: inline-block; padding: 6px 16px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 9999px; margin-bottom: 12px;">
+              <span style="color: #fca5a5; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;">Credential Recovery</span>
+            </div>
+            <h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">Agri<span style="color: #4ade80;">Link</span></h1>
+            <p style="margin: 6px 0 0; color: #cbd5e1; font-size: 13px;">Security & Password Authorization Center</p>
+          </td>
+        </tr>
+
+        <!-- Main Body Content -->
+        <tr>
+          <td style="padding: 36px 32px; color: #1e293b;">
+            <h2 style="margin: 0 0 16px; font-size: 20px; font-weight: 800; color: #0f172a;">
+              Password Reset Request
+            </h2>
+            <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.6; color: #475569;">
+              Hello <strong style="color: #0f172a;">${userName}</strong>,
+            </p>
+            <p style="margin: 0 0 24px; font-size: 14px; line-height: 1.6; color: #475569;">
+              We received an authorization request to reset the password for your AgriLink account associated with <strong style="color: #0f172a;">${email}</strong>. Use the 6-digit security code below to establish a new password:
+            </p>
+
+            <!-- Reset Code Card -->
+            <div style="margin: 28px 0; padding: 24px; background: #fef2f2; border: 2px dashed #ef4444; border-radius: 14px; text-align: center;">
+              <span style="display: block; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: #991b1b; margin-bottom: 8px;">
+                Password Reset Security Code
+              </span>
+              <div style="font-family: 'SF Mono', Monaco, 'Courier New', Courier, monospace; font-size: 36px; font-weight: 900; letter-spacing: 10px; color: #b91c1c; padding: 4px 0;">
+                ${code}
+              </div>
+              <span style="display: block; font-size: 11px; color: #dc2626; margin-top: 8px; font-weight: 600;">
+                ⏱ Expires in 15 minutes
+              </span>
+            </div>
+
+            <div style="background-color: #fff7ed; border-left: 4px solid #f97316; padding: 14px 16px; border-radius: 0 8px 8px 0; margin-bottom: 24px;">
+              <p style="margin: 0; font-size: 12px; color: #9a3412; line-height: 1.5;">
+                <strong>Did not request this?</strong> If you did not ask to reset your password, someone may have entered your email address by mistake. Your account remains secure and no changes have been made.
+              </p>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="background-color: #f1f5f9; padding: 20px 32px; border-top: 1px solid #e2e8f0; text-align: center;">
+            <p style="margin: 0 0 6px; font-size: 12px; font-weight: 700; color: #475569;">
+              AgriLink Agribusiness SCM Platform
+            </p>
+            <p style="margin: 0; font-size: 11px; color: #94a3b8;">
+              Ref: PWD-${Math.random().toString(36).substring(2, 9).toUpperCase()}
+            </p>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
   `;
 
   console.log(`\n======================================================`);
@@ -161,6 +267,7 @@ export async function sendPasswordResetEmail(email, code, userName = 'Valued Par
         from: getSenderAddress(),
         to: email,
         subject,
+        text,
         html
       });
       console.log(`✓ Password reset email sent via Google Mailer! Message ID: ${info.messageId}`);
@@ -182,27 +289,32 @@ export async function sendDisbursementNotification({ order, settlement, buyer, f
   const quantity = cropItem.quantity || 0;
   const orderNumber = order.orderNumber;
   const totalAmount = order.grandTotal.toFixed(2);
+  const totalAmountKes = Math.round(order.grandTotal * 130).toLocaleString();
   const farmerPayout = settlement.farmerPayout.toFixed(2);
+  const farmerPayoutKes = Math.round(settlement.farmerPayout * 130).toLocaleString();
   const transporterPayout = settlement.transporterPayout.toFixed(2);
+  const transporterPayoutKes = Math.round(settlement.transporterPayout * 130).toLocaleString();
   const platformFee = settlement.platformFee.toFixed(2);
+  const platformFeeKes = Math.round(settlement.platformFee * 130).toLocaleString();
 
   // 1. Text for SMS & WhatsApp
-  const smsMessage = `AgriLink ESCROW DISBURSED: Order #${orderNumber} (${quantity}kg ${cropName}) delivery confirmed. Farmer received $${farmerPayout}. Driver received $${transporterPayout}. Receipt: agrilink.co.ke/receipt/${order.id}`;
+  const smsMessage = `AgriLink ESCROW DISBURSED: Order #${orderNumber} (${quantity}kg ${cropName}) delivery confirmed. Farmer received KES ${farmerPayoutKes} ($${farmerPayout}). Driver received KES ${transporterPayoutKes} ($${transporterPayout}). Delivery OTP verified.`;
 
-  const whatsappMessage = `*AGRILINK OFFICIAL DISBURSEMENT RECEIPT*\n` +
+  const whatsappMessage = `*AGRILINK OFFICIAL DISBURSEMENT CERTIFICATE*\n` +
     `---------------------------------------\n` +
-    `*Order Number:* ${orderNumber}\n` +
-    `*Status:* COMPLETED & SETTLED (ESCROW RELEASED)\n` +
-    `*Produce:* ${quantity} kg of ${cropName}\n` +
-    `*Delivery To:* ${order.deliveryAddress}\n` +
+    `*Order Number:* #${orderNumber}\n` +
+    `*Status:* COMPLETED & ATOMICALLY SETTLED\n` +
+    `*Produce Item:* ${quantity} kg of ${cropName}\n` +
+    `*Delivery Hub:* ${order.deliveryAddress}\n` +
     `---------------------------------------\n` +
-    `*Total Escrow Held:* $${totalAmount}\n` +
-    `• Farmer Payout (${farmer?.name || 'Producer'}): $${farmerPayout}\n` +
-    `• Freight Payout (${transporterUser?.name || 'Driver'}): $${transporterPayout}\n` +
-    `• Platform SCM Fee (5%): $${platformFee}\n` +
+    `*Total Escrow Released:* KES ${totalAmountKes} ($${totalAmount})\n` +
+    `• Farmer Settlement (${farmer?.name || 'Producer'}): KES ${farmerPayoutKes} ($${farmerPayout})\n` +
+    `• Logistics Freight Fee (${transporterUser?.name || 'Driver'}): KES ${transporterPayoutKes} ($${transporterPayout})\n` +
+    `• SCM Platform Fee (5%): KES ${platformFeeKes} ($${platformFee})\n` +
     `---------------------------------------\n` +
-    `Verified via 4-Digit Delivery OTP. Funds disbursed to registered M-Pesa accounts.\n` +
-    `Thank you for using AgriLink!`;
+    `✓ Verified via Physical Delivery Inspection OTP.\n` +
+    `✓ Funds released directly to recipient accounts.\n` +
+    `Thank you for trusting AgriLink!`;
 
   // WhatsApp click-to-chat links
   const buyerWhatsAppLink = buyer?.phone
@@ -215,57 +327,73 @@ export async function sendDisbursementNotification({ order, settlement, buyer, f
 
   // 2. HTML Email Receipt for Buyer
   const buyerHtmlReceipt = `
-    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-      <div style="background: linear-gradient(135deg, #15803d, #0f172a); padding: 24px; text-align: center; color: #ffffff;">
-        <span style="display: inline-block; padding: 4px 12px; background: rgba(34,197,94,0.25); border: 1px solid #4ade80; border-radius: 100px; font-size: 11px; font-weight: bold; text-transform: uppercase;">
-          Settlement Confirmed
-        </span>
-        <h1 style="margin: 8px 0 0; font-size: 22px; font-weight: 800;">Official Escrow Disbursement Receipt</h1>
-        <p style="margin: 4px 0 0; font-size: 12px; opacity: 0.85;">Order #${orderNumber}</p>
-      </div>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <title>Official Escrow Disbursement Receipt</title>
+    </head>
+    <body style="margin: 0; padding: 24px 12px; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+        <tr>
+          <td style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); padding: 32px; text-align: center; color: #ffffff;">
+            <div style="display: inline-block; padding: 6px 14px; background: rgba(52, 211, 153, 0.2); border: 1px solid #34d399; border-radius: 9999px; margin-bottom: 12px;">
+              <span style="color: #6ee7b7; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">✓ Escrow Settled & Disbursed</span>
+            </div>
+            <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #ffffff;">Official Escrow Settlement Receipt</h1>
+            <p style="margin: 6px 0 0; font-size: 13px; color: #94a3b8; font-family: monospace;">Order #${orderNumber}</p>
+          </td>
+        </tr>
 
-      <div style="padding: 24px; color: #1e293b;">
-        <p style="font-size: 14px; margin-top: 0;">Dear <strong>${buyer?.name || 'Customer'}</strong>,</p>
-        <p style="font-size: 13px; line-height: 1.6; color: #475569;">
-          Physical inspection of your order has been verified via the driver OTP. The escrow funds have been atomically disbursed to the producer and logistics provider.
-        </p>
+        <tr>
+          <td style="padding: 32px; color: #1e293b;">
+            <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.6;">
+              Dear <strong>${buyer?.name || 'Customer'}</strong>,
+            </p>
+            <p style="margin: 0 0 24px; font-size: 13px; line-height: 1.6; color: #475569;">
+              Physical quality inspection for Order <strong>#${orderNumber}</strong> was completed and authenticated via the driver delivery OTP. The escrow deposit has been automatically and atomically disbursed to the agricultural producer and logistics contractor.
+            </p>
 
-        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 20px 0;">
-          <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-            <tr>
-              <td style="padding: 6px 0; color: #64748b;">Produce Item:</td>
-              <td style="padding: 6px 0; text-align: right; font-weight: bold; color: #0f172a;">${cropName} (${quantity} kg)</td>
-            </tr>
-            <tr>
-              <td style="padding: 6px 0; color: #64748b;">Farmer Payout:</td>
-              <td style="padding: 6px 0; text-align: right; font-weight: bold; color: #15803d;">$${farmerPayout}</td>
-            </tr>
-            <tr>
-              <td style="padding: 6px 0; color: #64748b;">Logistics Freight Fee:</td>
-              <td style="padding: 6px 0; text-align: right; font-weight: bold; color: #0f172a;">$${transporterPayout}</td>
-            </tr>
-            <tr>
-              <td style="padding: 6px 0; color: #64748b;">Platform SCM Commission (5%):</td>
-              <td style="padding: 6px 0; text-align: right; font-weight: bold; color: #0f172a;">$${platformFee}</td>
-            </tr>
-            <tr style="border-top: 1px solid #cbd5e1;">
-              <td style="padding: 10px 0 0; font-weight: bold; font-size: 14px;">Total Escrow Released:</td>
-              <td style="padding: 10px 0 0; text-align: right; font-weight: bold; font-size: 16px; color: #15803d;">$${totalAmount}</td>
-            </tr>
-          </table>
-        </div>
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; font-size: 13px; margin-bottom: 24px;">
+              <tr>
+                <td style="padding: 8px 0; color: #64748b;">Produce Consignment:</td>
+                <td style="padding: 8px 0; text-align: right; font-weight: 800; color: #0f172a;">${quantity} kg of ${cropName}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #64748b;">Farmer Net Payout:</td>
+                <td style="padding: 8px 0; text-align: right; font-weight: 800; color: #059669;">KES ${farmerPayoutKes} ($${farmerPayout})</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #64748b;">Freight Logistics Fee:</td>
+                <td style="padding: 8px 0; text-align: right; font-weight: 800; color: #0f172a;">KES ${transporterPayoutKes} ($${transporterPayout})</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #64748b;">Platform SCM Fee (5%):</td>
+                <td style="padding: 8px 0; text-align: right; font-weight: 800; color: #0f172a;">KES ${platformFeeKes} ($${platformFee})</td>
+              </tr>
+              <tr style="border-top: 2px solid #e2e8f0;">
+                <td style="padding: 14px 0 0; font-size: 15px; font-weight: 900; color: #0f172a;">Total Escrow Released:</td>
+                <td style="padding: 14px 0 0; text-align: right; font-size: 16px; font-weight: 900; color: #059669;">KES ${totalAmountKes} ($${totalAmount})</td>
+              </tr>
+            </table>
 
-        <p style="font-size: 12px; color: #64748b; margin-bottom: 0;">
-          Delivery Location: <strong>${order.deliveryAddress}</strong><br/>
-          Payment Method: <strong>M-Pesa STK Escrow</strong>
-        </p>
-      </div>
+            <div style="background-color: #f1f5f9; padding: 14px 18px; border-radius: 8px; font-size: 12px; color: #475569;">
+              <p style="margin: 0 0 4px;"><strong>Destination:</strong> ${order.deliveryAddress}</p>
+              <p style="margin: 0;"><strong>Payment Mechanism:</strong> Safaricom Daraja M-Pesa Escrow</p>
+            </div>
+          </td>
+        </tr>
 
-      <div style="background-color: #f1f5f9; padding: 16px 24px; text-align: center; font-size: 11px; color: #64748b;">
-        AgriLink Escrow Engine • Automated System Generated Receipt
-      </div>
-    </div>
+        <tr>
+          <td style="background-color: #f1f5f9; padding: 18px 32px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
+            AgriLink Escrow Engine • Safaricom B2C Certified • Ref: ESC-${order.id.substring(0, 8).toUpperCase()}
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
   `;
+
 
   // 3. Save In-App Notifications to Database
   try {

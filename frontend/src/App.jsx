@@ -1103,7 +1103,7 @@ function MainApp() {
         )}
 
         {/* FARMER VIEW: HARVEST PORTAL */}
-        {user.role === 'FARMER' && (
+        {user.role === 'FARMER' && activeTab === 'farmer' && (
           <div className="space-y-6">
             {/* Live Commodity Wholesale Index & Agro-Climate Advisory */}
             <CommodityPriceTicker />
@@ -1265,12 +1265,12 @@ function MainApp() {
               </form>
             </div>
 
-            {/* Farmer Inventory & Wallet */}
+              {/* Farmer Inventory & Wallet */}
             <div className="lg:col-span-2 space-y-6">
-              <div className="bg-gradient-to-r from-emerald-800 to-teal-800 text-white p-6 rounded-xl flex justify-between items-center shadow-md">
+              <div className="bg-gradient-to-r from-emerald-800 to-teal-800 text-white p-6 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-md">
                 <div>
-                  <span className="text-xs text-emerald-200">Farmer Wallet Balance (Escrow Settlements)</span>
-                  <h2 className="text-3xl font-black mt-1">${(user.walletBalance || 0).toFixed(2)}</h2>
+                  <span className="text-xs text-emerald-200 font-semibold">Farmer Wallet Balance (Escrow Settlements)</span>
+                  <h2 className="text-3xl font-black mt-1 font-mono">{formatMoney(user.walletBalance || 0)}</h2>
                   <p className="text-[10px] text-emerald-200/80 mt-1">Direct M-Pesa or Bank payout to: {user.phone}</p>
                 </div>
                 <div className="flex gap-2">
@@ -1285,32 +1285,53 @@ function MainApp() {
               </div>
 
               {/* Listings Table */}
-              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                <h3 className="font-bold text-sm text-slate-900 mb-3">My Harvest Inventory</h3>
+              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="font-bold text-sm text-slate-900">My Harvest Inventory ({farmerListings.length})</h3>
+                  <span className="text-[10px] text-slate-400">Published to B2B Wholesale Market</span>
+                </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-50 border-y uppercase text-slate-400 text-[10px]">
                       <tr>
-                        <th className="py-2 px-3">Crop Name</th>
-                        <th className="py-2 px-3">Grade</th>
-                        <th className="py-2 px-3">Available</th>
-                        <th className="py-2 px-3">Price</th>
-                        <th className="py-2 px-3">Status</th>
+                        <th className="py-2.5 px-3">Crop Name</th>
+                        <th className="py-2.5 px-3">Grade</th>
+                        <th className="py-2.5 px-3">Available</th>
+                        <th className="py-2.5 px-3">Wholesale Rate</th>
+                        <th className="py-2.5 px-3">Market Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {listings.map((l) => (
-                        <tr key={l.id}>
-                          <td className="py-2.5 px-3 font-semibold flex items-center gap-2">
-                            <img src={l.imageUrl} alt="" className="w-6 h-6 rounded object-cover" />
-                            <span>{l.cropName}</span>
+                      {farmerListings.length === 0 ? (
+                        <tr>
+                          <td colSpan="5" className="py-8 text-center text-slate-400">
+                            No harvests listed yet. Use the form on the left to publish your first produce batch.
                           </td>
-                          <td className="py-2.5 px-3">{l.grade}</td>
-                          <td className="py-2.5 px-3 font-bold">{l.availableQty} kg</td>
-                          <td className="py-2.5 px-3 text-emerald-600 font-bold">${l.unitPrice.toFixed(2)}</td>
-                          <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">{l.status}</span></td>
                         </tr>
-                      ))}
+                      ) : (
+                        farmerListings.map((l) => (
+                          <tr key={l.id} className="hover:bg-slate-50/70 transition-colors">
+                            <td className="py-2.5 px-3 font-semibold flex items-center gap-2">
+                              <img src={l.imageUrl} alt="" className="w-7 h-7 rounded-lg object-cover border border-slate-200" />
+                              <span className="font-bold text-slate-900">{l.cropName}</span>
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-bold">
+                                {l.grade}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3 font-bold text-slate-800">{l.availableQty.toLocaleString()} kg</td>
+                            <td className="py-2.5 px-3 font-bold text-emerald-600 font-mono">
+                              {formatMoney(l.unitPrice)} / kg
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
+                                {l.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -1321,7 +1342,7 @@ function MainApp() {
         )}
 
         {/* TRANSPORTER VIEW: LOGISTICS BOARD */}
-        {user.role === 'TRANSPORTER' && (
+        {user.role === 'TRANSPORTER' && activeTab === 'logistics' && (
           <div className="space-y-6">
             <div className="bg-white p-6 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
