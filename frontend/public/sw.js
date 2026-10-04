@@ -1,5 +1,5 @@
 // AgriLink Offline-First Service Worker
-const CACHE_NAME = 'agrilink-v1-cache';
+const CACHE_NAME = 'agrilink-v2-cache';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -27,23 +27,38 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Pass through API requests directly or handle network-first
-  if (event.request.url.includes('/api/')) {
+  const url = event.request.url;
+
+  // ✅ CRITICAL FIX: Ignore non-http/https requests
+  // (chrome-extension://, moz-extension://, etc. are NOT cacheable)
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    return;
+  }
+
+  // Pass through API requests directly — network-first, offline fallback
+  if (url.includes('/api/')) {
     event.respondWith(
       fetch(event.request).catch(() => {
-        return new Response(JSON.stringify({ offline: true, message: 'Offline mode active.' }), {
-          headers: { 'Content-Type': 'application/json' }
-        });
+        return new Response(
+          JSON.stringify({ offline: true, message: 'Huwezi kuunganika mtandaoni sasa. Jaribu tena baadaye.' }),
+          { headers: { 'Content-Type': 'application/json' } }
+        );
       })
     );
     return;
   }
 
-  // Network first with cache fallback for HTML / assets
+  // Network-first with cache fallback for HTML / static assets
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        if (response && response.status === 200 && response.type === 'basic') {
+        // Only cache valid same-origin http responses
+        if (
+          response &&
+          response.status === 200 &&
+          response.type === 'basic' &&
+          url.startsWith('http')
+        ) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         }
