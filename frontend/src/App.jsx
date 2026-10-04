@@ -58,6 +58,7 @@ import FreightCalculatorModal from './components/FreightCalculatorModal';
 import ChamaAggregationModal from './components/ChamaAggregationModal';
 import FarmerProfitCalculatorModal from './components/FarmerProfitCalculatorModal';
 import AlertsSubscriptionModal from './components/AlertsSubscriptionModal';
+import { LanguageProvider, LanguageSwitcher, useLanguage } from './components/LanguageContext';
 
 
 const API_BASE = '/api';
@@ -65,6 +66,8 @@ const API_BASE = '/api';
 function MainApp() {
   const { user, token, logout, refreshUser } = useAuth();
   const { formatMoney, currency } = useCurrency();
+  const { t, language } = useLanguage();
+
 
 
   // Admin login is accessible ONLY via secret URL: /?admin=1
@@ -547,7 +550,7 @@ function MainApp() {
                   title="Install AgriLink App on your device"
                 >
                   <Smartphone className="w-3.5 h-3.5" />
-                  <span className="hidden md:inline">Install Mobile App</span>
+                  <span className="hidden md:inline">{t('installMobileApp')}</span>
                 </button>
               )}
 
@@ -574,7 +577,7 @@ function MainApp() {
                   <p className="text-xs font-bold text-slate-800 flex items-center gap-1 justify-end">
                     {user.name}
                     {user.isEmailVerified && (
-                      <Check className="w-3.5 h-3.5 text-emerald-600" title="Verified Account" />
+                      <Check className="w-3.5 h-3.5 text-emerald-600" title={t('verifiedAccount')} />
                     )}
                   </p>
                   <p className="text-[10px] text-slate-400">{user.businessName || user.email}</p>
@@ -586,7 +589,7 @@ function MainApp() {
                 <div 
                   onClick={() => setShowTopUpModal(true)}
                   className="flex items-center gap-1.5 px-2.5 py-1 text-slate-900 font-extrabold text-xs cursor-pointer hover:text-emerald-700 transition-colors"
-                  title="Your Available Wallet Balance"
+                  title={t('walletBalance')}
                 >
                   <Wallet className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                   <span className="font-mono">{formatMoney(user.walletBalance || 0)}</span>
@@ -601,7 +604,7 @@ function MainApp() {
                     title="Deposit funds via M-Pesa or Card"
                   >
                     <PlusCircle className="w-3 h-3" />
-                    <span className="hidden sm:inline">Top Up</span>
+                    <span className="hidden sm:inline">{t('topUp')}</span>
                   </button>
 
                   <button
@@ -611,7 +614,7 @@ function MainApp() {
                     title="Withdraw funds to M-Pesa or Bank"
                   >
                     <ArrowUpRight className="w-3 h-3 text-amber-600" />
-                    <span className="hidden sm:inline">Withdraw</span>
+                    <span className="hidden sm:inline">{t('withdraw')}</span>
                   </button>
                 </div>
               </div>
@@ -623,7 +626,7 @@ function MainApp() {
                 title="Sign out of your session"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Sign Out</span>
+                <span className="hidden sm:inline">{t('signOut')}</span>
               </button>
             </div>
           </div>
@@ -641,7 +644,7 @@ function MainApp() {
                   }`}
                 >
                   <ShoppingBag className="w-3.5 h-3.5" />
-                  B2B Marketplace
+                  {t('b2bMarketplace')}
                 </button>
                 <button
                   onClick={() => setActiveTab('orders')}
@@ -650,7 +653,7 @@ function MainApp() {
                   }`}
                 >
                   <Lock className="w-3.5 h-3.5" />
-                  My Escrow Orders ({orders.length})
+                  {t('myOrders')} ({orders.length})
                 </button>
               </>
             )}
@@ -664,7 +667,7 @@ function MainApp() {
                   }`}
                 >
                   <Sprout className="w-3.5 h-3.5" />
-                  Farmer Harvest Dashboard
+                  {t('farmerDashboard')}
                 </button>
                 <button
                   onClick={() => setActiveTab('marketplace')}
@@ -673,7 +676,7 @@ function MainApp() {
                   }`}
                 >
                   <ShoppingBag className="w-3.5 h-3.5" />
-                  B2B Marketplace ({listings.length})
+                  {t('b2bMarketplace')} ({listings.length})
                 </button>
               </>
             )}
@@ -687,7 +690,7 @@ function MainApp() {
                   }`}
                 >
                   <Truck className="w-3.5 h-3.5" />
-                  Logistics Dispatch Board ({availableShipments.length})
+                  {t('logisticsBoard')} ({availableShipments.length})
                 </button>
                 <button
                   onClick={() => setActiveTab('marketplace')}
@@ -696,7 +699,7 @@ function MainApp() {
                   }`}
                 >
                   <ShoppingBag className="w-3.5 h-3.5" />
-                  B2B Marketplace ({listings.length})
+                  {t('b2bMarketplace')} ({listings.length})
                 </button>
               </>
             )}
@@ -710,7 +713,7 @@ function MainApp() {
                   }`}
                 >
                   <BarChart3 className="w-3.5 h-3.5" />
-                  Executive BI & Analytics
+                  {t('executiveBi')}
                 </button>
                 <button
                   onClick={() => setActiveTab('admin-users')}
@@ -719,7 +722,7 @@ function MainApp() {
                   }`}
                 >
                   <User className="w-3.5 h-3.5" />
-                  Stakeholders Directory ({allUsers.length})
+                  {t('stakeholders')} ({allUsers.length})
                 </button>
                 <button
                   onClick={() => setActiveTab('marketplace')}
@@ -728,7 +731,7 @@ function MainApp() {
                   }`}
                 >
                   <ShoppingBag className="w-3.5 h-3.5" />
-                  B2B Marketplace ({listings.length})
+                  {t('b2bMarketplace')} ({listings.length})
                 </button>
               </>
             )}
@@ -744,7 +747,7 @@ function MainApp() {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-amber-50 hover:text-amber-800 border border-transparent hover:border-amber-200 transition-all"
             >
               <Truck className="w-3.5 h-3.5 text-amber-600" />
-              <span className="hidden md:inline">Freight Quote</span>
+              <span className="hidden md:inline">{t('freightQuote')}</span>
             </button>
 
             <button
@@ -754,7 +757,7 @@ function MainApp() {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-purple-50 hover:text-purple-800 border border-transparent hover:border-purple-200 transition-all"
             >
               <Handshake className="w-3.5 h-3.5 text-purple-600" />
-              <span className="hidden md:inline">Chama Pool</span>
+              <span className="hidden md:inline">{t('chamaPool')}</span>
             </button>
 
             <button
@@ -764,11 +767,12 @@ function MainApp() {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-sky-50 hover:text-sky-800 border border-transparent hover:border-sky-200 transition-all"
             >
               <Bell className="w-3.5 h-3.5 text-sky-600" />
-              <span className="hidden md:inline">Alerts</span>
+              <span className="hidden md:inline">{t('alerts')}</span>
             </button>
 
-            {/* KES/USD & Packaging Unit Switcher */}
-            <div className="ml-1 pl-2 border-l border-slate-200">
+            {/* Bilingual EN/SWA Language Switcher & KES/USD Currency Switcher */}
+            <div className="ml-1 pl-2 border-l border-slate-200 flex items-center gap-2">
+              <LanguageSwitcher />
               <CurrencyUnitBar />
             </div>
           </div>
@@ -839,17 +843,17 @@ function MainApp() {
               <div className="max-w-2xl relative z-10">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold border border-emerald-400/30">
-                    <ShieldCheck className="w-3.5 h-3.5" /> Safaricom M-Pesa Escrow
+                    <ShieldCheck className="w-3.5 h-3.5" /> {t('escrowBadge')}
                   </span>
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold border border-amber-400/30">
-                    <Truck className="w-3.5 h-3.5" /> {transporterCount} Transporters Active in Corridor
+                    <Truck className="w-3.5 h-3.5" /> {transporterCount} {t('corridorTransporters')}
                   </span>
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                  Wholesale Agricultural Sourcing for {user.businessName || user.name}
+                  {t('marketplaceHeader')}
                 </h1>
                 <p className="mt-2 text-xs sm:text-sm text-emerald-100/90 leading-relaxed">
-                  Purchase produce directly from verified rural farmers. When you place an order, funds are held in escrow via M-Pesa and only disbursed when you inspect and confirm delivery.
+                  {t('marketplaceSubheader')}
                 </p>
               </div>
             </div>
@@ -860,7 +864,7 @@ function MainApp() {
                 <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                 <input
                   type="text"
-                  placeholder="Search produce (tomatoes, onions, county)..."
+                  placeholder={t('searchProducePlaceholder')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -868,15 +872,20 @@ function MainApp() {
               </div>
 
               <div className="flex gap-2 w-full md:w-auto overflow-x-auto">
-                {['ALL', 'HORTICULTURE', 'CEREAL', 'TUBER'].map((cat) => (
+                {[
+                  { key: 'ALL', label: t('allCategories') },
+                  { key: 'HORTICULTURE', label: t('horticulture') },
+                  { key: 'CEREAL', label: t('cereal') },
+                  { key: 'TUBER', label: t('tuber') }
+                ].map((cat) => (
                   <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
+                    key={cat.key}
+                    onClick={() => setSelectedCategory(cat.key)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                      selectedCategory === cat ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      selectedCategory === cat.key ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
                   >
-                    {cat}
+                    {cat.label}
                   </button>
                 ))}
                 <button onClick={loadRoleData} className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 border border-slate-200" title="Refresh Listings">
@@ -912,14 +921,11 @@ function MainApp() {
                         <h3 className="font-bold text-base text-slate-900">{item.cropName}</h3>
                         <div className="text-right">
                           <p className="text-base font-extrabold text-emerald-600">
-                            {(() => {
-                              const { formatUnitRate } = window.__currencyCtx || { formatUnitRate: () => ({ amount: `$${item.unitPrice.toFixed(2)}`, suffix: '/ kg' }) };
-                              // We use formatMoney-equivalent inline since context is at module level
-                              if (currency === 'KES') {
-                                return <><span>KES {Math.round(item.unitPrice * 130).toLocaleString()}</span><span className="text-[10px] text-slate-400 font-normal"> / kg</span></>;
-                              }
-                              return <><span>${item.unitPrice.toFixed(2)}</span><span className="text-[10px] text-slate-400 font-normal"> / kg</span></>;
-                            })()}
+                            {currency === 'KES' ? (
+                              <><span>KES {Math.round(item.unitPrice * 130).toLocaleString()}</span><span className="text-[10px] text-slate-400 font-normal"> / kg</span></>
+                            ) : (
+                              <><span>${item.unitPrice.toFixed(2)}</span><span className="text-[10px] text-slate-400 font-normal"> / kg</span></>
+                            )}
                           </p>
                           {currency === 'KES' && (
                             <span className="text-[10px] text-slate-400">${item.unitPrice.toFixed(2)} / kg</span>
@@ -930,14 +936,14 @@ function MainApp() {
 
                       <div className="mt-3 space-y-1 text-xs text-slate-600">
                         <p className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-slate-400" /> {item.location}</p>
-                        <p className="flex items-center gap-1.5"><Sprout className="w-3.5 h-3.5 text-slate-400" /> Producer: <strong>{item.farmer?.name}</strong></p>
-                        <p className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-slate-400" /> Harvest: {new Date(item.harvestDate).toLocaleDateString()}</p>
+                        <p className="flex items-center gap-1.5"><Sprout className="w-3.5 h-3.5 text-slate-400" /> {t('producer')}: <strong>{item.farmer?.name}</strong></p>
+                        <p className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-slate-400" /> {t('harvestDate')}: {new Date(item.harvestDate).toLocaleDateString()}</p>
                         
                         {/* Live Drivers Available indicator */}
                         <div className="pt-2">
                           <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                             <Truck className="w-3.5 h-3.5 text-emerald-600" />
-                            {transporterCount} Active Drivers Ready
+                            {transporterCount} {t('activeDriversReady')}
                           </span>
                         </div>
                       </div>
@@ -945,7 +951,7 @@ function MainApp() {
 
                     <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                       <div>
-                        <span className="text-[10px] text-slate-400 block">Available Volume</span>
+                        <span className="text-[10px] text-slate-400 block">{t('availableVolume')}</span>
                         <span className="text-xs font-bold text-slate-800">{item.availableQty.toLocaleString()} kg</span>
                       </div>
 
@@ -958,7 +964,7 @@ function MainApp() {
                             setShowAlertsModal(true);
                           }}
                           className="p-2 rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-700 transition-colors"
-                          title={`Set SMS/WhatsApp alert for ${item.cropName}`}
+                          title={`Set alert for ${item.cropName}`}
                         >
                           <Bell className="w-3.5 h-3.5" />
                         </button>
@@ -983,7 +989,7 @@ function MainApp() {
                           title="Propose bulk wholesale discount to farmer"
                         >
                           <Handshake className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline">Offer</span>
+                          <span className="hidden sm:inline">{t('makeOffer')}</span>
                         </button>
 
                         <button
@@ -994,10 +1000,9 @@ function MainApp() {
                           className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors"
                         >
                           <Lock className="w-3.5 h-3.5" />
-                          Order with Escrow
+                          {t('orderWithEscrow')}
                         </button>
                       </div>
-
                     </div>
                   </div>
                 </div>
@@ -1011,8 +1016,8 @@ function MainApp() {
           <div className="space-y-6">
             <div className="bg-white p-6 rounded-xl border border-slate-200 flex justify-between items-center">
               <div>
-                <h2 className="text-lg font-bold text-slate-900">My Purchase Orders & Escrow Tracker</h2>
-                <p className="text-xs text-slate-500 mt-1">Funds remain in escrow until you inspect physical delivery and provide the 4-digit PIN.</p>
+                <h2 className="text-lg font-bold text-slate-900">{t('ordersTitle')}</h2>
+                <p className="text-xs text-slate-500 mt-1">{t('ordersSub')}</p>
               </div>
               <button onClick={loadRoleData} className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 text-xs flex items-center gap-1">
                 <RefreshCw className="w-3.5 h-3.5" /> Refresh
@@ -1020,7 +1025,7 @@ function MainApp() {
             </div>
 
             {orders.length === 0 ? (
-              <p className="text-xs text-slate-400 py-12 text-center bg-white rounded-xl border">No active orders placed yet.</p>
+              <p className="text-xs text-slate-400 py-12 text-center bg-white rounded-xl border">{t('noOrdersYet')}</p>
             ) : (
               <div className="space-y-4">
                 {orders.map((order) => {
@@ -1042,7 +1047,7 @@ function MainApp() {
                         <h4 className="font-bold text-sm text-slate-900">{item?.cropName} ({item?.quantity} kg)</h4>
                         <p className="text-xs text-slate-500">Destination: {order.deliveryAddress}</p>
                         <p className="text-xs text-emerald-700 font-bold flex items-center gap-1">
-                          <ShieldCheck className="w-3.5 h-3.5" /> Escrow Deposit: ${(order.grandTotal || 0).toFixed(2)} ({order.escrowTransaction?.paymentGateway})
+                          <ShieldCheck className="w-3.5 h-3.5" /> {t('escrowDeposit')}: {formatMoney(order.grandTotal || 0)} ({order.escrowTransaction?.paymentGateway})
                         </p>
                       </div>
 
@@ -1051,18 +1056,18 @@ function MainApp() {
                         {isCompleted ? (
                           <div className="space-y-2">
                             <div className="text-emerald-800 font-bold flex items-center gap-1.5">
-                              <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Delivery Confirmed & Settled
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600" /> {t('deliveryConfirmed')}
                             </div>
                             <button
                               onClick={() => setSelectedReceiptOrder(order)}
                               className="w-full flex items-center justify-center gap-1.5 py-2 px-3 bg-white border border-emerald-300 rounded-lg text-emerald-800 font-bold hover:bg-emerald-50 transition-colors shadow-sm"
                             >
-                              <FileText className="w-3.5 h-3.5 text-emerald-600" /> View Settlement Receipt & Invoice
+                              <FileText className="w-3.5 h-3.5 text-emerald-600" /> {t('viewSettlementReceipt')}
                             </button>
                           </div>
                         ) : (
                           <div className="space-y-2">
-                            <span className="font-bold text-slate-800 block">Confirm Delivery & Release Escrow:</span>
+                            <span className="font-bold text-slate-800 block">{t('confirmDeliveryPrompt')}</span>
                             <div className="flex gap-2">
                               <input
                                 type="text"
@@ -1076,7 +1081,7 @@ function MainApp() {
                                 onClick={() => handleVerifyDelivery(shipment?.id)}
                                 className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded transition-colors"
                               >
-                                Release Escrow
+                                {t('releaseEscrowButton')}
                               </button>
                             </div>
                             <div className="flex items-center justify-between text-[10px] pt-1">
@@ -1088,7 +1093,7 @@ function MainApp() {
                                 title="Report damaged or substandard produce to hold escrow"
                               >
                                 <ShieldAlert className="w-3 h-3" />
-                                <span>Report Quality Issue</span>
+                                <span>{t('reportQualityIssue')}</span>
                               </button>
                             </div>
                           </div>
@@ -1113,11 +1118,11 @@ function MainApp() {
             {/* Add Produce Form with Image Selector */}
             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
               <h3 className="font-bold text-sm text-slate-900 mb-3 flex items-center gap-2 pb-2 border-b">
-                <PlusCircle className="w-4 h-4 text-emerald-600" /> List Harvest for Wholesale Sourcing
+                <PlusCircle className="w-4 h-4 text-emerald-600" /> {t('listHarvestTitle')}
               </h3>
               <form onSubmit={handleCreateListing} className="space-y-3 text-xs font-semibold text-slate-600">
                 <div>
-                  <label className="block mb-1">Crop / Commodity Name</label>
+                  <label className="block mb-1">{t('cropNameLabel')}</label>
                   <input
                     type="text"
                     required
@@ -1129,19 +1134,19 @@ function MainApp() {
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block mb-1">Category</label>
+                    <label className="block mb-1">{t('categoryLabel')}</label>
                     <select
                       value={newListing.category}
                       onChange={(e) => setNewListing({ ...newListing, category: e.target.value })}
                       className="w-full px-2 py-2 bg-slate-50 border rounded-lg text-xs"
                     >
-                      <option value="HORTICULTURE">Horticulture</option>
-                      <option value="CEREAL">Cereal</option>
-                      <option value="TUBER">Tuber</option>
+                      <option value="HORTICULTURE">{t('horticulture')}</option>
+                      <option value="CEREAL">{t('cereal')}</option>
+                      <option value="TUBER">{t('tuber')}</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block mb-1">Grade</label>
+                    <label className="block mb-1">{t('gradeLabel')}</label>
                     <select
                       value={newListing.grade}
                       onChange={(e) => setNewListing({ ...newListing, grade: e.target.value })}
@@ -1155,7 +1160,7 @@ function MainApp() {
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block mb-1">Volume (kg)</label>
+                    <label className="block mb-1">{t('volumeKgLabel')}</label>
                     <input
                       type="number"
                       required
@@ -1167,12 +1172,12 @@ function MainApp() {
                     />
                   </div>
                   <div>
-                    <label className="block mb-1">Unit Price ($/kg)</label>
+                    <label className="block mb-1">{t('unitPriceLabel')} ({currency === 'KES' ? 'KES / kg' : '$ / kg'})</label>
                     <input
                       type="number"
-                      step="0.01"
+                      step={currency === 'KES' ? '1' : '0.01'}
                       required
-                      placeholder="e.g. 0.75"
+                      placeholder={currency === 'KES' ? 'e.g. 95' : 'e.g. 0.75'}
                       value={newListing.unitPrice}
                       onChange={(e) => setNewListing({ ...newListing, unitPrice: e.target.value })}
                       className="w-full px-3 py-2 bg-slate-50 border rounded-lg text-xs"
@@ -1180,7 +1185,7 @@ function MainApp() {
                   </div>
                 </div>
                 <div>
-                  <label className="block mb-1">Farm Location / County</label>
+                  <label className="block mb-1">{t('farmLocationLabel')}</label>
                   <input
                     type="text"
                     required
@@ -1191,7 +1196,7 @@ function MainApp() {
                   />
                 </div>
                 <div>
-                  <label className="block mb-1">Harvest Date</label>
+                  <label className="block mb-1">{t('harvestDate')}</label>
                   <input
                     type="date"
                     required
@@ -1204,7 +1209,7 @@ function MainApp() {
                 {/* Produce Image Option with URL & Presets Picker */}
                 <div>
                   <div className="flex justify-between items-center mb-1">
-                    <label className="block">Produce Photo (URL / Gallery)</label>
+                    <label className="block">{t('producePhotoLabel')}</label>
                     <button
                       type="button"
                       onClick={() => setShowImagePicker(true)}
@@ -1242,8 +1247,8 @@ function MainApp() {
                 {/* Agronomy Profit Calculator Quick Launch */}
                 <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-bold text-emerald-900">💡 Not sure what price to set?</p>
-                    <p className="text-[11px] text-emerald-700">Use the Break-Even Calculator to find your fair minimum selling price</p>
+                    <p className="text-xs font-bold text-emerald-900">💡 {t('pricingTipTitle')}</p>
+                    <p className="text-[11px] text-emerald-700">{t('pricingTipSubtitle')}</p>
                   </div>
                   <button
                     type="button"
@@ -1251,7 +1256,7 @@ function MainApp() {
                     className="ml-2 shrink-0 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-sm transition-colors flex items-center gap-1"
                   >
                     <Scale className="w-3.5 h-3.5" />
-                    <span>Calculate</span>
+                    <span>{t('calculateButton')}</span>
                   </button>
                 </div>
 
@@ -1259,7 +1264,7 @@ function MainApp() {
                   type="submit"
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-xs mt-2 transition-colors"
                 >
-                  Publish to B2B Catalog
+                  {t('publishToCatalog')}
                 </button>
 
               </form>
@@ -1269,9 +1274,9 @@ function MainApp() {
             <div className="lg:col-span-2 space-y-6">
               <div className="bg-gradient-to-r from-emerald-800 to-teal-800 text-white p-6 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-md">
                 <div>
-                  <span className="text-xs text-emerald-200 font-semibold">Farmer Wallet Balance (Escrow Settlements)</span>
+                  <span className="text-xs text-emerald-200 font-semibold">{t('farmerWalletTitle')}</span>
                   <h2 className="text-3xl font-black mt-1 font-mono">{formatMoney(user.walletBalance || 0)}</h2>
-                  <p className="text-[10px] text-emerald-200/80 mt-1">Direct M-Pesa or Bank payout to: {user.phone}</p>
+                  <p className="text-[10px] text-emerald-200/80 mt-1">{t('directMpesaPayout')}: {user.phone}</p>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -1279,7 +1284,7 @@ function MainApp() {
                     className="bg-white text-emerald-900 font-extrabold px-4 py-2.5 rounded-xl text-xs shadow-md hover:bg-emerald-50 flex items-center gap-1.5 transition-all"
                   >
                     <ArrowUpRight className="w-4 h-4 text-amber-600" />
-                    <span>Withdraw Funds</span>
+                    <span>{t('withdraw')}</span>
                   </button>
                 </div>
               </div>
@@ -1287,25 +1292,25 @@ function MainApp() {
               {/* Listings Table */}
               <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="font-bold text-sm text-slate-900">My Harvest Inventory ({farmerListings.length})</h3>
+                  <h3 className="font-bold text-sm text-slate-900">{t('myInventoryTitle')} ({farmerListings.length})</h3>
                   <span className="text-[10px] text-slate-400">Published to B2B Wholesale Market</span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-50 border-y uppercase text-slate-400 text-[10px]">
                       <tr>
-                        <th className="py-2.5 px-3">Crop Name</th>
-                        <th className="py-2.5 px-3">Grade</th>
-                        <th className="py-2.5 px-3">Available</th>
-                        <th className="py-2.5 px-3">Wholesale Rate</th>
-                        <th className="py-2.5 px-3">Market Status</th>
+                        <th className="py-2.5 px-3">{t('cropNameLabel')}</th>
+                        <th className="py-2.5 px-3">{t('gradeLabel')}</th>
+                        <th className="py-2.5 px-3">{t('availableVolume')}</th>
+                        <th className="py-2.5 px-3">{t('wholesaleRate')}</th>
+                        <th className="py-2.5 px-3">{t('marketStatus')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {farmerListings.length === 0 ? (
                         <tr>
                           <td colSpan="5" className="py-8 text-center text-slate-400">
-                            No harvests listed yet. Use the form on the left to publish your first produce batch.
+                            {t('noHarvestsListed')}
                           </td>
                         </tr>
                       ) : (
@@ -1346,22 +1351,22 @@ function MainApp() {
           <div className="space-y-6">
             <div className="bg-white p-6 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-lg font-bold text-slate-900">AgriLink Freight & Dispatch Dispatcher</h2>
-                <p className="text-xs text-slate-500 mt-1">Claim pending cargo shipments, advance transit milestones, and provide the Delivery OTP to the recipient buyer.</p>
+                <h2 className="text-lg font-bold text-slate-900">{t('freightDispatcherTitle')}</h2>
+                <p className="text-xs text-slate-500 mt-1">{t('freightDispatcherSub')}</p>
               </div>
 
               {/* Transporter Wallet Balance */}
               <div className="flex items-center gap-3 p-3 bg-slate-900 text-white rounded-xl shadow-inner">
                 <div>
-                  <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider block">Freight Earnings</span>
-                  <span className="text-lg font-black font-mono">${(user.walletBalance || 0).toFixed(2)}</span>
+                  <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider block">{t('freightEarnings')}</span>
+                  <span className="text-lg font-black font-mono">{formatMoney(user.walletBalance || 0)}</span>
                 </div>
                 <button
                   onClick={() => setShowWithdrawModal(true)}
                   className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow transition-colors flex items-center gap-1"
                 >
                   <ArrowUpRight className="w-3.5 h-3.5" />
-                  <span>Withdraw</span>
+                  <span>{t('withdraw')}</span>
                 </button>
               </div>
             </div>
@@ -1377,9 +1382,9 @@ function MainApp() {
 
             {/* Available Jobs */}
             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-              <h3 className="font-bold text-sm text-slate-900 mb-3">Available Freight Jobs</h3>
+              <h3 className="font-bold text-sm text-slate-900 mb-3">{t('availableFreightJobs')}</h3>
               {availableShipments.length === 0 ? (
-                <p className="text-xs text-slate-400 py-6 text-center">No cargo awaiting transporter dispatch.</p>
+                <p className="text-xs text-slate-400 py-6 text-center">{t('noCargoAwaiting')}</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {availableShipments.map((shipment) => (
@@ -1387,19 +1392,19 @@ function MainApp() {
                       <div>
                         <div className="flex justify-between font-mono text-xs">
                           <span className="font-bold">{shipment.order?.orderNumber}</span>
-                          <span className="text-emerald-700 font-extrabold">Freight: ${shipment.order?.transportFee.toFixed(2)}</span>
+                          <span className="text-emerald-700 font-extrabold">Freight: {formatMoney(shipment.order?.transportFee || 0)}</span>
                         </div>
                         <div className="mt-2 space-y-1 text-xs text-slate-600">
-                          <p><strong>Cargo:</strong> {shipment.order?.items[0]?.cropName} ({shipment.order?.items[0]?.quantity} kg)</p>
-                          <p><strong>Pickup:</strong> {shipment.pickupLocation}</p>
-                          <p><strong>Dropoff:</strong> {shipment.dropoffLocation}</p>
+                          <p><strong>{t('cargoLabel')}:</strong> {shipment.order?.items[0]?.cropName} ({shipment.order?.items[0]?.quantity} kg)</p>
+                          <p><strong>{t('pickupLabel')}:</strong> {shipment.pickupLocation}</p>
+                          <p><strong>{t('dropoffLabel')}:</strong> {shipment.dropoffLocation}</p>
                         </div>
                       </div>
                       <button
                         onClick={() => handleAcceptShipment(shipment.id)}
                         className="mt-4 w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 rounded-lg text-xs"
                       >
-                        Claim Dispatch Job
+                        {t('claimCargo')}
                       </button>
                     </div>
                   ))}
@@ -1409,7 +1414,7 @@ function MainApp() {
 
             {/* My Active Shipments */}
             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-              <h3 className="font-bold text-sm text-slate-900 mb-3">My In-Transit Shipments</h3>
+              <h3 className="font-bold text-sm text-slate-900 mb-3">{t('myInTransitShipments')}</h3>
               <div className="space-y-3">
                 {orders.filter(o => o.shipment?.transporterId === user.id).map((order) => {
                   const s = order.shipment;
@@ -1417,9 +1422,9 @@ function MainApp() {
                     <div key={order.id} className="p-4 rounded-xl border bg-slate-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-xs">
                       <div>
                         <span className="font-bold text-slate-800 text-sm">{order.items[0]?.cropName} ({order.items[0]?.quantity} kg)</span>
-                        <p className="text-slate-500">Route: {s?.pickupLocation} $\rightarrow$ {s?.dropoffLocation}</p>
+                        <p className="text-slate-500">Route: {s?.pickupLocation} → {s?.dropoffLocation}</p>
                         <p className="font-mono text-emerald-700 font-bold text-sm mt-1">
-                          Delivery Verification OTP: {s?.confirmationOtp}
+                          {t('deliveryOtpNotice')}: {s?.confirmationOtp}
                         </p>
                       </div>
 
@@ -1429,21 +1434,21 @@ function MainApp() {
                           disabled={s.transitStatus !== 'ASSIGNED'}
                           className="px-3 py-1.5 rounded font-bold bg-amber-500 text-white disabled:bg-slate-200 disabled:text-slate-400"
                         >
-                          Mark Picked Up
+                          {t('markPickedUp')}
                         </button>
                         <button
                           onClick={() => handleUpdateTransitStatus(s.id, 'IN_TRANSIT')}
                           disabled={s.transitStatus !== 'PICKED_UP'}
                           className="px-3 py-1.5 rounded font-bold bg-blue-600 text-white disabled:bg-slate-200 disabled:text-slate-400"
                         >
-                          Mark In Transit
+                          {t('markInTransit')}
                         </button>
                         <button
                           onClick={() => handleUpdateTransitStatus(s.id, 'ARRIVED')}
                           disabled={s.transitStatus !== 'IN_TRANSIT'}
                           className="px-3 py-1.5 rounded font-bold bg-emerald-600 text-white disabled:bg-slate-200 disabled:text-slate-400"
                         >
-                          Mark Arrived
+                          {t('markArrived')}
                         </button>
                       </div>
                     </div>
@@ -1597,9 +1602,9 @@ function MainApp() {
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100">
             <div className="flex justify-between items-start border-b border-slate-100 pb-3">
               <div>
-                <span className="text-xs font-bold text-emerald-600 uppercase">Purchase Order (PO)</span>
+                <span className="text-xs font-bold text-emerald-600 uppercase">{t('purchaseOrderModalTitle')}</span>
                 <h3 className="text-base font-bold text-slate-900 mt-0.5">{orderModalListing.cropName}</h3>
-                <p className="text-xs text-slate-500">Producer: {orderModalListing.farmer?.name}</p>
+                <p className="text-xs text-slate-500">{t('producer')}: {orderModalListing.farmer?.name}</p>
               </div>
               <button onClick={() => setOrderModalListing(null)} className="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
             </div>
@@ -1609,13 +1614,13 @@ function MainApp() {
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center gap-2.5 text-xs text-emerald-900">
                 <Truck className="w-5 h-5 text-emerald-600 shrink-0" />
                 <div>
-                  <p className="font-bold">{transporterCount} Active Verified Transporters Ready</p>
+                  <p className="font-bold">{transporterCount} {t('activeDriversReady')}</p>
                   <p className="text-[11px] text-emerald-700">Immediate pickup upon escrow lock. Fast cold-chain & freight dispatch.</p>
                 </div>
               </div>
 
               <div>
-                <label className="block mb-1">Order Volume (kg)</label>
+                <label className="block mb-1">{t('orderVolumeKg')}</label>
                 <input
                   type="number"
                   min="10"
@@ -1627,7 +1632,7 @@ function MainApp() {
               </div>
 
               <div>
-                <label className="block mb-1">Destination Delivery Address</label>
+                <label className="block mb-1">{t('destinationAddress')}</label>
                 <input
                   type="text"
                   value={deliveryAddress}
@@ -1639,7 +1644,7 @@ function MainApp() {
               {/* M-Pesa Phone Input */}
               <div>
                 <label className="block mb-1 flex items-center justify-between">
-                  <span>M-Pesa Mobile Number for STK Push Prompt</span>
+                  <span>{t('mpesaPhonePrompt')}</span>
                   <span className="text-[10px] text-emerald-600 font-bold">Lipa Na M-Pesa Online</span>
                 </label>
                 <div className="relative">
@@ -1658,25 +1663,25 @@ function MainApp() {
               {/* Breakdown */}
               <div className="bg-slate-50 p-3 rounded-xl border space-y-1 text-xs">
                 <div className="flex justify-between text-slate-600 font-normal">
-                  <span>Produce Cost ({orderQty} kg @ ${orderModalListing.unitPrice.toFixed(2)}):</span>
-                  <span>${(orderQty * orderModalListing.unitPrice).toFixed(2)}</span>
+                  <span>{t('produceCost')} ({orderQty} kg @ {formatMoney(orderModalListing.unitPrice)}):</span>
+                  <span>{formatMoney(orderQty * orderModalListing.unitPrice)}</span>
                 </div>
                 <div className="flex justify-between text-slate-600 font-normal">
-                  <span>Freight / Logistics Estimate:</span>
-                  <span>${(20.00 + (orderQty * 0.02)).toFixed(2)}</span>
+                  <span>{t('freightLogisticsEst')}:</span>
+                  <span>{formatMoney(20.00 + (orderQty * 0.02))}</span>
                 </div>
                 <div className="flex justify-between text-slate-600 font-normal">
-                  <span>AgriLink Escrow Fee (5%):</span>
-                  <span>${((orderQty * orderModalListing.unitPrice) * 0.05).toFixed(2)}</span>
+                  <span>{t('escrowFee')}:</span>
+                  <span>{formatMoney((orderQty * orderModalListing.unitPrice) * 0.05)}</span>
                 </div>
                 <div className="pt-2 border-t flex justify-between text-sm font-extrabold text-slate-900">
-                  <span>Total Escrow Lock:</span>
+                  <span>{t('totalEscrowLock')}:</span>
                   <span className="text-emerald-700">
-                    ${(
+                    {formatMoney(
                       (orderQty * orderModalListing.unitPrice) +
                       (20.00 + (orderQty * 0.02)) +
                       ((orderQty * orderModalListing.unitPrice) * 0.05)
-                    ).toFixed(2)}
+                    )}
                   </span>
                 </div>
               </div>
@@ -1688,7 +1693,7 @@ function MainApp() {
                 onClick={() => setOrderModalListing(null)}
                 className="flex-1 px-4 py-2 rounded-lg border text-xs font-bold text-slate-600 hover:bg-slate-50"
               >
-                Cancel
+                {t('cancel')}
               </button>
               <button
                 type="button"
@@ -1704,7 +1709,7 @@ function MainApp() {
                 ) : (
                   <>
                     <Phone className="w-4 h-4" />
-                    Send STK Push & Hold Escrow
+                    {t('confirmAndLockEscrow')}
                   </>
                 )}
               </button>
@@ -2089,9 +2094,11 @@ function MainApp() {
 export default function App() {
   return (
     <AuthProvider>
-      <CurrencyUnitProvider>
-        <MainApp />
-      </CurrencyUnitProvider>
+      <LanguageProvider>
+        <CurrencyUnitProvider>
+          <MainApp />
+        </CurrencyUnitProvider>
+      </LanguageProvider>
     </AuthProvider>
   );
 }
