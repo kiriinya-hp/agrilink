@@ -16,37 +16,52 @@ const {
   SMTP_FROM = 'AgriLink Escrow Notifications <notifications@agrilink.co.ke>'
 } = process.env;
 
-// Initialize Nodemailer transporter with Google App Password or Custom SMTP
+// Initialize Nodemailer with explicit Gmail SMTP (port 465 SSL)
 let transporter = null;
 
 if (GMAIL_USER && GMAIL_APP_PASSWORD && !GMAIL_USER.includes('your_email')) {
-  try {
-    transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: GMAIL_USER.trim(),
-        pass: GMAIL_APP_PASSWORD.replace(/\s+/g, '') // remove spaces from 16-character code
-      }
-    });
-    console.log(`[EMAIL] Google App Mailer initialized successfully for ${GMAIL_USER}`);
-  } catch (err) {
-    console.warn('Google App Mailer initialization skipped:', err.message);
-  }
+  const cleanPass = GMAIL_APP_PASSWORD.replace(/\s+/g, '');
+  const cleanUser = GMAIL_USER.trim();
+
+  console.log(`[EMAIL] Initializing Gmail SMTP for: ${cleanUser}`);
+  console.log(`[EMAIL] App Password length: ${cleanPass.length} characters`);
+
+  transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: {
+      user: cleanUser,
+      pass: cleanPass
+    },
+    tls: { rejectUnauthorized: false }
+  });
+
+  // Verify connection at server startup — logs success or full error details
+  transporter.verify((err, success) => {
+    if (err) {
+      console.error('==========================================');
+      console.error('[EMAIL ERROR] Gmail SMTP FAILED TO CONNECT:');
+      console.error('Error Code:', err.code);
+      console.error('Error Message:', err.message);
+      console.error('SMTP Response:', err.response);
+      console.error('==========================================');
+    } else {
+      console.log('[EMAIL] ✅ Gmail SMTP connected — emails will send successfully!');
+    }
+  });
+
 } else if (SMTP_HOST && SMTP_USER && SMTP_PASS && !SMTP_USER.includes('YOUR_')) {
-  try {
-    transporter = nodemailer.createTransport({
-      host: SMTP_HOST,
-      port: Number(SMTP_PORT),
-      secure: Number(SMTP_PORT) === 465,
-      auth: {
-        user: SMTP_USER,
-        pass: SMTP_PASS
-      }
-    });
-  } catch (err) {
-    console.warn('SMTP transporter initialization skipped:', err.message);
-  }
+  transporter = nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: Number(SMTP_PORT),
+    secure: Number(SMTP_PORT) === 465,
+    auth: { user: SMTP_USER, pass: SMTP_PASS }
+  });
+} else {
+  console.warn('[EMAIL] ⚠️ No email credentials set. Codes will only log to console.');
 }
+
 
 const getSenderAddress = () => {
   if (GMAIL_USER && !GMAIL_USER.includes('your_email')) {
@@ -167,11 +182,18 @@ export async function sendVerificationEmail(email, code, userName = 'Valued Part
         text,
         html
       });
-      console.log(`✓ Verification email sent via Google Mailer! Message ID: ${info.messageId}`);
+      console.log(`✅ Verification email SENT! Message ID: ${info.messageId}`);
       return { success: true, mode: 'GOOGLE_APP_SENT', messageId: info.messageId };
     } catch (err) {
-      console.error('⚠️ Google Mailer send failed:', err.message);
+      console.error('==========================================');
+      console.error('❌ VERIFICATION EMAIL FAILED TO SEND:');
+      console.error('Code:', err.code);
+      console.error('Message:', err.message);
+      console.error('Response:', err.response);
+      console.error('==========================================');
     }
+  } else {
+    console.warn('[EMAIL] transporter is null — check GMAIL_USER and GMAIL_APP_PASSWORD env vars');
   }
 
   return { success: true, mode: 'PREVIEW_LOGGED', code };
@@ -270,11 +292,18 @@ export async function sendPasswordResetEmail(email, code, userName = 'Valued Par
         text,
         html
       });
-      console.log(`✓ Password reset email sent via Google Mailer! Message ID: ${info.messageId}`);
+      console.log(`✅ Password reset email SENT! Message ID: ${info.messageId}`);
       return { success: true, mode: 'GOOGLE_APP_SENT', messageId: info.messageId };
     } catch (err) {
-      console.error('⚠️ Password reset email failed to send:', err.message);
+      console.error('==========================================');
+      console.error('❌ PASSWORD RESET EMAIL FAILED TO SEND:');
+      console.error('Code:', err.code);
+      console.error('Message:', err.message);
+      console.error('Response:', err.response);
+      console.error('==========================================');
     }
+  } else {
+    console.warn('[EMAIL] transporter is null — check GMAIL_USER and GMAIL_APP_PASSWORD env vars');
   }
 
   return { success: true, mode: 'PREVIEW_LOGGED', code };
