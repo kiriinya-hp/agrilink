@@ -59,6 +59,7 @@ import ChamaAggregationModal from './components/ChamaAggregationModal';
 import FarmerProfitCalculatorModal from './components/FarmerProfitCalculatorModal';
 import AlertsSubscriptionModal from './components/AlertsSubscriptionModal';
 import { LanguageProvider, LanguageSwitcher, useLanguage } from './components/LanguageContext';
+import DashboardBackground from './components/DashboardBackground';
 
 
 const API_BASE = '/api';
@@ -520,9 +521,12 @@ function MainApp() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
+    <div className="min-h-screen relative text-slate-900 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
+      {/* Dynamic Thematic Background: Farmers, Crops, Drivers & Buyers */}
+      <DashboardBackground activeTab={activeTab} language={language} />
+
       {/* Header / Navbar */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+      <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -633,7 +637,7 @@ function MainApp() {
         </div>
 
         {/* Dynamic Navigation for Logged-In Role */}
-        <div className="bg-slate-50 border-t border-slate-200 px-4 sm:px-6 lg:px-8">
+        <div className="bg-slate-50/90 backdrop-blur-md border-t border-slate-200/80 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto flex gap-2 py-2 overflow-x-auto">
             {user.role === 'BUYER' && (
               <>
@@ -800,7 +804,7 @@ function MainApp() {
       {/* ========================================================= */}
       {/* ROLE-SPECIFIC CONTENT VIEWS                               */}
       {/* ========================================================= */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 pb-24 sm:pb-8">
+      <main className="relative z-10 flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 pb-24 sm:pb-8">
 
         {/* ======================================================== */}
         {/* ADMIN ROLE GUARD: Block non-admins from admin-only views  */}
