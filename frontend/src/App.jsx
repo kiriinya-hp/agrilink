@@ -634,14 +634,14 @@ function MainApp() {
                 </div>
               </div>
 
-              {/* Sign Out Button */}
+              {/* Sign Out Button — always visible on mobile */}
               <button
                 onClick={logout}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-rose-600 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 bg-rose-50 text-xs font-bold text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-colors"
                 title="Sign out of your session"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">{t('signOut')}</span>
+                <span>Out</span>
               </button>
             </div>
           </div>
