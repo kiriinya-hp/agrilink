@@ -2,13 +2,22 @@
 title AgriLink Platform Launcher
 color 0A
 
-:: Store the project root path safely (no nested quote issues)
+:: Store the project root path safely
 set "ROOTDIR=%~dp0"
 
 echo ========================================================
 echo       AgriLink - Starting Backend + Frontend
 echo ========================================================
 echo.
+
+:: Automatically clear ports 5000 and 3000 if occupied by old sessions
+echo  Freeing ports 5000 and 3000 from any previous sessions...
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":5000" ^| findstr "LISTENING"') do (
+    taskkill /f /pid %%a >nul 2>&1
+)
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":3000" ^| findstr "LISTENING"') do (
+    taskkill /f /pid %%a >nul 2>&1
+)
 
 :: Step 1: Start Backend API (Port 5000) in its own window
 echo  [1/2]  Backend API starting at http://localhost:5000 ...
