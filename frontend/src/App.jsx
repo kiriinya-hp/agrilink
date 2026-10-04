@@ -34,7 +34,8 @@ import {
   Handshake,
   ShieldAlert,
   Scale,
-  CloudSun
+  CloudSun,
+  Bot
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
