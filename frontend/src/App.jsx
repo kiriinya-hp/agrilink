@@ -1100,6 +1100,14 @@ function MainApp() {
                                 <span>{t('reportQualityIssue')}</span>
                               </button>
                             </div>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedReceiptOrder(order)}
+                              className="w-full mt-1.5 py-1.5 px-3 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg text-slate-700 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                            >
+                              <FileText className="w-3.5 h-3.5 text-indigo-600" />
+                              <span>View Tax Invoice & Waybill</span>
+                            </button>
                           </div>
                         )}
                       </div>
@@ -1453,6 +1461,15 @@ function MainApp() {
                           className="px-3 py-1.5 rounded font-bold bg-emerald-600 text-white disabled:bg-slate-200 disabled:text-slate-400"
                         >
                           {t('markArrived')}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedReceiptOrder(order)}
+                          className="px-3 py-1.5 rounded font-bold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 flex items-center gap-1 shadow-2xs"
+                          title="Open official Transporter Consignment Waybill & Gate Pass"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-indigo-600" />
+                          <span>Waybill</span>
                         </button>
                       </div>
                     </div>
