@@ -44,7 +44,7 @@ export default function Login({ onNavigateRegister, onNavigateAdmin, onNavigateF
           </div>
         </div>
         <h2 className="mt-4 text-center text-3xl font-extrabold tracking-tight text-white">
-          Agri<span className="text-emerald-500">Link</span> SCM Portal
+          Agri<span className="text-emerald-500">Link</span> — Sign In
         </h2>
         <p className="mt-2 text-center text-xs text-slate-400 font-medium">
           Integrated B2B Agribusiness Supply Chain & Escrow System
