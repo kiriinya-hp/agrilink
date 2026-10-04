@@ -4,15 +4,19 @@ services:
     env: node
     plan: free
     region: frankfurt
-    buildCommand: npm run build && cd backend && npx prisma db push && npm run db:seed
+    # Build: install all deps + generate Prisma client + build React frontend
+    buildCommand: npm run install:all && cd backend && npx prisma generate && cd ../frontend && npm run build
+    # Start: run the Express backend (which serves the built frontend from frontend/dist/)
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: "10000"
       - key: JWT_SECRET
         generateValue: true
       - key: GMAIL_USER
-        sync: false
+        value: agrilink287@gmail.com
       - key: GMAIL_APP_PASSWORD
         sync: false
       - key: DARAJA_CONSUMER_KEY
