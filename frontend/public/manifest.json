@@ -1,23 +1,17 @@
 {
   "short_name": "AgriLink",
-  "name": "AgriLink - Agribusiness B2B Supply Chain & Escrow",
+  "name": "AgriLink - B2B Agribusiness SCM Kenya",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2909/2909765.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/2909/2909765.png",
-      "type": "image/png",
-      "sizes": "512x512",
-      "purpose": "any maskable"
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
     }
   ],
   "start_url": "/",
-  "background_color": "#ffffff",
-  "theme_color": "#16a34a",
+  "background_color": "#064e3b",
+  "theme_color": "#059669",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "scope": "/"
 }

@@ -1,4 +1,5 @@
-const CACHE_NAME = 'agrilink-v1';
+// AgriLink Offline-First Service Worker
+const CACHE_NAME = 'agrilink-v1-cache';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -26,18 +27,28 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Pass API requests through to the network directly
+  // Pass through API requests directly or handle network-first
   if (event.request.url.includes('/api/')) {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return new Response(JSON.stringify({ offline: true, message: 'Offline mode active.' }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      })
+    );
     return;
   }
 
+  // Network first with cache fallback for HTML / assets
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
+    fetch(event.request)
+      .then((response) => {
+        if (response && response.status === 200 && response.type === 'basic') {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         }
-      });
-    })
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });

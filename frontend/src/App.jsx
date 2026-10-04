@@ -60,6 +60,9 @@ import FarmerProfitCalculatorModal from './components/FarmerProfitCalculatorModa
 import AlertsSubscriptionModal from './components/AlertsSubscriptionModal';
 import { LanguageProvider, LanguageSwitcher, useLanguage } from './components/LanguageContext';
 import DashboardBackground from './components/DashboardBackground';
+import UssdSimulatorModal from './components/UssdSimulatorModal';
+import AiNegotiationModal from './components/AiNegotiationModal';
+import SatelliteCropScannerModal from './components/SatelliteCropScannerModal';
 
 
 const API_BASE = '/api';
@@ -123,6 +126,13 @@ function MainApp() {
   const [alertsDefaultCrop, setAlertsDefaultCrop] = useState('Tomatoes');
   const [freightOrigin, setFreightOrigin] = useState('');
   const [freightDestination, setFreightDestination] = useState('Nairobi Central Wholesale Depot');
+
+  // Novel Differentiator Modals State
+  const [showUssdModal, setShowUssdModal] = useState(false);
+  const [showAiNegotiation, setShowAiNegotiation] = useState(false);
+  const [showSatelliteScanner, setShowSatelliteScanner] = useState(false);
+  const [satelliteCrop, setSatelliteCrop] = useState('Tomatoes');
+  const [satelliteLocation, setSatelliteLocation] = useState('Kinangop, Nyandarua County');
 
 
   // Farmer New Listing Form State
@@ -774,6 +784,43 @@ function MainApp() {
               <span className="hidden md:inline">{t('alerts')}</span>
             </button>
 
+            {/* Kilimo AI Autonomous Negotiator Button */}
+            <button
+              type="button"
+              onClick={() => setShowAiNegotiation(true)}
+              title="Kilimo AI Autonomous Price Discovery & Deal Maker"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-purple-50 hover:text-purple-800 border border-transparent hover:border-purple-200 transition-all"
+            >
+              <Bot className="w-3.5 h-3.5 text-purple-600" />
+              <span className="hidden lg:inline">AI Deal Maker</span>
+            </button>
+
+            {/* Sentinel-2 Satellite Crop Health Scanner Button */}
+            <button
+              type="button"
+              onClick={() => {
+                setSatelliteCrop('Tomatoes');
+                setSatelliteLocation('Kinangop, Nyandarua County');
+                setShowSatelliteScanner(true);
+              }}
+              title="Sentinel-2 Satellite NDVI Crop Health & Yield Scanner"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-teal-50 hover:text-teal-800 border border-transparent hover:border-teal-200 transition-all"
+            >
+              <Radio className="w-3.5 h-3.5 text-teal-600" />
+              <span className="hidden lg:inline">Satellite NDVI</span>
+            </button>
+
+            {/* Rural USSD Gateway Simulator (*384*50#) Button */}
+            <button
+              type="button"
+              onClick={() => setShowUssdModal(true)}
+              title="Rural Feature Phone USSD Gateway (*384*50#)"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-amber-50 hover:text-amber-800 border border-transparent hover:border-amber-200 transition-all"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-amber-600" />
+              <span className="hidden lg:inline">*384*50#</span>
+            </button>
+
             {/* Bilingual EN/SWA Language Switcher & KES/USD Currency Switcher */}
             <div className="ml-1 pl-2 border-l border-slate-200 flex items-center gap-2">
               <LanguageSwitcher />
@@ -984,6 +1031,20 @@ function MainApp() {
                           title="Calculate transport cost for this produce"
                         >
                           <Truck className="w-3.5 h-3.5" />
+                        </button>
+
+                        {/* Satellite NDVI Crop Scan Button */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSatelliteCrop(item.cropName || 'Tomatoes');
+                            setSatelliteLocation(item.location || 'Kinangop, Nyandarua County');
+                            setShowSatelliteScanner(true);
+                          }}
+                          className="p-2 rounded-lg bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-700 transition-colors"
+                          title="Verify Farm Canopy Vigor with Sentinel-2 Satellite"
+                        >
+                          <Radio className="w-3.5 h-3.5" />
                         </button>
 
                         <button
@@ -1269,6 +1330,26 @@ function MainApp() {
                   >
                     <Scale className="w-3.5 h-3.5" />
                     <span>{t('calculateButton')}</span>
+                  </button>
+                </div>
+
+                {/* Satellite Shamba Remote Sensing Health Audit */}
+                <div className="bg-teal-50 border border-teal-200 rounded-xl p-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold text-teal-900">🛰️ Satellite Crop Health & Yield Audit</p>
+                    <p className="text-[11px] text-teal-700">Scan field with Sentinel-2 radar to get Space Verified badge</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSatelliteCrop(newListing.cropName || 'Tomatoes');
+                      setSatelliteLocation(newListing.location || 'Kinangop, Nyandarua County');
+                      setShowSatelliteScanner(true);
+                    }}
+                    className="ml-2 shrink-0 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-lg shadow-sm transition-colors flex items-center gap-1"
+                  >
+                    <Radio className="w-3.5 h-3.5" />
+                    <span>Scan Shamba</span>
                   </button>
                 </div>
 
@@ -2107,6 +2188,36 @@ function MainApp() {
         onClose={() => setShowAlertsModal(false)}
         user={user}
         defaultCrop={alertsDefaultCrop}
+      />
+
+      {/* ========================================================= */}
+      {/* 📱 RURAL FEATURE PHONE USSD SIMULATOR (*384*50#)         */}
+      {/* ========================================================= */}
+      <UssdSimulatorModal
+        isOpen={showUssdModal}
+        onClose={() => setShowUssdModal(false)}
+      />
+
+      {/* ========================================================= */}
+      {/* 🤖 KILIMO AI AUTONOMOUS PRICE & DEAL NEGOTIATOR           */}
+      {/* ========================================================= */}
+      <AiNegotiationModal
+        isOpen={showAiNegotiation}
+        onClose={() => setShowAiNegotiation(false)}
+        onAcceptDeal={(deal) => {
+          showNotification(`Deal negotiated: ${deal.targetVolumeKg}kg ${deal.cropName} @ KES ${deal.aiRecommendedRateKes}/kg!`);
+          loadRoleData();
+        }}
+      />
+
+      {/* ========================================================= */}
+      {/* 🛰️ COPERNICUS SENTINEL-2 SATELLITE CROP HEALTH SCANNER    */}
+      {/* ========================================================= */}
+      <SatelliteCropScannerModal
+        isOpen={showSatelliteScanner}
+        onClose={() => setShowSatelliteScanner(false)}
+        initialCrop={satelliteCrop}
+        initialLocation={satelliteLocation}
       />
     </div>
   );
