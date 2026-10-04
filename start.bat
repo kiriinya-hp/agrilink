@@ -1,24 +1,38 @@
 @echo off
 title AgriLink Platform Launcher
 color 0A
+
+:: Store the project root path safely (no nested quote issues)
+set "ROOTDIR=%~dp0"
+
 echo ========================================================
-echo       Starting AgriLink (Backend + Frontend)
+echo       AgriLink - Starting Backend + Frontend
 echo ========================================================
+echo.
 
-echo [1/2] Starting Backend API Server (Port 5000)...
-start "AgriLink Backend API (Port 5000)" cmd /k "cd /d "%~dp0backend" && npm run dev"
+:: Step 1: Start Backend API (Port 5000) in its own window
+echo  [1/2]  Backend API starting at http://localhost:5000 ...
+start "AgriLink Backend API  [PORT 5000]" cmd /k "cd /d %ROOTDIR%backend && npm run dev"
 
-echo [2/2] Starting Frontend Vite Dev Server (Port 3000)...
-start "AgriLink Frontend Vite (Port 3000)" cmd /k "cd /d "%~dp0frontend" && npm run dev"
+:: Small gap before starting frontend
+timeout /t 2 /nobreak >nul
 
-echo Waiting for servers to initialize...
-timeout /t 3 /nobreak >nul
+:: Step 2: Start Frontend Vite Dev Server (Port 3000) in its own window
+echo  [2/2]  Frontend Vite starting at http://localhost:3000 ...
+start "AgriLink Frontend Vite [PORT 3000]" cmd /k "cd /d %ROOTDIR%frontend && npm run dev"
 
-echo Opening AgriLink in your default browser...
+:: Give both servers enough time to fully initialize
+echo.
+echo  Waiting for servers to initialize (8 seconds)...
+timeout /t 8 /nobreak >nul
+
+:: Open browser at frontend dev server
+echo  Opening browser at http://localhost:3000 ...
 start http://localhost:3000
 
 echo.
 echo ========================================================
-echo   Backend is running at:  http://localhost:5000
-echo   Frontend is running at: http://localhost:3000
+echo   Backend API:   http://localhost:5000
+echo   Frontend App:  http://localhost:3000
+echo   Close either command window to stop that server.
 echo ========================================================
