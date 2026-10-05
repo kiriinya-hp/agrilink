@@ -254,8 +254,10 @@ export async function sendSMSNotification(phone, message) {
         timeout: 8000
       });
 
-      console.log(`✅ SMS delivered via Africa's Talking! Response:`, atRes.data);
-      return { success: true, sent: true, mode: 'AT_SMS_SENT', data: atRes.data };
+      console.log(`✅ SMS status from Africa's Talking:`, JSON.stringify(atRes.data));
+      const recipientStatus = atRes.data?.SMSMessageData?.Recipients?.[0]?.status;
+      const isDelivered = recipientStatus === 'Success';
+      return { success: true, sent: isDelivered, mode: 'AT_SMS_SENT', data: atRes.data };
     } catch (err) {
       console.error('[SMS ERROR] Africa\'s Talking error:', err.response?.data || err.message);
     }
