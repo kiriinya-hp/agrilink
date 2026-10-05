@@ -208,15 +208,16 @@ export async function sendSMSNotification(phone, message) {
         ? 'https://api.sandbox.africastalking.com/version1/messaging'
         : 'https://api.africastalking.com/version1/messaging';
 
+      const senderId = process.env.AT_SENDER_ID || (AT_USERNAME !== 'sandbox' ? 'agrilink' : undefined);
       const params = new URLSearchParams();
       params.append('username', AT_USERNAME);
       params.append('to', `+${sanitized}`);
       params.append('message', message);
-      if (process.env.AT_SENDER_ID) {
-        params.append('from', process.env.AT_SENDER_ID);
+      if (senderId) {
+        params.append('from', senderId);
       }
 
-      const atRes = await axios.post(baseUrl, params.toString(), {
+      let atRes = await axios.post(baseUrl, params.toString(), {
         headers: {
           apiKey: AT_API_KEY.trim(),
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -224,6 +225,21 @@ export async function sendSMSNotification(phone, message) {
         },
         timeout: 8000
       });
+
+      // If carrier reports Sender ID pending or invalid, retry without 'from'
+      const firstStatus = atRes.data?.SMSMessageData?.Recipients?.[0]?.status;
+      if (senderId && (firstStatus === 'InvalidSenderId' || firstStatus === 'Rejected')) {
+        console.warn(`[SMS] Sender ID '${senderId}' not yet active on carrier network, retrying without 'from'...`);
+        params.delete('from');
+        atRes = await axios.post(baseUrl, params.toString(), {
+          headers: {
+            apiKey: AT_API_KEY.trim(),
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Accept: 'application/json'
+          },
+          timeout: 8000
+        });
+      }
 
       console.log(`✅ SMS status from Africa's Talking:`, JSON.stringify(atRes.data));
       const recipientStatus = atRes.data?.SMSMessageData?.Recipients?.[0]?.status;
