@@ -3,7 +3,12 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { triggerStkPush } from '../services/mpesaService.js';
-import { sendVerificationEmail, sendPasswordResetEmail, sendDisbursementNotification } from '../services/notificationService.js';
+import { 
+  sendVerificationEmail, 
+  sendPasswordResetEmail, 
+  sendDisbursementNotification,
+  sendSMSNotification 
+} from '../services/notificationService.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -106,7 +111,7 @@ router.post('/auth/register', async (req, res) => {
       }
     });
 
-    // Send verification code via email
+    // Send verification code via email & SMS
     let emailSent = false;
     let emailResult = null;
     try {
@@ -114,6 +119,14 @@ router.post('/auth/register', async (req, res) => {
       emailSent = emailResult?.sent === true;
     } catch (e) {
       console.warn('Initial verification email log:', e.message);
+    }
+
+    if (newUser.phone) {
+      try {
+        await sendSMSNotification(newUser.phone, `AgriLink Security: ${verificationCode} is your Account Verification Code. Valid for 15 mins.`);
+      } catch (smsErr) {
+        console.warn('Initial verification SMS log:', smsErr.message);
+      }
     }
 
     res.status(201).json({
@@ -154,6 +167,14 @@ router.post('/auth/send-verification', async (req, res) => {
       emailSent = emailResult?.sent === true;
     } catch (e) {
       console.warn('Resend verification email log:', e.message);
+    }
+
+    if (user.phone) {
+      try {
+        await sendSMSNotification(user.phone, `AgriLink Security: ${code} is your Account Verification Code. Valid for 15 mins.`);
+      } catch (smsErr) {
+        console.warn('Resend verification SMS log:', smsErr.message);
+      }
     }
 
     res.json({
@@ -246,6 +267,14 @@ router.post('/auth/forgot-password', async (req, res) => {
       emailSent = emailResult?.sent === true;
     } catch (e) {
       console.warn('Forgot password email log:', e.message);
+    }
+
+    if (user.phone) {
+      try {
+        await sendSMSNotification(user.phone, `AgriLink Security: ${resetCode} is your Password Reset Code. Valid for 15 mins.`);
+      } catch (smsErr) {
+        console.warn('Forgot password SMS log:', smsErr.message);
+      }
     }
 
     res.json({

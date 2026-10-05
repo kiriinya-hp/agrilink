@@ -184,6 +184,87 @@ export function sanitizePhone(phone) {
 }
 
 /**
+ * Send SMS Notification via Brevo SMS or Africa's Talking SMS
+ */
+export async function sendSMSNotification(phone, message) {
+  const sanitized = sanitizePhone(phone);
+  if (!sanitized) {
+    console.warn('[SMS] No valid phone number provided for SMS dispatch');
+    return { success: false, error: 'Invalid phone number' };
+  }
+
+  console.log(`\n======================================================`);
+  console.log(`📱 [SMS DISPATCH INITIATED]`);
+  console.log(`📞 Recipient: +${sanitized}`);
+  console.log(`💬 Content: ${message}`);
+  console.log(`======================================================\n`);
+
+  // 1. Try Brevo Transactional SMS API (if BREVO_API_KEY is configured)
+  if (BREVO_API_KEY) {
+    try {
+      console.log(`[SMS] Sending via Brevo SMS API to +${sanitized}...`);
+      const brevoSmsRes = await axios.post(
+        'https://api.brevo.com/v3/transactionalSMS/send',
+        {
+          sender: 'AgriLink',
+          recipient: sanitized,
+          content: message
+        },
+        {
+          headers: {
+            'api-key': BREVO_API_KEY.trim(),
+            'Content-Type': 'application/json'
+          },
+          timeout: 8000
+        }
+      );
+
+      if (brevoSmsRes.data?.messageId) {
+        console.log(`✅ SMS delivered via Brevo! Message ID: ${brevoSmsRes.data.messageId}`);
+        return { success: true, sent: true, mode: 'BREVO_SMS_SENT', messageId: brevoSmsRes.data.messageId };
+      }
+    } catch (err) {
+      console.error('[SMS NOTICE] Brevo SMS response:', err.response?.data?.message || err.message);
+    }
+  }
+
+  // 2. Try Africa's Talking SMS API (if AT_API_KEY is configured)
+  const { AT_API_KEY, AT_USERNAME = 'sandbox' } = process.env;
+  if (AT_API_KEY) {
+    try {
+      console.log(`[SMS] Sending via Africa's Talking to +${sanitized}...`);
+      const baseUrl = AT_USERNAME === 'sandbox'
+        ? 'https://api.sandbox.africastalking.com/version1/messaging'
+        : 'https://api.africastalking.com/version1/messaging';
+
+      const params = new URLSearchParams();
+      params.append('username', AT_USERNAME);
+      params.append('to', `+${sanitized}`);
+      params.append('message', message);
+      if (process.env.AT_SENDER_ID) {
+        params.append('from', process.env.AT_SENDER_ID);
+      }
+
+      const atRes = await axios.post(baseUrl, params.toString(), {
+        headers: {
+          apiKey: AT_API_KEY.trim(),
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Accept: 'application/json'
+        },
+        timeout: 8000
+      });
+
+      console.log(`✅ SMS delivered via Africa's Talking! Response:`, atRes.data);
+      return { success: true, sent: true, mode: 'AT_SMS_SENT', data: atRes.data };
+    } catch (err) {
+      console.error('[SMS ERROR] Africa\'s Talking error:', err.response?.data || err.message);
+    }
+  }
+
+  return { success: true, sent: false, mode: 'PREVIEW_LOGGED' };
+}
+
+/**
  * Send 6-digit Email Verification OTP
  */
 export async function sendVerificationEmail(email, code, userName = 'Valued Partner') {
