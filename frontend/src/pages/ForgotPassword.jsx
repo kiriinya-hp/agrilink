@@ -113,8 +113,8 @@ export default function ForgotPassword({ onNavigateLogin }) {
         </h2>
         <p className="mt-1 text-center text-xs text-slate-400">
           {step === 'request'
-            ? 'Enter your registered email to receive a 6-digit authorization code.'
-            : `Enter the 6-digit code sent to ${email} and your new password.`}
+            ? 'Enter your registered email to receive a 6-digit authorization code via email and SMS.'
+            : `Enter the 6-digit code sent to ${email} (also sent via SMS) and your new password.`}
         </p>
 
         <div className="mt-6 bg-slate-800/70 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-2xl">

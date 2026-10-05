@@ -394,9 +394,9 @@ export default function Register({ onNavigateLogin }) {
               <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-3 border border-emerald-500/30">
                 <ShieldCheck className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-bold text-white">Enter 6-Digit Email Code</h3>
+              <h3 className="text-lg font-bold text-white">Enter 6-Digit Verification Code</h3>
               <p className="text-xs text-slate-300 mt-1">
-                We sent a security code to <strong className="text-emerald-400">{formData.email}</strong> via Google App Mailer.
+                We sent a security code to <strong className="text-emerald-400">{formData.email}</strong> and via SMS to <strong className="text-emerald-400">{formData.phone || 'your phone'}</strong>.
               </p>
             </div>
 
