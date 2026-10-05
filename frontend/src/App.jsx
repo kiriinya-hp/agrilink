@@ -648,27 +648,29 @@ function MainApp() {
         </div>
 
         {/* Dynamic Navigation for Logged-In Role */}
-        <div className="bg-slate-50/90 backdrop-blur-md border-t border-slate-200/80 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto flex gap-2 py-2 overflow-x-auto">
+        <div className="bg-slate-50/90 backdrop-blur-md border-t border-slate-200/80 px-2 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto flex gap-1 sm:gap-2 py-1.5 sm:py-2 overflow-x-auto scrollbar-none">
             {user.role === 'BUYER' && (
               <>
                 <button
                   onClick={() => setActiveTab('marketplace')}
-                  className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                     activeTab === 'marketplace' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                  {t('b2bMarketplace')}
+                  <ShoppingBag className="w-3.5 h-3.5 shrink-0" />
+                  <span className="hidden sm:inline">{t('b2bMarketplace')}</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('orders')}
-                  className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                     activeTab === 'orders' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  <Lock className="w-3.5 h-3.5" />
-                  {t('myOrders')} ({orders.length})
+                  <Lock className="w-3.5 h-3.5 shrink-0" />
+                  <span className="hidden sm:inline">{t('myOrders')}</span>
+                  <span className="sm:hidden">Orders</span>
+                  <span>({orders.length})</span>
                 </button>
               </>
             )}
@@ -677,21 +679,24 @@ function MainApp() {
               <>
                 <button
                   onClick={() => setActiveTab('farmer')}
-                  className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                     activeTab === 'farmer' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  <Sprout className="w-3.5 h-3.5" />
-                  {t('farmerDashboard')}
+                  <Sprout className="w-3.5 h-3.5 shrink-0" />
+                  <span className="hidden sm:inline">{t('farmerDashboard')}</span>
+                  <span className="sm:hidden">Farm</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('marketplace')}
-                  className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                     activeTab === 'marketplace' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                  {t('b2bMarketplace')} ({listings.length})
+                  <ShoppingBag className="w-3.5 h-3.5 shrink-0" />
+                  <span className="hidden sm:inline">{t('b2bMarketplace')}</span>
+                  <span className="sm:hidden">Market</span>
+                  <span>({listings.length})</span>
                 </button>
               </>
             )}
@@ -700,21 +705,25 @@ function MainApp() {
               <>
                 <button
                   onClick={() => setActiveTab('logistics')}
-                  className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                     activeTab === 'logistics' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  <Truck className="w-3.5 h-3.5" />
-                  {t('logisticsBoard')} ({availableShipments.length})
+                  <Truck className="w-3.5 h-3.5 shrink-0" />
+                  <span className="hidden sm:inline">{t('logisticsBoard')}</span>
+                  <span className="sm:hidden">Loads</span>
+                  <span>({availableShipments.length})</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('marketplace')}
-                  className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                     activeTab === 'marketplace' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                  {t('b2bMarketplace')} ({listings.length})
+                  <ShoppingBag className="w-3.5 h-3.5 shrink-0" />
+                  <span className="hidden sm:inline">{t('b2bMarketplace')}</span>
+                  <span className="sm:hidden">Market</span>
+                  <span>({listings.length})</span>
                 </button>
               </>
             )}
@@ -723,43 +732,48 @@ function MainApp() {
               <>
                 <button
                   onClick={() => setActiveTab('analytics')}
-                  className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                     activeTab === 'analytics' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  <BarChart3 className="w-3.5 h-3.5" />
-                  {t('executiveBi')}
+                  <BarChart3 className="w-3.5 h-3.5 shrink-0" />
+                  <span className="hidden sm:inline">{t('executiveBi')}</span>
+                  <span className="sm:hidden">BI</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('admin-users')}
-                  className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                     activeTab === 'admin-users' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  <User className="w-3.5 h-3.5" />
-                  {t('stakeholders')} ({allUsers.length})
+                  <User className="w-3.5 h-3.5 shrink-0" />
+                  <span className="hidden sm:inline">{t('stakeholders')}</span>
+                  <span className="sm:hidden">Users</span>
+                  <span>({allUsers.length})</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('marketplace')}
-                  className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                     activeTab === 'marketplace' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                  {t('b2bMarketplace')} ({listings.length})
+                  <ShoppingBag className="w-3.5 h-3.5 shrink-0" />
+                  <span className="hidden sm:inline">{t('b2bMarketplace')}</span>
+                  <span className="sm:hidden">Market</span>
+                  <span>({listings.length})</span>
                 </button>
               </>
             )}
 
             {/* Spacer to push feature tools to the right */}
-            <div className="flex-1" />
+            <div className="flex-1 min-w-2" />
 
-            {/* Quick-Access Feature Tool Buttons (always visible) */}
+            {/* Quick-Access Feature Tool Buttons */}
             <button
               type="button"
               onClick={() => setShowFreightCalculator(true)}
               title="Instant Freight & Mileage Calculator"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-amber-50 hover:text-amber-800 border border-transparent hover:border-amber-200 transition-all"
+              className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-bold text-slate-600 hover:bg-amber-50 hover:text-amber-800 border border-transparent hover:border-amber-200 transition-all shrink-0"
             >
               <Truck className="w-3.5 h-3.5 text-amber-600" />
               <span className="hidden md:inline">{t('freightQuote')}</span>
@@ -769,7 +783,7 @@ function MainApp() {
               type="button"
               onClick={() => setShowChamaAggregation(true)}
               title="Chama / Cooperative Produce Pooling"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-purple-50 hover:text-purple-800 border border-transparent hover:border-purple-200 transition-all"
+              className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-bold text-slate-600 hover:bg-purple-50 hover:text-purple-800 border border-transparent hover:border-purple-200 transition-all shrink-0"
             >
               <Handshake className="w-3.5 h-3.5 text-purple-600" />
               <span className="hidden md:inline">{t('chamaPool')}</span>
@@ -779,7 +793,7 @@ function MainApp() {
               type="button"
               onClick={() => setShowAlertsModal(true)}
               title="Set Price Drop & Harvest SMS / WhatsApp Alerts"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-sky-50 hover:text-sky-800 border border-transparent hover:border-sky-200 transition-all"
+              className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-bold text-slate-600 hover:bg-sky-50 hover:text-sky-800 border border-transparent hover:border-sky-200 transition-all shrink-0"
             >
               <Bell className="w-3.5 h-3.5 text-sky-600" />
               <span className="hidden md:inline">{t('alerts')}</span>
@@ -790,7 +804,7 @@ function MainApp() {
               type="button"
               onClick={() => setShowAiNegotiation(true)}
               title="Kilimo AI Autonomous Price Discovery & Deal Maker"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-purple-50 hover:text-purple-800 border border-transparent hover:border-purple-200 transition-all"
+              className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-bold text-slate-600 hover:bg-purple-50 hover:text-purple-800 border border-transparent hover:border-purple-200 transition-all shrink-0"
             >
               <Bot className="w-3.5 h-3.5 text-purple-600" />
               <span className="hidden lg:inline">AI Deal Maker</span>
@@ -805,7 +819,7 @@ function MainApp() {
                 setShowSatelliteScanner(true);
               }}
               title="Sentinel-2 Satellite NDVI Crop Health & Yield Scanner"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-teal-50 hover:text-teal-800 border border-transparent hover:border-teal-200 transition-all"
+              className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-bold text-slate-600 hover:bg-teal-50 hover:text-teal-800 border border-transparent hover:border-teal-200 transition-all shrink-0"
             >
               <Radio className="w-3.5 h-3.5 text-teal-600" />
               <span className="hidden lg:inline">Satellite NDVI</span>
@@ -816,14 +830,14 @@ function MainApp() {
               type="button"
               onClick={() => setShowUssdModal(true)}
               title="Rural Feature Phone USSD Gateway (*384*50#)"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-amber-50 hover:text-amber-800 border border-transparent hover:border-amber-200 transition-all"
+              className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-bold text-slate-600 hover:bg-amber-50 hover:text-amber-800 border border-transparent hover:border-amber-200 transition-all shrink-0"
             >
               <Smartphone className="w-3.5 h-3.5 text-amber-600" />
               <span className="hidden lg:inline">*384*50#</span>
             </button>
 
             {/* Bilingual EN/SWA Language Switcher & KES/USD Currency Switcher */}
-            <div className="ml-1 pl-2 border-l border-slate-200 flex items-center gap-2">
+            <div className="ml-1 pl-2 border-l border-slate-200 flex items-center gap-2 shrink-0">
               <LanguageSwitcher />
               <CurrencyUnitBar />
             </div>

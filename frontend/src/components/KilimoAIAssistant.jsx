@@ -545,11 +545,12 @@ How would you like to proceed?`,
               setIsOpen(false);
               if (window.speechSynthesis) window.speechSynthesis.cancel();
             }}
-            className="absolute inset-0 bg-slate-950/30 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in"
+            className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm transition-opacity duration-300 animate-in fade-in"
           />
 
-          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-            <div className="w-screen max-w-md sm:max-w-lg bg-white shadow-2xl flex flex-col border-l border-slate-200 animate-in slide-in-from-right duration-300">
+          {/* Panel — full screen on mobile, side panel on sm+ */}
+          <div className="fixed inset-0 sm:inset-y-0 sm:right-0 sm:left-auto flex sm:pl-10 pointer-events-none">
+            <div className="w-full sm:w-screen sm:max-w-md lg:max-w-lg bg-white shadow-2xl flex flex-col sm:border-l border-slate-200 animate-in slide-in-from-right duration-300 pointer-events-auto">
               
               {/* Clean Minimalist Header */}
               <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
@@ -761,7 +762,7 @@ How would you like to proceed?`,
               </div>
 
               {/* Clean Bottom Input Bar */}
-              <div className="p-4 border-t border-slate-100 bg-white">
+              <div className="p-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-slate-100 bg-white">
                 <form 
                   onSubmit={handleSubmit}
                   className="flex items-center gap-2 p-1.5 rounded-2xl border border-slate-200 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/10 bg-slate-50/70 focus-within:bg-white transition-all shadow-xs"
@@ -788,7 +789,7 @@ How would you like to proceed?`,
                     }
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
-                    className="flex-1 bg-transparent text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none px-1"
+                    className="flex-1 bg-transparent text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none px-1 min-w-0"
                   />
 
                   <button
