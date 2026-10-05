@@ -81,41 +81,11 @@ const getSenderAddress = () => {
  * Universal email dispatcher (Resend HTTPS -> Brevo HTTPS -> SMTP -> Console preview fallback)
  */
 async function sendEmailMessage({ to, subject, html, text, userName = 'Partner' }) {
-  // 1. Try Resend HTTPS REST API (Port 443 — NEVER blocked by Render)
-  if (RESEND_API_KEY) {
-    try {
-      console.log(`[EMAIL] Dispatching via Resend HTTPS API to ${to}...`);
-      const resendRes = await axios.post(
-        'https://api.resend.com/emails',
-        {
-          from: 'AgriLink Security <onboarding@resend.dev>',
-          to: [to],
-          subject,
-          html,
-          text
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${RESEND_API_KEY.trim()}`,
-            'Content-Type': 'application/json'
-          },
-          timeout: 8000
-        }
-      );
-      if (resendRes.data?.id) {
-        console.log(`✅ Email delivered via Resend HTTPS! ID: ${resendRes.data.id}`);
-        return { success: true, sent: true, mode: 'RESEND_HTTPS_SENT', messageId: resendRes.data.id };
-      }
-    } catch (err) {
-      console.error('[EMAIL ERROR] Resend HTTPS failed:', err.response?.data || err.message);
-    }
-  }
-
-  // 2. Try Brevo HTTPS REST API (Port 443 — NEVER blocked by Render)
+  // 1. Try Brevo HTTPS REST API (Port 443 — sends to ANY recipient email address)
   if (BREVO_API_KEY) {
     try {
       console.log(`[EMAIL] Dispatching via Brevo HTTPS API to ${to}...`);
-      const senderEmail = GMAIL_USER ? GMAIL_USER.trim() : 'security@agrilink.co.ke';
+      const senderEmail = GMAIL_USER ? GMAIL_USER.trim() : 'agrilink287@gmail.com';
       const brevoRes = await axios.post(
         'https://api.brevo.com/v3/smtp/email',
         {
@@ -139,6 +109,36 @@ async function sendEmailMessage({ to, subject, html, text, userName = 'Partner' 
       }
     } catch (err) {
       console.error('[EMAIL ERROR] Brevo HTTPS failed:', err.response?.data || err.message);
+    }
+  }
+
+  // 2. Try Resend HTTPS REST API (Port 443 — works for registered developer email)
+  if (RESEND_API_KEY) {
+    try {
+      console.log(`[EMAIL] Dispatching via Resend HTTPS API to ${to}...`);
+      const resendRes = await axios.post(
+        'https://api.resend.com/emails',
+        {
+          from: 'AgriLink Security <onboarding@resend.dev>',
+          to: [to],
+          subject,
+          html,
+          text
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${RESEND_API_KEY.trim()}`,
+            'Content-Type': 'application/json'
+          },
+          timeout: 8000
+        }
+      );
+      if (resendRes.data?.id) {
+        console.log(`✅ Email delivered via Resend HTTPS! ID: ${resendRes.data.id}`);
+        return { success: true, sent: true, mode: 'RESEND_HTTPS_SENT', messageId: resendRes.data.id };
+      }
+    } catch (err) {
+      console.error('[EMAIL ERROR] Resend HTTPS failed:', err.response?.data || err.message);
     }
   }
 
