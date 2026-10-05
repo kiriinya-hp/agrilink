@@ -199,36 +199,7 @@ export async function sendSMSNotification(phone, message) {
   console.log(`💬 Content: ${message}`);
   console.log(`======================================================\n`);
 
-  // 1. Try Brevo Transactional SMS API (if BREVO_API_KEY is configured)
-  if (BREVO_API_KEY) {
-    try {
-      console.log(`[SMS] Sending via Brevo SMS API to +${sanitized}...`);
-      const brevoSmsRes = await axios.post(
-        'https://api.brevo.com/v3/transactionalSMS/send',
-        {
-          sender: 'AgriLink',
-          recipient: sanitized,
-          content: message
-        },
-        {
-          headers: {
-            'api-key': BREVO_API_KEY.trim(),
-            'Content-Type': 'application/json'
-          },
-          timeout: 8000
-        }
-      );
-
-      if (brevoSmsRes.data?.messageId) {
-        console.log(`✅ SMS delivered via Brevo! Message ID: ${brevoSmsRes.data.messageId}`);
-        return { success: true, sent: true, mode: 'BREVO_SMS_SENT', messageId: brevoSmsRes.data.messageId };
-      }
-    } catch (err) {
-      console.error('[SMS NOTICE] Brevo SMS response:', err.response?.data?.message || err.message);
-    }
-  }
-
-  // 2. Try Africa's Talking SMS API (if AT_API_KEY is configured)
+  // 1. Try Africa's Talking SMS API (Kenya Local Carrier Gateway - Safaricom/Airtel)
   const { AT_API_KEY, AT_USERNAME = 'sandbox' } = process.env;
   if (AT_API_KEY) {
     try {
@@ -260,6 +231,35 @@ export async function sendSMSNotification(phone, message) {
       return { success: true, sent: isDelivered, mode: 'AT_SMS_SENT', data: atRes.data };
     } catch (err) {
       console.error('[SMS ERROR] Africa\'s Talking error:', err.response?.data || err.message);
+    }
+  }
+
+  // 2. Try Brevo Transactional SMS API (Fallback only if Africa's Talking is not configured)
+  if (BREVO_API_KEY) {
+    try {
+      console.log(`[SMS] Sending via Brevo SMS API to +${sanitized}...`);
+      const brevoSmsRes = await axios.post(
+        'https://api.brevo.com/v3/transactionalSMS/send',
+        {
+          sender: 'AgriLink',
+          recipient: sanitized,
+          content: message
+        },
+        {
+          headers: {
+            'api-key': BREVO_API_KEY.trim(),
+            'Content-Type': 'application/json'
+          },
+          timeout: 8000
+        }
+      );
+
+      if (brevoSmsRes.data?.messageId) {
+        console.log(`✅ SMS queued via Brevo! Message ID: ${brevoSmsRes.data.messageId}`);
+        return { success: true, sent: true, mode: 'BREVO_SMS_SENT', messageId: brevoSmsRes.data.messageId };
+      }
+    } catch (err) {
+      console.error('[SMS NOTICE] Brevo SMS response:', err.response?.data?.message || err.message);
     }
   }
 
