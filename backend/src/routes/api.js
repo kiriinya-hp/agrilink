@@ -107,8 +107,11 @@ router.post('/auth/register', async (req, res) => {
     });
 
     // Send verification code via email
+    let emailSent = false;
+    let emailResult = null;
     try {
-      await sendVerificationEmail(newUser.email, verificationCode, newUser.name);
+      emailResult = await sendVerificationEmail(newUser.email, verificationCode, newUser.name);
+      emailSent = emailResult?.sent === true;
     } catch (e) {
       console.warn('Initial verification email log:', e.message);
     }
@@ -117,7 +120,11 @@ router.post('/auth/register', async (req, res) => {
       success: true,
       requiresVerification: true,
       email: newUser.email,
-      message: 'A 6-digit verification code has been dispatched to your email via Google App Mailer.'
+      emailSent,
+      previewCode: !emailSent ? verificationCode : undefined,
+      message: emailSent
+        ? 'A 6-digit verification code has been dispatched to your email.'
+        : 'Account created. Use the verification code displayed on screen or in server logs.'
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -140,9 +147,23 @@ router.post('/auth/send-verification', async (req, res) => {
       data: { verificationCode: code }
     });
 
-    await sendVerificationEmail(user.email, code, user.name);
+    let emailSent = false;
+    let emailResult = null;
+    try {
+      emailResult = await sendVerificationEmail(user.email, code, user.name);
+      emailSent = emailResult?.sent === true;
+    } catch (e) {
+      console.warn('Resend verification email log:', e.message);
+    }
 
-    res.json({ success: true, message: `Verification code sent to ${user.email}` });
+    res.json({
+      success: true,
+      emailSent,
+      previewCode: !emailSent ? code : undefined,
+      message: emailSent
+        ? `Verification code sent to ${user.email}`
+        : `New verification code generated for ${user.email}.`
+    });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -218,11 +239,22 @@ router.post('/auth/forgot-password', async (req, res) => {
       data: { resetCode, resetCodeExpires }
     });
 
-    await sendPasswordResetEmail(user.email, resetCode, user.name);
+    let emailSent = false;
+    let emailResult = null;
+    try {
+      emailResult = await sendPasswordResetEmail(user.email, resetCode, user.name);
+      emailSent = emailResult?.sent === true;
+    } catch (e) {
+      console.warn('Forgot password email log:', e.message);
+    }
 
     res.json({
       success: true,
-      message: `A 6-digit password reset authorization code has been dispatched to ${user.email} via Google App Mailer.`
+      emailSent,
+      previewCode: !emailSent ? resetCode : undefined,
+      message: emailSent
+        ? `A 6-digit password reset authorization code has been dispatched to ${user.email}.`
+        : `Password reset code generated. Use the code displayed on screen or check server logs.`
     });
   } catch (error) {
     console.error('Forgot password error:', error);

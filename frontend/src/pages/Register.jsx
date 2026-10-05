@@ -14,7 +14,8 @@ import {
   ShieldCheck, 
   CheckCircle2, 
   RefreshCw,
-  ArrowLeft
+  ArrowLeft,
+  KeyRound
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import AuthAnimatedBackground from '../components/AuthAnimatedBackground';
@@ -39,6 +40,7 @@ export default function Register({ onNavigateLogin }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [previewCode, setPreviewCode] = useState('');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -75,7 +77,7 @@ export default function Register({ onNavigateLogin }) {
 
     setLoading(true);
     try {
-      const res = await register({
+      const data = await register({
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
@@ -85,7 +87,10 @@ export default function Register({ onNavigateLogin }) {
         businessName: formData.businessName
       });
 
-      setSuccessMsg(`A 6-digit security code has been dispatched to ${formData.email} via Google App Mailer.`);
+      if (data?.previewCode) {
+        setPreviewCode(data.previewCode);
+      }
+      setSuccessMsg(data?.message || `A 6-digit security code has been dispatched to ${formData.email}.`);
       setStep('verify');
       startCountdown();
     } catch (err) {
@@ -130,6 +135,9 @@ export default function Register({ onNavigateLogin }) {
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
 
+      if (data?.previewCode) {
+        setPreviewCode(data.previewCode);
+      }
       setSuccessMsg(`New 6-digit code sent to ${formData.email}!`);
       startCountdown();
     } catch (err) {
@@ -403,6 +411,30 @@ export default function Register({ onNavigateLogin }) {
               <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 shrink-0" />
                 <span>{successMsg}</span>
+              </div>
+            )}
+
+            {previewCode && (
+              <div className="mb-5 p-3.5 bg-amber-500/15 border border-amber-500/40 rounded-xl text-xs text-amber-200">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="font-bold flex items-center gap-1.5 text-amber-300">
+                    <KeyRound className="w-4 h-4 text-amber-400" />
+                    Cloud Host Port Notice
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setVerificationCode(previewCode)}
+                    className="px-2 py-0.5 rounded-md bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-[11px] shadow-sm transition-all"
+                  >
+                    Auto-Fill Code
+                  </button>
+                </div>
+                <p className="text-[11px] text-amber-200/90 leading-relaxed">
+                  Render free tier blocks SMTP port 465/587. Your active verification code is:{' '}
+                  <strong className="font-mono text-white text-sm tracking-widest bg-slate-900/80 px-2 py-0.5 rounded border border-amber-500/30">
+                    {previewCode}
+                  </strong>
+                </p>
               </div>
             )}
 

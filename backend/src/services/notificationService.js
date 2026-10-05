@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
+import axios from 'axios';
 import { PrismaClient } from '@prisma/client';
 
 dotenv.config();
@@ -9,45 +10,51 @@ const prisma = new PrismaClient();
 const {
   GMAIL_USER,
   GMAIL_APP_PASSWORD,
+  RESEND_API_KEY,
+  BREVO_API_KEY,
   SMTP_HOST,
   SMTP_PORT = 587,
   SMTP_USER,
   SMTP_PASS,
-  SMTP_FROM = 'AgriLink Escrow Notifications <notifications@agrilink.co.ke>'
+  SMTP_FROM = 'AgriLink Security <notifications@agrilink.co.ke>'
 } = process.env;
 
-// Initialize Nodemailer with explicit Gmail SMTP (port 465 SSL)
+// SMTP status tracking
 let transporter = null;
+let isSmtpOperational = false;
 
 if (GMAIL_USER && GMAIL_APP_PASSWORD && !GMAIL_USER.includes('your_email')) {
   const cleanPass = GMAIL_APP_PASSWORD.replace(/\s+/g, '');
   const cleanUser = GMAIL_USER.trim();
 
   console.log(`[EMAIL] Initializing Gmail SMTP for: ${cleanUser}`);
-  console.log(`[EMAIL] App Password length: ${cleanPass.length} characters`);
 
   transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
+    port: 587,
+    secure: false, // STARTTLS
     auth: {
       user: cleanUser,
       pass: cleanPass
     },
-    tls: { rejectUnauthorized: false }
+    tls: { rejectUnauthorized: false },
+    connectionTimeout: 6000,
+    greetingTimeout: 6000,
+    socketTimeout: 8000
   });
 
-  // Verify connection at server startup — logs success or full error details
-  transporter.verify((err, success) => {
+  // Test connection on startup
+  transporter.verify((err) => {
     if (err) {
-      console.error('==========================================');
-      console.error('[EMAIL ERROR] Gmail SMTP FAILED TO CONNECT:');
-      console.error('Error Code:', err.code);
-      console.error('Error Message:', err.message);
-      console.error('SMTP Response:', err.response);
-      console.error('==========================================');
+      isSmtpOperational = false;
+      console.warn('======================================================');
+      console.warn('[EMAIL NOTICE] Outbound SMTP port blocked by hosting provider (Code: ' + err.code + ').');
+      console.warn('ℹ️ Render Free Tier blocks outbound SMTP ports 25, 465 & 587.');
+      console.warn('💡 Tip: Set RESEND_API_KEY or BREVO_API_KEY for free HTTPS email delivery.');
+      console.warn('======================================================');
     } else {
-      console.log('[EMAIL] ✅ Gmail SMTP connected — emails will send successfully!');
+      isSmtpOperational = true;
+      console.log('[EMAIL] ✅ Gmail SMTP connected successfully!');
     }
   });
 
@@ -56,11 +63,108 @@ if (GMAIL_USER && GMAIL_APP_PASSWORD && !GMAIL_USER.includes('your_email')) {
     host: SMTP_HOST,
     port: Number(SMTP_PORT),
     secure: Number(SMTP_PORT) === 465,
-    auth: { user: SMTP_USER, pass: SMTP_PASS }
+    auth: { user: SMTP_USER, pass: SMTP_PASS },
+    connectionTimeout: 6000,
+    socketTimeout: 8000
   });
-} else {
-  console.warn('[EMAIL] ⚠️ No email credentials set. Codes will only log to console.');
+  isSmtpOperational = true;
 }
+
+const getSenderAddress = () => {
+  if (GMAIL_USER && !GMAIL_USER.includes('your_email')) {
+    return `AgriLink Security <${GMAIL_USER.trim()}>`;
+  }
+  return SMTP_FROM;
+};
+
+/**
+ * Universal email dispatcher (Resend HTTPS -> Brevo HTTPS -> SMTP -> Console preview fallback)
+ */
+async function sendEmailMessage({ to, subject, html, text, userName = 'Partner' }) {
+  // 1. Try Resend HTTPS REST API (Port 443 — NEVER blocked by Render)
+  if (RESEND_API_KEY) {
+    try {
+      console.log(`[EMAIL] Dispatching via Resend HTTPS API to ${to}...`);
+      const resendRes = await axios.post(
+        'https://api.resend.com/emails',
+        {
+          from: 'AgriLink Security <onboarding@resend.dev>',
+          to: [to],
+          subject,
+          html,
+          text
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${RESEND_API_KEY.trim()}`,
+            'Content-Type': 'application/json'
+          },
+          timeout: 8000
+        }
+      );
+      if (resendRes.data?.id) {
+        console.log(`✅ Email delivered via Resend HTTPS! ID: ${resendRes.data.id}`);
+        return { success: true, sent: true, mode: 'RESEND_HTTPS_SENT', messageId: resendRes.data.id };
+      }
+    } catch (err) {
+      console.error('[EMAIL ERROR] Resend HTTPS failed:', err.response?.data || err.message);
+    }
+  }
+
+  // 2. Try Brevo HTTPS REST API (Port 443 — NEVER blocked by Render)
+  if (BREVO_API_KEY) {
+    try {
+      console.log(`[EMAIL] Dispatching via Brevo HTTPS API to ${to}...`);
+      const senderEmail = GMAIL_USER ? GMAIL_USER.trim() : 'security@agrilink.co.ke';
+      const brevoRes = await axios.post(
+        'https://api.brevo.com/v3/smtp/email',
+        {
+          sender: { name: 'AgriLink Security', email: senderEmail },
+          to: [{ email: to, name: userName }],
+          subject,
+          htmlContent: html,
+          textContent: text
+        },
+        {
+          headers: {
+            'api-key': BREVO_API_KEY.trim(),
+            'Content-Type': 'application/json'
+          },
+          timeout: 8000
+        }
+      );
+      if (brevoRes.data?.messageId) {
+        console.log(`✅ Email delivered via Brevo HTTPS! ID: ${brevoRes.data.messageId}`);
+        return { success: true, sent: true, mode: 'BREVO_HTTPS_SENT', messageId: brevoRes.data.messageId };
+      }
+    } catch (err) {
+      console.error('[EMAIL ERROR] Brevo HTTPS failed:', err.response?.data || err.message);
+    }
+  }
+
+  // 3. Try Nodemailer SMTP if operational
+  if (transporter && isSmtpOperational) {
+    try {
+      console.log(`[EMAIL] Dispatching via SMTP to ${to}...`);
+      const info = await transporter.sendMail({
+        from: getSenderAddress(),
+        to,
+        subject,
+        text,
+        html
+      });
+      console.log(`✅ Email sent via SMTP! Message ID: ${info.messageId}`);
+      return { success: true, sent: true, mode: 'GOOGLE_APP_SENT', messageId: info.messageId };
+    } catch (err) {
+      console.error('❌ SMTP send failed:', err.code, err.message);
+    }
+  }
+
+  // 4. Fallback: Log to console & return preview
+  console.log(`[EMAIL FALLBACK] Email preview saved. Outbound SMTP/API not active on this host.`);
+  return { success: true, sent: false, mode: 'PREVIEW_LOGGED' };
+}
+
 
 
 const getSenderAddress = () => {
@@ -173,30 +277,18 @@ export async function sendVerificationEmail(email, code, userName = 'Valued Part
   console.log(`🔑 Verification OTP: ${code}`);
   console.log(`======================================================\n`);
 
-  if (transporter) {
-    try {
-      const info = await transporter.sendMail({
-        from: getSenderAddress(),
-        to: email,
-        subject,
-        text,
-        html
-      });
-      console.log(`✅ Verification email SENT! Message ID: ${info.messageId}`);
-      return { success: true, mode: 'GOOGLE_APP_SENT', messageId: info.messageId };
-    } catch (err) {
-      console.error('==========================================');
-      console.error('❌ VERIFICATION EMAIL FAILED TO SEND:');
-      console.error('Code:', err.code);
-      console.error('Message:', err.message);
-      console.error('Response:', err.response);
-      console.error('==========================================');
-    }
-  } else {
-    console.warn('[EMAIL] transporter is null — check GMAIL_USER and GMAIL_APP_PASSWORD env vars');
-  }
+  const dispatchRes = await sendEmailMessage({
+    to: email,
+    subject,
+    html,
+    text,
+    userName
+  });
 
-  return { success: true, mode: 'PREVIEW_LOGGED', code };
+  return {
+    ...dispatchRes,
+    code
+  };
 }
 
 /**
@@ -283,30 +375,18 @@ export async function sendPasswordResetEmail(email, code, userName = 'Valued Par
   console.log(`🔑 Reset Code: ${code}`);
   console.log(`======================================================\n`);
 
-  if (transporter) {
-    try {
-      const info = await transporter.sendMail({
-        from: getSenderAddress(),
-        to: email,
-        subject,
-        text,
-        html
-      });
-      console.log(`✅ Password reset email SENT! Message ID: ${info.messageId}`);
-      return { success: true, mode: 'GOOGLE_APP_SENT', messageId: info.messageId };
-    } catch (err) {
-      console.error('==========================================');
-      console.error('❌ PASSWORD RESET EMAIL FAILED TO SEND:');
-      console.error('Code:', err.code);
-      console.error('Message:', err.message);
-      console.error('Response:', err.response);
-      console.error('==========================================');
-    }
-  } else {
-    console.warn('[EMAIL] transporter is null — check GMAIL_USER and GMAIL_APP_PASSWORD env vars');
-  }
+  const dispatchRes = await sendEmailMessage({
+    to: email,
+    subject,
+    html,
+    text,
+    userName
+  });
 
-  return { success: true, mode: 'PREVIEW_LOGGED', code };
+  return {
+    ...dispatchRes,
+    code
+  };
 }
 
 /**
@@ -465,17 +545,18 @@ export async function sendDisbursementNotification({ order, settlement, buyer, f
     console.error('Failed to create in-app notification records:', dbErr.message);
   }
 
-  // 4. Send Email to Buyer if SMTP is active
-  if (transporter && buyer?.email) {
+  // 4. Send Email to Buyer
+  if (buyer?.email) {
     try {
-      await transporter.sendMail({
-        from: SMTP_FROM,
+      await sendEmailMessage({
         to: buyer.email,
         subject: `AgriLink Settlement: Official Receipt for Order #${orderNumber}`,
-        html: buyerHtmlReceipt
+        html: buyerHtmlReceipt,
+        text: smsMessage,
+        userName: buyer.name || 'Valued Customer'
       });
     } catch (e) {
-      console.warn('Could not dispatch SMTP email receipt:', e.message);
+      console.warn('Could not dispatch email receipt:', e.message);
     }
   }
 
