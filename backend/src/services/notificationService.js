@@ -167,12 +167,7 @@ async function sendEmailMessage({ to, subject, html, text, userName = 'Partner' 
 
 
 
-const getSenderAddress = () => {
-  if (GMAIL_USER && !GMAIL_USER.includes('your_email')) {
-    return `AgriLink Security <${GMAIL_USER.trim()}>`;
-  }
-  return SMTP_FROM;
-};
+
 
 /**
  * Format phone to international WhatsApp / SMS format (e.g. 254712345678)
