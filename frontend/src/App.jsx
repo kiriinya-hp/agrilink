@@ -35,7 +35,9 @@ import {
   ShieldAlert,
   Scale,
   CloudSun,
-  Bot
+  Bot,
+  Leaf,
+  Camera
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
@@ -64,6 +66,7 @@ import DashboardBackground from './components/DashboardBackground';
 import UssdSimulatorModal from './components/UssdSimulatorModal';
 import AiNegotiationModal from './components/AiNegotiationModal';
 import SatelliteCropScannerModal from './components/SatelliteCropScannerModal';
+import CropDiseaseDoctorModal from './components/CropDiseaseDoctorModal';
 
 
 const API_BASE = '/api';
@@ -134,6 +137,7 @@ function MainApp() {
   const [showSatelliteScanner, setShowSatelliteScanner] = useState(false);
   const [satelliteCrop, setSatelliteCrop] = useState('Tomatoes');
   const [satelliteLocation, setSatelliteLocation] = useState('Kinangop, Nyandarua County');
+  const [showCropDoctor, setShowCropDoctor] = useState(false);
 
 
   // Farmer New Listing Form State
@@ -825,6 +829,18 @@ function MainApp() {
               <span className="hidden lg:inline">Satellite NDVI</span>
             </button>
 
+            {/* Kilimo AI Crop Disease & Pest Doctor Button */}
+            <button
+              type="button"
+              onClick={() => setShowCropDoctor(true)}
+              title="Kilimo AI Crop Disease & Pest Doctor Scanner"
+              className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 transition-all shrink-0 shadow-xs"
+            >
+              <Leaf className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="hidden sm:inline">AI Crop Doctor</span>
+              <span className="sm:hidden">Doctor</span>
+            </button>
+
             {/* Rural USSD Gateway Simulator (*384*50#) Button */}
             <button
               type="button"
@@ -1201,6 +1217,39 @@ function MainApp() {
             {/* Live Commodity Wholesale Index & Agro-Climate Advisory */}
             <CommodityPriceTicker />
             <KilimoWeatherAdvisory />
+
+            {/* AI Crop Doctor & Agronomy Diagnostic Hub Banner */}
+            <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 rounded-2xl p-4 sm:p-5 text-white shadow-lg border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-400 flex items-center justify-center shrink-0">
+                  <Leaf className="w-6 h-6 animate-pulse" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-extrabold text-sm sm:text-base text-white tracking-tight">
+                      Kilimo AI Crop Doctor & Pest Diagnosis
+                    </h3>
+                    <span className="text-[10px] font-bold bg-emerald-500/30 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-400/30">
+                      Camera AI
+                    </span>
+                  </div>
+                  <p className="text-xs text-emerald-200/80 mt-0.5">
+                    Snap or upload leaf photos to diagnose tomato late blight, fall armyworm, bacterial wilt & get local Kenya agrovet prescriptions.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setShowCropDoctor(true)}
+                  className="w-full sm:w-auto px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
+                >
+                  <Camera className="w-4 h-4" />
+                  <span>Diagnose Crop Now</span>
+                </button>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Add Produce Form with Image Selector */}
@@ -2104,6 +2153,7 @@ function MainApp() {
         onNavigateTab={(tab) => setActiveTab(tab)}
         onOpenTopUp={() => setShowTopUpModal(true)}
         onOpenWithdraw={() => setShowWithdrawModal(true)}
+        onOpenCropDoctor={() => setShowCropDoctor(true)}
       />
 
       {/* ========================================================= */}
@@ -2233,6 +2283,19 @@ function MainApp() {
         onClose={() => setShowSatelliteScanner(false)}
         initialCrop={satelliteCrop}
         initialLocation={satelliteLocation}
+      />
+
+      {/* ========================================================= */}
+      {/* 🌿 KILIMO AI CROP DISEASE & PEST DOCTOR SCANNER           */}
+      {/* ========================================================= */}
+      <CropDiseaseDoctorModal
+        isOpen={showCropDoctor}
+        onClose={() => setShowCropDoctor(false)}
+        onOpenKilimoAI={(prompt) => {
+          setShowCropDoctor(false);
+          const aiBtn = document.querySelector('button[aria-label="Toggle Kilimo AI"]');
+          if (aiBtn) aiBtn.click();
+        }}
       />
     </div>
   );

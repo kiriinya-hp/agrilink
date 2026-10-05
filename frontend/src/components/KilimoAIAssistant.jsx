@@ -19,7 +19,8 @@ import {
   Check, 
   ChevronRight,
   Radio,
-  ExternalLink
+  ExternalLink,
+  Leaf
 } from 'lucide-react';
 
 // =====================================================================
@@ -92,7 +93,8 @@ export default function KilimoAIAssistant({
   activeTab, 
   onNavigateTab, 
   onOpenTopUp,
-  onOpenWithdraw 
+  onOpenWithdraw,
+  onOpenCropDoctor 
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [language, setLanguage] = useState('en'); // 'en' or 'sw'
@@ -240,6 +242,10 @@ export default function KilimoAIAssistant({
         if (onOpenWithdraw) onOpenWithdraw();
         setIsOpen(false);
         break;
+      case 'open_crop_doctor':
+        if (onOpenCropDoctor) onOpenCropDoctor();
+        setIsOpen(false);
+        break;
       default:
         break;
     }
@@ -316,6 +322,27 @@ Ungependa nikusaidie na nini sasa hivi?`,
           { label: 'Nenda Sokoni', action: 'navigate_main' },
           { label: 'Weka Mazao Shambani', action: 'navigate_farmer' },
           { label: 'Toa Pesa M-Pesa', action: 'open_withdraw' }
+        ]
+      };
+    }
+
+    // 1.5 CROP DISEASE & PEST DOCTOR (COMPUTER VISION)
+    if (q.includes('disease') || q.includes('pest') || q.includes('leaf') || q.includes('blight') || q.includes('armyworm') || q.includes('wilt') || q.includes('ugonjwa') || q.includes('wadudu') || q.includes('dawa') || q.includes('doctor') || q.includes('daktari')) {
+      return {
+        text: `🌿 **Kilimo AI Crop Doctor & Pest Diagnosis Engine:**
+
+You can scan or upload photos of diseased crop leaves and stems to receive instant agronomic diagnosis and prescription:
+
+• 🍅 **Tomato Late Blight & Early Blight** (*Phytophthora infestans*) → Ridomil Gold / Oshothane
+• 🌽 **Fall Armyworm & Stalk Borer** (*Spodoptera frugiperda*) → Belt 480 SC / Coragen
+• 🥔 **Bacterial Wilt & Black Scurf** on Shangi Potatoes → Copper Hydroxide (Kocide 2000)
+• 🥑 **Anthracnose & Black Spot** on Hass Avocados → Ortiva Top / Copper Oxychloride
+• 🥬 **Black Rot & Aphids** on Sukuma Wiki & Cabbages → Nordox & Neem Oil
+
+Every diagnosis includes exact chemical dosage per 20L knapsack sprayer, pre-harvest interval (PHI), and organic home remedies (such as wood ash and neem leaf extract)!`,
+        actions: [
+          { label: '🌿 Open Crop Doctor Camera', action: 'open_crop_doctor' },
+          { label: 'Explore Marketplace Listings', action: 'navigate_main' }
         ]
       };
     }
