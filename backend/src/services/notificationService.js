@@ -227,9 +227,10 @@ export async function sendSMSNotification(phone, message) {
       });
 
       // If carrier reports Sender ID pending or invalid, retry without 'from'
+      const resMsg = atRes.data?.SMSMessageData?.Message;
       const firstStatus = atRes.data?.SMSMessageData?.Recipients?.[0]?.status;
-      if (senderId && (firstStatus === 'InvalidSenderId' || firstStatus === 'Rejected')) {
-        console.warn(`[SMS] Sender ID '${senderId}' not yet active on carrier network, retrying without 'from'...`);
+      if (senderId && (resMsg === 'InvalidSenderId' || firstStatus === 'InvalidSenderId' || firstStatus === 'Rejected')) {
+        console.warn(`[SMS] Sender ID '${senderId}' is still pending carrier approval on Africa's Talking. Retrying with default route...`);
         params.delete('from');
         atRes = await axios.post(baseUrl, params.toString(), {
           headers: {
@@ -239,6 +240,7 @@ export async function sendSMSNotification(phone, message) {
           },
           timeout: 8000
         });
+        console.log(`✅ SMS status from Africa's Talking (fallback route):`, JSON.stringify(atRes.data));
       }
 
       console.log(`✅ SMS status from Africa's Talking:`, JSON.stringify(atRes.data));
