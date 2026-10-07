@@ -580,6 +580,17 @@ export default function Register({ onNavigateLogin }) {
                       : 'Send 6-Digit SMS to Phone'}
                   </span>
                 </button>
+
+                {/* Sleek reCAPTCHA security indicator */}
+                <div className="flex items-center justify-between text-[10px] text-slate-400 pt-2 px-1">
+                  <span className="flex items-center gap-1.5 text-slate-300">
+                    <svg className="w-3.5 h-3.5 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zm0 4.18c2.97 0 5.43 2.16 5.9 5h-2.02c-.43-1.72-2-3-3.88-3-2.21 0-4 1.79-4 4 0 1.2.53 2.27 1.36 3H7.26c-.79-.88-1.26-2.03-1.26-3.3 0-3.15 2.55-5.7 6-5.7z" />
+                    </svg>
+                    Google reCAPTCHA Protected
+                  </span>
+                  <span className="text-emerald-400/90 font-medium">Safe SMS Delivery</span>
+                </div>
               </div>
 
               {/* Invisible reCAPTCHA container for Google Firebase Phone Auth */}

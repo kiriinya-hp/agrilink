@@ -60,9 +60,33 @@ body {
   animation: dash-flow 40s linear infinite;
 }
 
-/* Hide the intrusive floating Google reCAPTCHA badge */
+/* Beautifully styled, modern, and comfortably positioned Google reCAPTCHA badge */
 .grecaptcha-badge {
-  visibility: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
+  visibility: visible !important;
+  opacity: 0.95 !important;
+  pointer-events: auto !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  z-index: 9999 !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease !important;
 }
+
+.grecaptcha-badge:hover {
+  opacity: 1 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 16px 32px -4px rgba(0, 0, 0, 0.35) !important;
+}
+
+@media (max-width: 640px) {
+  .grecaptcha-badge {
+    bottom: 16px !important;
+    right: 16px !important;
+    transform: scale(0.9) !important;
+    transform-origin: bottom right !important;
+  }
+}
+
