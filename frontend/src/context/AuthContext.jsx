@@ -114,6 +114,26 @@ export function AuthProvider({ children }) {
     return data.user;
   };
 
+  const loginWithGoogle = async (googleUser, selectedRole = 'FARMER') => {
+    const res = await fetch('/api/auth/google-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: googleUser.email,
+        name: googleUser.displayName,
+        role: selectedRole
+      })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+
+    setToken(data.token);
+    setUser(data.user);
+    localStorage.setItem('agrilink_token', data.token);
+    localStorage.setItem('agrilink_user', JSON.stringify(data.user));
+    return data.user;
+  };
+
   const logout = () => {
     setToken(null);
     setUser(null);
@@ -138,7 +158,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, adminLogin, register, verifyRegistration, verifyFirebasePhone, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, token, loading, login, loginWithGoogle, adminLogin, register, verifyRegistration, verifyFirebasePhone, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

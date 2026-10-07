@@ -2,7 +2,9 @@ import { initializeApp } from 'firebase/app';
 import { 
   getAuth, 
   RecaptchaVerifier, 
-  signInWithPhoneNumber 
+  signInWithPhoneNumber,
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'firebase/auth';
 
 // Your live AgriLink Google Firebase Web configuration
@@ -19,6 +21,21 @@ const firebaseConfig = {
 // Initialize Firebase App & Auth
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
+
+/**
+ * 1-Click Sign in with Google Popup
+ */
+export async function signInWithGooglePopup() {
+  const result = await signInWithPopup(auth, googleProvider);
+  const user = result.user;
+  return {
+    email: user.email,
+    displayName: user.displayName,
+    photoURL: user.photoURL,
+    uid: user.uid
+  };
+}
 
 // Check if real Firebase keys are configured
 export const isFirebaseConfigured = () => {

@@ -275,6 +275,57 @@ router.post('/auth/verify-firebase-phone', async (req, res) => {
   }
 });
 
+// 1-Click Sign in with Google (OAuth)
+router.post('/auth/google-login', async (req, res) => {
+  try {
+    const { email, name, role = 'FARMER' } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email is required from Google account' });
+    }
+
+    let user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() }
+    });
+
+    if (!user) {
+      // Auto-register new user via Google Sign-In
+      const randomPassword = Math.random().toString(36).slice(-10) + '!Aa1';
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+      user = await prisma.user.create({
+        data: {
+          email: email.toLowerCase().trim(),
+          name: name || 'Google User',
+          password: hashedPassword,
+          role: role,
+          isEmailVerified: true,
+          kycStatus: 'VERIFIED'
+        }
+      });
+
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          type: 'SYSTEM',
+          title: 'Welcome to AgriLink',
+          message: 'Your account was created via 1-Click Google Sign-In with verified status.'
+        }
+      });
+    }
+
+    const token = generateToken(user);
+    const { password: _, ...userWithoutPassword } = user;
+    res.json({
+      success: true,
+      message: `Welcome to AgriLink, ${user.name}!`,
+      token,
+      user: userWithoutPassword
+    });
+  } catch (error) {
+    console.error('Google login backend error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // ==========================================
 // PASSWORD RESETTING (FORGOT & RESET)
 // ==========================================
