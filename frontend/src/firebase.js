@@ -5,15 +5,15 @@ import {
   signInWithPhoneNumber 
 } from 'firebase/auth';
 
-// Firebase configuration using Vite environment variables
-// Replace with your real Firebase Project keys from console.firebase.google.com
+// Your live AgriLink Google Firebase Web configuration
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDummyKeyReplaceWithYourOwn",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "agrilink-ke.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "agrilink-ke",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "agrilink-ke.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "1029384756",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:1029384756:web:abcdef123456"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyC33FrraNTehK6zTiMivOySpXKm_dWa8WM",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "agrilink-a875f.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "agrilink-a875f",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "agrilink-a875f.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "665449813551",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:665449813551:web:21ee86def799d4da8b18da",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-DNXYHMF1WS"
 };
 
 // Initialize Firebase App & Auth
@@ -22,8 +22,7 @@ export const auth = getAuth(app);
 
 // Check if real Firebase keys are configured
 export const isFirebaseConfigured = () => {
-  const apiKey = import.meta.env.VITE_FIREBASE_API_KEY || "";
-  return apiKey && !apiKey.includes("DummyKey");
+  return true;
 };
 
 /**
