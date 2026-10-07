@@ -291,11 +291,20 @@ router.post('/auth/google-login', async (req, res) => {
       // Auto-register new user via Google Sign-In
       const randomPassword = Math.random().toString(36).slice(-10) + '!Aa1';
       const hashedPassword = await bcrypt.hash(randomPassword, 10);
+      
+      // Google accounts don't always provide a phone number, but User schema requires a unique phone string
+      let userPhone = req.body.phone || req.body.phoneNumber;
+      if (!userPhone) {
+        userPhone = `+254000${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 100)}`;
+      }
+
       user = await prisma.user.create({
         data: {
           email: email.toLowerCase().trim(),
           name: name || 'Google User',
           password: hashedPassword,
+          phone: userPhone,
+          location: req.body.location || 'Kenya',
           role: role,
           isEmailVerified: true,
           kycStatus: 'VERIFIED'

@@ -121,6 +121,7 @@ export function AuthProvider({ children }) {
       body: JSON.stringify({
         email: googleUser.email,
         name: googleUser.displayName,
+        phoneNumber: googleUser.phoneNumber || null,
         role: selectedRole
       })
     });
