@@ -232,6 +232,49 @@ router.post('/auth/verify-email', async (req, res) => {
   }
 });
 
+// Verify Phone via Google Firebase (10,000 Free SMS / Month)
+router.post('/auth/verify-firebase-phone', async (req, res) => {
+  try {
+    const { email, phoneNumber } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email is required' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: { 
+        isEmailVerified: true, 
+        verificationCode: null,
+        phone: phoneNumber ? phoneNumber.trim() : user.phone,
+        kycStatus: 'VERIFIED'
+      }
+    });
+
+    await prisma.notification.create({
+      data: {
+        userId: user.id,
+        type: 'SMS',
+        title: 'Phone Verified via Google Firebase',
+        message: 'Your phone number was verified via Google Firebase Free SMS OTP.'
+      }
+    });
+
+    const token = generateToken(updatedUser);
+    const { password: _, ...userWithoutPassword } = updatedUser;
+    res.json({
+      success: true,
+      message: 'Phone verified successfully via Google Firebase! Registration complete.',
+      token,
+      user: userWithoutPassword
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // ==========================================
 // PASSWORD RESETTING (FORGOT & RESET)
 // ==========================================

@@ -15,16 +15,19 @@ import {
   CheckCircle2, 
   RefreshCw,
   ArrowLeft,
-  KeyRound
+  KeyRound,
+  Smartphone
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import AuthAnimatedBackground from '../components/AuthAnimatedBackground';
+import { sendFirebasePhoneOtp, confirmFirebasePhoneOtp } from '../firebase';
 
 export default function Register({ onNavigateLogin }) {
-  const { register, verifyRegistration } = useAuth();
+  const { register, verifyRegistration, verifyFirebasePhone } = useAuth();
 
   const [step, setStep] = useState('form'); // 'form' or 'verify'
   const [role, setRole] = useState('FARMER'); // 'FARMER', 'BUYER', 'TRANSPORTER'
+  const [authMethod, setAuthMethod] = useState('STANDARD'); // 'STANDARD' or 'FIREBASE_PHONE'
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -112,10 +115,41 @@ export default function Register({ onNavigateLogin }) {
 
     setLoading(true);
     try {
-      await verifyRegistration(formData.email, verificationCode.trim());
+      if (authMethod === 'FIREBASE_PHONE') {
+        const confirmResult = await confirmFirebasePhoneOtp(verificationCode.trim());
+        await verifyFirebasePhone(formData.email, confirmResult.phoneNumber || formData.phone);
+      } else {
+        await verifyRegistration(formData.email, verificationCode.trim());
+      }
       // On success, AuthContext sets token/user and automatically redirects to dashboard!
     } catch (err) {
       setError(err.message || 'Invalid or expired verification code');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Send / Resend Free SMS via Google Firebase Phone Auth (10,000 Free SMS / Month)
+  const handleSendFirebasePhoneOtp = async () => {
+    if (!formData.phone) {
+      setError('Please provide a phone number to receive SMS');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    try {
+      let clean = formData.phone.replace(/[^0-9]/g, '');
+      if (clean.startsWith('0')) clean = '254' + clean.slice(1);
+      else if (clean.startsWith('7') || clean.startsWith('1')) clean = '254' + clean;
+      const formatted = '+' + clean;
+
+      await sendFirebasePhoneOtp(formatted, 'recaptcha-container');
+      setAuthMethod('FIREBASE_PHONE');
+      setSuccessMsg(`Google Firebase dispatched a free 6-digit SMS to ${formatted}!`);
+      startCountdown();
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'Failed to send SMS via Google Firebase. Check phone number format.');
     } finally {
       setLoading(false);
     }
@@ -485,6 +519,33 @@ export default function Register({ onNavigateLogin }) {
                   </>
                 )}
               </button>
+
+              {/* Optional: Google Firebase Free Phone SMS Trigger */}
+              <div className="pt-3 border-t border-slate-700/60">
+                <button
+                  type="button"
+                  disabled={loading || countdown > 0}
+                  onClick={handleSendFirebasePhoneOtp}
+                  className={`w-full py-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                    authMethod === 'FIREBASE_PHONE'
+                      ? 'bg-blue-600/20 border-blue-500/40 text-blue-300'
+                      : 'bg-slate-700/50 hover:bg-slate-700 border-slate-600 text-slate-300 hover:text-white'
+                  }`}
+                >
+                  <Smartphone className="w-4 h-4 text-blue-400" />
+                  <span>
+                    {authMethod === 'FIREBASE_PHONE' 
+                      ? '✓ Code Dispatched via Google Firebase SMS' 
+                      : 'Send Free 6-Digit SMS to Phone (Google Firebase)'}
+                  </span>
+                </button>
+                <p className="text-[10px] text-slate-400 text-center mt-1.5">
+                  Google Identity Platform · 10,000 Free SMS per month to Kenyan phones
+                </p>
+              </div>
+
+              {/* Invisible reCAPTCHA container for Google Firebase Phone Auth */}
+              <div id="recaptcha-container"></div>
             </form>
 
             <div className="mt-5 pt-4 border-t border-slate-700/60 flex justify-between items-center text-xs">

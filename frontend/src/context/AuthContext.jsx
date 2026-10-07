@@ -98,6 +98,22 @@ export function AuthProvider({ children }) {
     return data.user;
   };
 
+  const verifyFirebasePhone = async (email, phoneNumber) => {
+    const res = await fetch('/api/auth/verify-firebase-phone', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, phoneNumber })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+
+    setToken(data.token);
+    setUser(data.user);
+    localStorage.setItem('agrilink_token', data.token);
+    localStorage.setItem('agrilink_user', JSON.stringify(data.user));
+    return data.user;
+  };
+
   const logout = () => {
     setToken(null);
     setUser(null);
@@ -122,7 +138,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, adminLogin, register, verifyRegistration, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, token, loading, login, adminLogin, register, verifyRegistration, verifyFirebasePhone, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
