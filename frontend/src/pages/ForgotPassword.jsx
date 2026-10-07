@@ -82,11 +82,15 @@ export default function ForgotPassword({ onNavigateLogin }) {
 
       await sendFirebasePhoneOtp(formatted, 'recaptcha-container');
       setAuthMethod('FIREBASE_PHONE');
-      setSuccessMsg(`Google Firebase dispatched a free 6-digit SMS to ${formatted}!`);
+      setSuccessMsg(`A 6-digit SMS code was dispatched to ${formatted}!`);
       startCountdown();
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Failed to send SMS via Google Firebase. Check phone format.');
+      if (err.message?.includes('operation-not-allowed') || err.message?.includes('region')) {
+        setError('Kenya (+254) is not enabled in Firebase SMS Region Policy. Enable Kenya in Firebase Console > Authentication > Settings > SMS region policy.');
+      } else {
+        setError(err.message || 'Failed to send SMS code. Check phone format.');
+      }
     } finally {
       setLoading(false);
     }
@@ -316,7 +320,7 @@ export default function ForgotPassword({ onNavigateLogin }) {
               {/* Optional: Google Firebase Free Phone SMS Trigger for Forgot Password */}
               <div className="pt-3 border-t border-slate-700/60 space-y-2">
                 <span className="text-[11px] font-bold text-slate-300 block">
-                  Send reset code via Google Free SMS to your phone:
+                  Send reset code via SMS to your phone:
                 </span>
 
                 <div className="flex gap-2">
@@ -325,7 +329,7 @@ export default function ForgotPassword({ onNavigateLogin }) {
                     placeholder="07XXXXXXXX"
                     value={inputPhone || userPhone || ''}
                     onChange={(e) => setInputPhone(e.target.value)}
-                    className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                   <button
                     type="button"
@@ -333,17 +337,14 @@ export default function ForgotPassword({ onNavigateLogin }) {
                     onClick={handleSendFirebasePhoneOtp}
                     className={`px-3 py-2 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all shrink-0 ${
                       authMethod === 'FIREBASE_PHONE'
-                        ? 'bg-blue-600/30 border-blue-500 text-blue-300'
-                        : 'bg-blue-600 hover:bg-blue-500 text-white border-blue-600 shadow-sm'
+                        ? 'bg-emerald-600/30 border-emerald-500 text-emerald-300'
+                        : 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-600 shadow-sm'
                     }`}
                   >
                     <Smartphone className="w-3.5 h-3.5" />
-                    <span>{authMethod === 'FIREBASE_PHONE' ? 'SMS Dispatched!' : 'Send Google SMS'}</span>
+                    <span>{authMethod === 'FIREBASE_PHONE' ? 'SMS Sent!' : 'Send SMS'}</span>
                   </button>
                 </div>
-                <p className="text-[10px] text-slate-400">
-                  Google Identity Platform · 10,000 Free SMS per month to Kenyan phones
-                </p>
               </div>
 
               {/* Invisible reCAPTCHA container for Google Firebase */}

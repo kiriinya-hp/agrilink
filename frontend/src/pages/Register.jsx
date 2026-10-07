@@ -528,20 +528,17 @@ export default function Register({ onNavigateLogin }) {
                   onClick={handleSendFirebasePhoneOtp}
                   className={`w-full py-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
                     authMethod === 'FIREBASE_PHONE'
-                      ? 'bg-blue-600/20 border-blue-500/40 text-blue-300'
+                      ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-300'
                       : 'bg-slate-700/50 hover:bg-slate-700 border-slate-600 text-slate-300 hover:text-white'
                   }`}
                 >
-                  <Smartphone className="w-4 h-4 text-blue-400" />
+                  <Smartphone className="w-4 h-4 text-emerald-400" />
                   <span>
                     {authMethod === 'FIREBASE_PHONE' 
-                      ? '✓ Code Dispatched via Google Firebase SMS' 
-                      : 'Send Free 6-Digit SMS to Phone (Google Firebase)'}
+                      ? '✓ SMS Dispatched' 
+                      : 'Send 6-Digit SMS to Phone'}
                   </span>
                 </button>
-                <p className="text-[10px] text-slate-400 text-center mt-1.5">
-                  Google Identity Platform · 10,000 Free SMS per month to Kenyan phones
-                </p>
               </div>
 
               {/* Invisible reCAPTCHA container for Google Firebase Phone Auth */}

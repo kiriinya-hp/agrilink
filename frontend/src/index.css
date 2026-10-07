@@ -59,3 +59,13 @@ body {
   stroke-dasharray: 12, 12;
   animation: dash-flow 40s linear infinite;
 }
+
+/* Compact, tidy positioning for Google reCAPTCHA badge */
+.grecaptcha-badge {
+  bottom: 12px !important;
+  right: 12px !important;
+  transform: scale(0.82) !important;
+  transform-origin: bottom right !important;
+  z-index: 40 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
+}
