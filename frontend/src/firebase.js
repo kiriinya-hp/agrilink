@@ -26,13 +26,10 @@ export const isFirebaseConfigured = () => {
 };
 
 /**
- * Initialize Invisible reCAPTCHA verifier for Phone Auth
- * @param {string} buttonOrContainerId - DOM element ID for reCAPTCHA
+ * Reset reCAPTCHA verifier completely
  */
-export function initRecaptcha(buttonOrContainerId = 'recaptcha-container') {
-  if (typeof window === 'undefined') return null;
-  
-  // Safely clear any previous reCAPTCHA instance to avoid dead DOM node errors
+export function resetRecaptcha(buttonOrContainerId = 'recaptcha-container') {
+  if (typeof window === 'undefined') return;
   if (window.recaptchaVerifier) {
     try {
       window.recaptchaVerifier.clear();
@@ -41,31 +38,38 @@ export function initRecaptcha(buttonOrContainerId = 'recaptcha-container') {
     }
     window.recaptchaVerifier = null;
   }
-
-  // Ensure target container exists
-  let target = buttonOrContainerId;
   const el = document.getElementById(buttonOrContainerId);
-  if (!el) {
-    // If element not yet mounted, create a hidden container in body
-    let fallback = document.getElementById('recaptcha-fallback-container');
-    if (!fallback) {
-      fallback = document.createElement('div');
-      fallback.id = 'recaptcha-fallback-container';
-      document.body.appendChild(fallback);
-    }
-    target = 'recaptcha-fallback-container';
+  if (el) el.innerHTML = '';
+}
+
+/**
+ * Initialize Invisible reCAPTCHA verifier for Phone Auth
+ * @param {string} buttonOrContainerId - DOM element ID for reCAPTCHA
+ */
+export function initRecaptcha(buttonOrContainerId = 'recaptcha-container') {
+  if (typeof window === 'undefined') return null;
+  
+  // 1. If an active verifier already exists, reuse it!
+  if (window.recaptchaVerifier) {
+    return window.recaptchaVerifier;
   }
 
-  window.recaptchaVerifier = new RecaptchaVerifier(auth, target, {
+  // 2. Ensure target container exists and clear any stale iframes
+  let targetElement = document.getElementById(buttonOrContainerId);
+  if (!targetElement) {
+    targetElement = document.createElement('div');
+    targetElement.id = buttonOrContainerId;
+    document.body.appendChild(targetElement);
+  }
+  targetElement.innerHTML = '';
+
+  window.recaptchaVerifier = new RecaptchaVerifier(auth, targetElement, {
     size: 'invisible',
     callback: () => {
       // reCAPTCHA solved
     },
     'expired-callback': () => {
-      if (window.recaptchaVerifier) {
-        try { window.recaptchaVerifier.clear(); } catch (e) {}
-        window.recaptchaVerifier = null;
-      }
+      resetRecaptcha(buttonOrContainerId);
     }
   });
 
@@ -86,15 +90,8 @@ export async function sendFirebasePhoneOtp(formattedPhone, containerId = 'recapt
     return { success: true, confirmationResult };
   } catch (error) {
     console.error('[Firebase Phone Auth Error]:', error);
-    // Reset reCAPTCHA on error so user can retry
-    if (window.recaptchaVerifier) {
-      try {
-        window.recaptchaVerifier.clear();
-      } catch (e) {
-        // ignore
-      }
-      window.recaptchaVerifier = null;
-    }
+    // Reset on error so user can immediately retry without "already rendered" error
+    resetRecaptcha(containerId);
     throw error;
   }
 }
