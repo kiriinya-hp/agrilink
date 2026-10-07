@@ -280,18 +280,33 @@ router.post('/auth/verify-firebase-phone', async (req, res) => {
 // ==========================================
 router.post('/auth/forgot-password', async (req, res) => {
   try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ success: false, error: 'Email address is required' });
+    const { email, identifier: rawId } = req.body;
+    const identifier = (email || rawId || '').trim();
+    if (!identifier) return res.status(400).json({ success: false, error: 'Email address or phone number is required' });
 
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() }
+    // Format phone search patterns
+    let cleanLocal = identifier.replace(/[^0-9]/g, '');
+    let cleanIntl = cleanLocal;
+    if (cleanLocal.startsWith('254')) cleanLocal = '0' + cleanLocal.slice(3);
+    else if (cleanLocal.startsWith('0')) cleanIntl = '254' + cleanLocal.slice(1);
+
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: identifier.toLowerCase() },
+          { phone: identifier },
+          { phone: cleanLocal },
+          { phone: cleanIntl },
+          { phone: '+' + cleanIntl }
+        ]
+      }
     });
 
     if (!user) {
       // Clean security response: avoid email enumeration attack
       return res.json({
         success: true,
-        message: 'If an account exists with that email, a 6-digit password reset code has been sent.'
+        message: 'If an account exists with that email or phone number, a 6-digit password reset code has been sent.'
       });
     }
 
@@ -305,16 +320,20 @@ router.post('/auth/forgot-password', async (req, res) => {
 
     let emailSent = false;
     let emailResult = null;
-    try {
-      emailResult = await sendPasswordResetEmail(user.email, resetCode, user.name);
-      emailSent = emailResult?.sent === true;
-    } catch (e) {
-      console.warn('Forgot password email log:', e.message);
+    if (user.email) {
+      try {
+        emailResult = await sendPasswordResetEmail(user.email, resetCode, user.name);
+        emailSent = emailResult?.sent === true;
+      } catch (e) {
+        console.warn('Forgot password email log:', e.message);
+      }
     }
 
+    let smsSent = false;
     if (user.phone) {
       try {
-        await sendSMSNotification(user.phone, `AgriLink Security: ${resetCode} is your Password Reset Code. Valid for 15 mins.`);
+        const smsRes = await sendSMSNotification(user.phone, `AgriLink Security: ${resetCode} is your Password Reset Code. Valid for 15 mins.`);
+        smsSent = smsRes?.sent === true;
       } catch (smsErr) {
         console.warn('Forgot password SMS log:', smsErr.message);
       }
@@ -323,10 +342,11 @@ router.post('/auth/forgot-password', async (req, res) => {
     res.json({
       success: true,
       emailSent,
-      previewCode: !emailSent ? resetCode : undefined,
-      message: emailSent
-        ? `A 6-digit password reset authorization code has been dispatched to ${user.email}.`
-        : `Password reset code generated. Use the code displayed on screen or check server logs.`
+      smsSent,
+      phone: user.phone,
+      email: user.email,
+      previewCode: (!emailSent && !smsSent) ? resetCode : undefined,
+      message: `A 6-digit password reset authorization code has been dispatched to ${user.email}${user.phone ? ` and via SMS to ${user.phone}` : ''}.`
     });
   } catch (error) {
     console.error('Forgot password error:', error);
@@ -336,11 +356,12 @@ router.post('/auth/forgot-password', async (req, res) => {
 
 router.post('/auth/reset-password', async (req, res) => {
   try {
-    const { email, code, newPassword } = req.body;
-    if (!email || !code || !newPassword) {
+    const { email, identifier: rawId, code, newPassword } = req.body;
+    const identifier = (email || rawId || '').trim();
+    if (!identifier || !code || !newPassword) {
       return res.status(400).json({
         success: false,
-        error: 'Email, 6-digit authorization code, and new password are required'
+        error: 'Email or phone, 6-digit authorization code, and new password are required'
       });
     }
 
@@ -351,8 +372,21 @@ router.post('/auth/reset-password', async (req, res) => {
       });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() }
+    let cleanLocal = identifier.replace(/[^0-9]/g, '');
+    let cleanIntl = cleanLocal;
+    if (cleanLocal.startsWith('254')) cleanLocal = '0' + cleanLocal.slice(3);
+    else if (cleanLocal.startsWith('0')) cleanIntl = '254' + cleanLocal.slice(1);
+
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: identifier.toLowerCase() },
+          { phone: identifier },
+          { phone: cleanLocal },
+          { phone: cleanIntl },
+          { phone: '+' + cleanIntl }
+        ]
+      }
     });
 
     if (!user) return res.status(404).json({ success: false, error: 'Account not found' });

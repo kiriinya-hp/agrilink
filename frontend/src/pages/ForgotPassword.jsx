@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { Sprout, Lock, Mail, ArrowRight, AlertCircle, CheckCircle2, RefreshCw, ArrowLeft, KeyRound, ShieldAlert } from 'lucide-react';
+import { Sprout, Lock, Mail, ArrowRight, AlertCircle, CheckCircle2, RefreshCw, ArrowLeft, KeyRound, ShieldAlert, Phone, Smartphone } from 'lucide-react';
 import AuthAnimatedBackground from '../components/AuthAnimatedBackground';
+import { sendFirebasePhoneOtp, confirmFirebasePhoneOtp } from '../firebase';
 
 export default function ForgotPassword({ onNavigateLogin }) {
   const [step, setStep] = useState('request'); // 'request' or 'reset'
   const [email, setEmail] = useState('');
+  const [userPhone, setUserPhone] = useState('');
+  const [authMethod, setAuthMethod] = useState('STANDARD'); // 'STANDARD' or 'FIREBASE_PHONE'
   const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -39,12 +42,15 @@ export default function ForgotPassword({ onNavigateLogin }) {
       const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() })
+        body: JSON.stringify({ identifier: email.trim() })
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
 
       setSuccessMsg(data.message || `A 6-digit reset code was dispatched to ${email}.`);
+      if (data.phone) {
+        setUserPhone(data.phone);
+      }
       if (data.previewCode) {
         setPreviewCode(data.previewCode);
       }
@@ -52,6 +58,33 @@ export default function ForgotPassword({ onNavigateLogin }) {
       startCountdown();
     } catch (err) {
       setError(err.message || 'Failed to request password reset');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Optional: Send Free SMS via Google Firebase Phone Auth
+  const handleSendFirebasePhoneOtp = async () => {
+    const targetPhone = userPhone || (email.match(/^[0-9+]/) ? email : '');
+    if (!targetPhone) {
+      setError('No phone number found for this account to send Firebase SMS.');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    try {
+      let clean = targetPhone.replace(/[^0-9]/g, '');
+      if (clean.startsWith('0')) clean = '254' + clean.slice(1);
+      else if (clean.startsWith('7') || clean.startsWith('1')) clean = '254' + clean;
+      const formatted = '+' + clean;
+
+      await sendFirebasePhoneOtp(formatted, 'recaptcha-container');
+      setAuthMethod('FIREBASE_PHONE');
+      setSuccessMsg(`Google Firebase dispatched a free 6-digit SMS to ${formatted}!`);
+      startCountdown();
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'Failed to send SMS via Google Firebase.');
     } finally {
       setLoading(false);
     }
@@ -74,11 +107,15 @@ export default function ForgotPassword({ onNavigateLogin }) {
 
     setLoading(true);
     try {
+      if (authMethod === 'FIREBASE_PHONE') {
+        await confirmFirebasePhoneOtp(code.trim());
+      }
+
       const res = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: email.trim(),
+          identifier: email.trim(),
           code: code.trim(),
           newPassword
         })
@@ -136,14 +173,14 @@ export default function ForgotPassword({ onNavigateLogin }) {
             <form onSubmit={handleRequestReset} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">
-                  Registered Email Address
+                  Registered Email or Phone Number
                 </label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
                   <input
-                    type="email"
+                    type="text"
                     required
-                    placeholder="farmer@agrilink.co.ke"
+                    placeholder="07XXXXXXXX or name@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-9 pr-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -159,7 +196,7 @@ export default function ForgotPassword({ onNavigateLogin }) {
                 {loading ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    Sending Code via Google Mailer...
+                    Sending Code via SMS & Email...
                   </>
                 ) : (
                   <>
@@ -273,6 +310,30 @@ export default function ForgotPassword({ onNavigateLogin }) {
                   </>
                 )}
               </button>
+
+              {/* Optional: Google Firebase Free Phone SMS Trigger for Forgot Password */}
+              <div className="pt-2 border-t border-slate-700/60">
+                <button
+                  type="button"
+                  disabled={loading || countdown > 0}
+                  onClick={handleSendFirebasePhoneOtp}
+                  className={`w-full py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                    authMethod === 'FIREBASE_PHONE'
+                      ? 'bg-blue-600/20 border-blue-500/40 text-blue-300'
+                      : 'bg-slate-700/50 hover:bg-slate-700 border-slate-600 text-slate-300 hover:text-white'
+                  }`}
+                >
+                  <Smartphone className="w-4 h-4 text-blue-400" />
+                  <span>
+                    {authMethod === 'FIREBASE_PHONE'
+                      ? '✓ Code Dispatched via Google Firebase SMS'
+                      : 'Send Free 6-Digit SMS to Phone (Google Firebase)'}
+                  </span>
+                </button>
+              </div>
+
+              {/* Invisible reCAPTCHA container for Google Firebase */}
+              <div id="recaptcha-container"></div>
             </form>
           )}
 
