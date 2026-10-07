@@ -32,21 +32,43 @@ export const isFirebaseConfigured = () => {
 export function initRecaptcha(buttonOrContainerId = 'recaptcha-container') {
   if (typeof window === 'undefined') return null;
   
-  if (!window.recaptchaVerifier) {
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, buttonOrContainerId, {
-      size: 'invisible',
-      callback: () => {
-        // reCAPTCHA solved - will proceed with submit
-      },
-      'expired-callback': () => {
-        // Reset reCAPTCHA on expiration
-        if (window.recaptchaVerifier) {
-          window.recaptchaVerifier.clear();
-          window.recaptchaVerifier = null;
-        }
-      }
-    });
+  // Safely clear any previous reCAPTCHA instance to avoid dead DOM node errors
+  if (window.recaptchaVerifier) {
+    try {
+      window.recaptchaVerifier.clear();
+    } catch (e) {
+      // ignore
+    }
+    window.recaptchaVerifier = null;
   }
+
+  // Ensure target container exists
+  let target = buttonOrContainerId;
+  const el = document.getElementById(buttonOrContainerId);
+  if (!el) {
+    // If element not yet mounted, create a hidden container in body
+    let fallback = document.getElementById('recaptcha-fallback-container');
+    if (!fallback) {
+      fallback = document.createElement('div');
+      fallback.id = 'recaptcha-fallback-container';
+      document.body.appendChild(fallback);
+    }
+    target = 'recaptcha-fallback-container';
+  }
+
+  window.recaptchaVerifier = new RecaptchaVerifier(auth, target, {
+    size: 'invisible',
+    callback: () => {
+      // reCAPTCHA solved
+    },
+    'expired-callback': () => {
+      if (window.recaptchaVerifier) {
+        try { window.recaptchaVerifier.clear(); } catch (e) {}
+        window.recaptchaVerifier = null;
+      }
+    }
+  });
+
   return window.recaptchaVerifier;
 }
 

@@ -63,17 +63,19 @@ export default function ForgotPassword({ onNavigateLogin }) {
     }
   };
 
+  const [inputPhone, setInputPhone] = useState('');
+
   // Optional: Send Free SMS via Google Firebase Phone Auth
   const handleSendFirebasePhoneOtp = async () => {
-    const targetPhone = userPhone || (email.match(/^[0-9+]/) ? email : '');
-    if (!targetPhone) {
-      setError('No phone number found for this account to send Firebase SMS.');
+    const rawTarget = inputPhone || userPhone || (email.match(/^[0-9+]/) ? email : '');
+    if (!rawTarget || rawTarget.replace(/[^0-9]/g, '').length < 9) {
+      setError('Please provide a valid Kenyan phone number (e.g. 07XXXXXXXX) to receive the Google SMS.');
       return;
     }
     setError('');
     setLoading(true);
     try {
-      let clean = targetPhone.replace(/[^0-9]/g, '');
+      let clean = rawTarget.replace(/[^0-9]/g, '');
       if (clean.startsWith('0')) clean = '254' + clean.slice(1);
       else if (clean.startsWith('7') || clean.startsWith('1')) clean = '254' + clean;
       const formatted = '+' + clean;
@@ -84,7 +86,7 @@ export default function ForgotPassword({ onNavigateLogin }) {
       startCountdown();
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Failed to send SMS via Google Firebase.');
+      setError(err.message || 'Failed to send SMS via Google Firebase. Check phone format.');
     } finally {
       setLoading(false);
     }
@@ -312,24 +314,36 @@ export default function ForgotPassword({ onNavigateLogin }) {
               </button>
 
               {/* Optional: Google Firebase Free Phone SMS Trigger for Forgot Password */}
-              <div className="pt-2 border-t border-slate-700/60">
-                <button
-                  type="button"
-                  disabled={loading || countdown > 0}
-                  onClick={handleSendFirebasePhoneOtp}
-                  className={`w-full py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
-                    authMethod === 'FIREBASE_PHONE'
-                      ? 'bg-blue-600/20 border-blue-500/40 text-blue-300'
-                      : 'bg-slate-700/50 hover:bg-slate-700 border-slate-600 text-slate-300 hover:text-white'
-                  }`}
-                >
-                  <Smartphone className="w-4 h-4 text-blue-400" />
-                  <span>
-                    {authMethod === 'FIREBASE_PHONE'
-                      ? '✓ Code Dispatched via Google Firebase SMS'
-                      : 'Send Free 6-Digit SMS to Phone (Google Firebase)'}
-                  </span>
-                </button>
+              <div className="pt-3 border-t border-slate-700/60 space-y-2">
+                <span className="text-[11px] font-bold text-slate-300 block">
+                  Send reset code via Google Free SMS to your phone:
+                </span>
+
+                <div className="flex gap-2">
+                  <input
+                    type="tel"
+                    placeholder="07XXXXXXXX"
+                    value={inputPhone || userPhone || ''}
+                    onChange={(e) => setInputPhone(e.target.value)}
+                    className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button
+                    type="button"
+                    disabled={loading || countdown > 0}
+                    onClick={handleSendFirebasePhoneOtp}
+                    className={`px-3 py-2 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all shrink-0 ${
+                      authMethod === 'FIREBASE_PHONE'
+                        ? 'bg-blue-600/30 border-blue-500 text-blue-300'
+                        : 'bg-blue-600 hover:bg-blue-500 text-white border-blue-600 shadow-sm'
+                    }`}
+                  >
+                    <Smartphone className="w-3.5 h-3.5" />
+                    <span>{authMethod === 'FIREBASE_PHONE' ? 'SMS Dispatched!' : 'Send Google SMS'}</span>
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Google Identity Platform · 10,000 Free SMS per month to Kenyan phones
+                </p>
               </div>
 
               {/* Invisible reCAPTCHA container for Google Firebase */}
