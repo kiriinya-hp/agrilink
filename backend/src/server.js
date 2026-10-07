@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import apiRoutes from './routes/api.js';
+import apiRoutes, { autoRestoreSnapshotIfAvailable, autoSaveSnapshot } from './routes/api.js';
 
 dotenv.config();
 
@@ -64,10 +64,17 @@ app.use((err, req, res, next) => {
   res.status(500).json({ success: false, error: 'Internal Server Error', details: err.message });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`=========================================`);
   console.log(`🌾 AgriLink Backend API running on port ${PORT}`);
   console.log(`🚀 Health Check: http://localhost:${PORT}/health`);
   console.log(`📡 API Base:     http://localhost:${PORT}/api`);
   console.log(`=========================================`);
+  
+  // Sync persistent snapshot on server start
+  try {
+    await autoRestoreSnapshotIfAvailable();
+  } catch (err) {
+    console.warn('Initial snapshot restore notice:', err.message);
+  }
 });

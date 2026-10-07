@@ -158,8 +158,26 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const updateProfile = async (profileData) => {
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch('/api/auth/profile', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(profileData)
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+
+    setUser(data.user);
+    localStorage.setItem('agrilink_user', JSON.stringify(data.user));
+    return data.user;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, loginWithGoogle, adminLogin, register, verifyRegistration, verifyFirebasePhone, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, token, loading, login, loginWithGoogle, adminLogin, register, verifyRegistration, verifyFirebasePhone, logout, refreshUser, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

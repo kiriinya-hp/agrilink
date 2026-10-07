@@ -2,6 +2,9 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { triggerStkPush } from '../services/mpesaService.js';
 import { 
   sendVerificationEmail, 
@@ -10,9 +13,92 @@ import {
   sendSMSNotification 
 } from '../services/notificationService.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const SNAPSHOT_FILE = path.join(__dirname, '../../prisma/db-snapshot.json');
+
 const router = express.Router();
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'agrilink_secret_jwt_key_2026';
+
+// Helper: Auto-save database snapshot to JSON file
+export async function autoSaveSnapshot() {
+  try {
+    const users = await prisma.user.findMany();
+    const listings = await prisma.produceListing.findMany();
+    const snapshot = {
+      version: '1.0',
+      timestamp: new Date().toISOString(),
+      usersCount: users.length,
+      listingsCount: listings.length,
+      users,
+      listings
+    };
+    fs.writeFileSync(SNAPSHOT_FILE, JSON.stringify(snapshot, null, 2), 'utf-8');
+    console.log(`[Database Snapshot] Persisted ${users.length} users and ${listings.length} listings to db-snapshot.json`);
+  } catch (err) {
+    console.warn('[Database Snapshot] Auto-save warning:', err.message);
+  }
+}
+
+// Helper: Auto-restore on startup if snapshot exists
+export async function autoRestoreSnapshotIfAvailable() {
+  try {
+    if (!fs.existsSync(SNAPSHOT_FILE)) return;
+    const raw = fs.readFileSync(SNAPSHOT_FILE, 'utf-8');
+    const snapshot = JSON.parse(raw);
+    if (!snapshot || !Array.isArray(snapshot.users) || snapshot.users.length === 0) return;
+
+    console.log(`[Database Snapshot] Restoring/Verifying ${snapshot.users.length} records from persistent snapshot...`);
+    for (const u of snapshot.users) {
+      const existing = await prisma.user.findUnique({ where: { id: u.id } });
+      if (!existing) {
+        try {
+          await prisma.user.create({
+            data: {
+              id: u.id,
+              name: u.name,
+              email: u.email,
+              phone: u.phone,
+              password: u.password,
+              role: u.role,
+              kycStatus: u.kycStatus || 'VERIFIED',
+              isEmailVerified: Boolean(u.isEmailVerified),
+              location: u.location || 'Kenya',
+              businessName: u.businessName,
+              idNumber: u.idNumber,
+              walletBalance: u.walletBalance ?? 0.0,
+              createdAt: u.createdAt ? new Date(u.createdAt) : new Date()
+            }
+          });
+        } catch (insertErr) {
+          console.warn(`[Snapshot] Could not insert user ${u.email}:`, insertErr.message);
+        }
+      } else {
+        try {
+          await prisma.user.update({
+            where: { id: u.id },
+            data: {
+              name: u.name,
+              phone: u.phone,
+              role: u.role,
+              businessName: u.businessName,
+              location: u.location,
+              kycStatus: u.kycStatus,
+              isEmailVerified: Boolean(u.isEmailVerified),
+              walletBalance: u.walletBalance ?? existing.walletBalance
+            }
+          });
+        } catch (updateErr) {
+          console.warn(`[Snapshot] Could not sync user ${u.email}:`, updateErr.message);
+        }
+      }
+    }
+    console.log(`[Database Snapshot] Persistence synchronization complete.`);
+  } catch (err) {
+    console.warn('[Database Snapshot] Auto-restore warning:', err.message);
+  }
+}
 
 // ==========================================
 // ADMIN PROTECTION MIDDLEWARE
@@ -611,6 +697,63 @@ router.get('/auth/me', async (req, res) => {
   }
 });
 
+// Update Authenticated User Profile
+router.put('/auth/profile', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'No authorization token provided' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    const { name, phone, location, businessName, idNumber } = req.body;
+    const dataToUpdate = {};
+
+    if (name && name.trim()) dataToUpdate.name = name.trim();
+    if (location && location.trim()) dataToUpdate.location = location.trim();
+    if (businessName !== undefined) dataToUpdate.businessName = businessName ? businessName.trim() : null;
+    if (idNumber !== undefined) dataToUpdate.idNumber = idNumber ? idNumber.trim() : null;
+
+    if (phone && phone.trim()) {
+      const cleanPhone = phone.trim();
+      // Check if phone number is already registered to a different account
+      const existingPhoneUser = await prisma.user.findFirst({
+        where: {
+          phone: cleanPhone,
+          id: { not: decoded.id }
+        }
+      });
+      if (existingPhoneUser) {
+        return res.status(400).json({
+          success: false,
+          error: 'This phone number is already registered to another user account.'
+        });
+      }
+      dataToUpdate.phone = cleanPhone;
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: decoded.id },
+      data: dataToUpdate
+    });
+
+    // Auto-save snapshot so profile changes persist across server restarts
+    await autoSaveSnapshot();
+
+    const { password: _, ...userWithoutPassword } = updatedUser;
+    res.json({
+      success: true,
+      message: 'Profile updated successfully in database!',
+      user: userWithoutPassword
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Admin: Fetch all users (ADMIN ONLY — protected by requireAdmin)
 router.get('/admin/users', requireAdmin, async (req, res) => {
   try {
@@ -658,6 +801,9 @@ router.put('/admin/users/:id', requireAdmin, async (req, res) => {
       data: dataToUpdate
     });
 
+    // Auto-persist to snapshot file so updates survive server restarts
+    await autoSaveSnapshot();
+
     const { password: _, ...userWithoutPassword } = updated;
     res.json({ success: true, message: 'Stakeholder updated successfully in database!', user: userWithoutPassword });
   } catch (error) {
@@ -670,7 +816,116 @@ router.delete('/admin/users/:id', requireAdmin, async (req, res) => {
   try {
     const userId = req.params.id;
     await prisma.user.delete({ where: { id: userId } });
+    await autoSaveSnapshot();
     res.json({ success: true, message: 'User record deleted from database successfully.' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Admin: Export full database snapshot as JSON (ADMIN ONLY)
+router.get('/admin/database/export', requireAdmin, async (req, res) => {
+  try {
+    const users = await prisma.user.findMany();
+    const listings = await prisma.produceListing.findMany();
+    const orders = await prisma.order.findMany({ include: { items: true } });
+    const shipments = await prisma.shipment.findMany();
+
+    const snapshot = {
+      version: '1.0',
+      exportDate: new Date().toISOString(),
+      counts: {
+        users: users.length,
+        listings: listings.length,
+        orders: orders.length,
+        shipments: shipments.length
+      },
+      users,
+      listings,
+      orders,
+      shipments
+    };
+
+    res.json({ success: true, snapshot });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Admin: Restore / Import database from JSON snapshot (ADMIN ONLY)
+router.post('/admin/database/import', requireAdmin, async (req, res) => {
+  try {
+    const { snapshot } = req.body;
+    if (!snapshot || !Array.isArray(snapshot.users)) {
+      return res.status(400).json({ success: false, error: 'Invalid snapshot format: missing users array' });
+    }
+
+    let restoredUsers = 0;
+    for (const u of snapshot.users) {
+      const existing = await prisma.user.findUnique({ where: { id: u.id } });
+      if (!existing) {
+        try {
+          await prisma.user.create({
+            data: {
+              id: u.id,
+              name: u.name,
+              email: u.email,
+              phone: u.phone,
+              password: u.password,
+              role: u.role,
+              kycStatus: u.kycStatus || 'VERIFIED',
+              isEmailVerified: Boolean(u.isEmailVerified),
+              location: u.location || 'Kenya',
+              businessName: u.businessName,
+              idNumber: u.idNumber,
+              walletBalance: u.walletBalance ?? 0.0,
+              createdAt: u.createdAt ? new Date(u.createdAt) : new Date()
+            }
+          });
+          restoredUsers++;
+        } catch (e) {
+          console.warn(`Could not restore user ${u.email}:`, e.message);
+        }
+      } else {
+        try {
+          await prisma.user.update({
+            where: { id: u.id },
+            data: {
+              name: u.name,
+              phone: u.phone,
+              role: u.role,
+              businessName: u.businessName,
+              location: u.location,
+              kycStatus: u.kycStatus,
+              isEmailVerified: Boolean(u.isEmailVerified),
+              walletBalance: u.walletBalance ?? existing.walletBalance
+            }
+          });
+          restoredUsers++;
+        } catch (e) {
+          console.warn(`Could not update user ${u.email}:`, e.message);
+        }
+      }
+    }
+
+    // Immediately save refreshed snapshot
+    await autoSaveSnapshot();
+
+    res.json({
+      success: true,
+      message: `Database synchronized successfully! ${restoredUsers} stakeholders updated/restored.`,
+      restoredUsers
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Admin: Trigger instant snapshot synchronization
+router.post('/admin/database/sync', requireAdmin, async (req, res) => {
+  try {
+    await autoSaveSnapshot();
+    res.json({ success: true, message: 'Database snapshot synchronized to persistent storage successfully!' });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

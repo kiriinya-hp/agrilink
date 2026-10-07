@@ -37,7 +37,9 @@ import {
   CloudSun,
   Bot,
   Leaf,
-  Camera
+  Camera,
+  Download,
+  Upload
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
@@ -67,6 +69,7 @@ import UssdSimulatorModal from './components/UssdSimulatorModal';
 import AiNegotiationModal from './components/AiNegotiationModal';
 import SatelliteCropScannerModal from './components/SatelliteCropScannerModal';
 import CropDiseaseDoctorModal from './components/CropDiseaseDoctorModal';
+import UserProfileModal from './components/UserProfileModal';
 
 
 const API_BASE = '/api';
@@ -138,6 +141,8 @@ function MainApp() {
   const [satelliteCrop, setSatelliteCrop] = useState('Tomatoes');
   const [satelliteLocation, setSatelliteLocation] = useState('Kinangop, Nyandarua County');
   const [showCropDoctor, setShowCropDoctor] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [dbSyncing, setDbSyncing] = useState(false);
 
 
   // Farmer New Listing Form State
@@ -467,6 +472,81 @@ function MainApp() {
     }
   };
 
+  // Admin: Export full database as JSON snapshot
+  const handleExportDatabase = async () => {
+    try {
+      setDbSyncing(true);
+      const res = await fetch(`${API_BASE}/admin/database/export`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      // Download JSON backup file to user machine
+      const blob = new Blob([JSON.stringify(data.snapshot, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `agrilink-database-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showNotification('Database backup downloaded successfully to your computer!');
+    } catch (err) {
+      showNotification(err.message || 'Export failed', 'error');
+    } finally {
+      setDbSyncing(false);
+    }
+  };
+
+  // Admin: Import / Restore database from JSON snapshot file
+  const handleImportDatabase = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setDbSyncing(true);
+      const text = await file.text();
+      const snapshot = JSON.parse(text);
+      const res = await fetch(`${API_BASE}/admin/database/import`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ snapshot })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      showNotification(data.message || 'Database restored and synchronized successfully!');
+      loadRoleData();
+    } catch (err) {
+      showNotification(err.message || 'Failed to restore database from file', 'error');
+    } finally {
+      setDbSyncing(false);
+      e.target.value = '';
+    }
+  };
+
+  // Admin: Trigger instant snapshot synchronization
+  const handleSyncDatabase = async () => {
+    try {
+      setDbSyncing(true);
+      const res = await fetch(`${API_BASE}/admin/database/sync`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      showNotification('Database snapshot saved to persistent storage!');
+    } catch (err) {
+      showNotification(err.message, 'error');
+    } finally {
+      setDbSyncing(false);
+    }
+  };
+
   // Buyer: Confirm delivery with driver's OTP -> triggers atomic settlement & multi-channel notification
   const handleVerifyDelivery = async (shipmentId) => {
     const otp = otpInputs[shipmentId];
@@ -587,21 +667,33 @@ function MainApp() {
                 )}
               </button>
 
-              {/* Role Badge */}
-              <div className="flex items-center gap-2">
-                <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${roleBadgeColors[user.role]}`}>
-                  {user.role}
-                </span>
-                <div className="hidden sm:block text-right">
-                  <p className="text-xs font-bold text-slate-800 flex items-center gap-1 justify-end">
-                    {user.name}
+              {/* User Profile Pill & Trigger */}
+              <button
+                type="button"
+                onClick={() => setShowProfileModal(true)}
+                className="flex items-center gap-2 p-1.5 pr-2.5 rounded-xl hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200 group text-left cursor-pointer"
+                title="Click to view and edit your profile"
+              >
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center font-bold text-xs shadow-sm group-hover:scale-105 transition-transform">
+                  {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                </div>
+                <div className="text-left">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-slate-800 group-hover:text-emerald-700 transition-colors">
+                      {user.name}
+                    </span>
                     {user.isEmailVerified && (
                       <Check className="w-3.5 h-3.5 text-emerald-600" title={t('verifiedAccount')} />
                     )}
-                  </p>
-                  <p className="text-[10px] text-slate-400">{user.businessName || user.email}</p>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded border ${roleBadgeColors[user.role]}`}>
+                      {user.role}
+                    </span>
+                    <span className="text-[10px] text-emerald-600 font-semibold group-hover:underline">Edit Profile</span>
+                  </div>
                 </div>
-              </div>
+              </button>
 
               {/* Dual Financial Actions Hub: Top Up & Withdraw */}
               <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100/80 border border-slate-200">
@@ -1664,27 +1756,73 @@ function MainApp() {
         {/* ADMIN VIEW: REGISTERED USERS DATABASE TABLE */}
         {user.role === 'ADMIN' && activeTab === 'admin-users' && (
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-            {/* Database Studio Quick Info Banner */}
-            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-                  <Database className="w-5 h-5" />
+            {/* Database Studio & Persistence Hub Banner */}
+            <div className="bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 text-white rounded-2xl p-5 shadow-lg border border-indigo-700/40 space-y-4">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-11 h-11 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                    <Database className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-bold text-base text-white">Database Management & Auto-Persistence</h4>
+                      <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30 font-bold flex items-center gap-1">
+                        <Check className="w-3 h-3" /> Auto-Sync Active
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-300 mt-0.5">
+                      Edits made in this table are instantly saved to SQLite (<code className="text-indigo-300 font-mono">dev.db</code>) and mirrored to persistent snapshot (<code className="text-indigo-300 font-mono">db-snapshot.json</code>).
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-bold text-sm text-indigo-950">Visual Database Management (Prisma Studio)</h4>
-                  <p className="text-xs text-indigo-700">
-                    Direct access: Double-click <code className="bg-white/80 px-1.5 py-0.5 rounded font-mono font-bold text-indigo-900">open-database.bat</code> in your Desktop folder to open the full visual spreadsheet editor at <span className="underline font-bold">http://localhost:5555</span>.
-                  </p>
+
+                {/* Database Backup & Restore Action Buttons */}
+                <div className="flex items-center gap-2 flex-wrap shrink-0">
+                  <button
+                    onClick={handleExportDatabase}
+                    disabled={dbSyncing}
+                    className="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all disabled:opacity-50"
+                    title="Download complete database snapshot JSON to your computer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download Backup</span>
+                  </button>
+
+                  <label className="px-3 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+                    <Upload className="w-3.5 h-3.5 text-indigo-300" />
+                    <span>Restore Backup</span>
+                    <input
+                      type="file"
+                      accept=".json"
+                      onChange={handleImportDatabase}
+                      disabled={dbSyncing}
+                      className="hidden"
+                    />
+                  </label>
+
+                  <button
+                    onClick={handleSyncDatabase}
+                    disabled={dbSyncing}
+                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all disabled:opacity-50"
+                    title="Force immediate persistent snapshot save"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${dbSyncing ? 'animate-spin' : ''}`} />
+                    <span>{dbSyncing ? 'Syncing...' : 'Sync Now'}</span>
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[11px] font-mono bg-white px-2 py-1 rounded border border-indigo-200 text-indigo-800 font-bold">
-                  dev.db (SQLite)
+
+              <div className="pt-3 border-t border-indigo-800/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-[11px] text-slate-400">
+                <span>
+                  💡 <strong>Server Restarts:</strong> The server automatically restores custom stakeholder accounts from <code className="text-indigo-300 font-mono">db-snapshot.json</code> whenever the Render container boots up.
+                </span>
+                <span className="font-mono text-indigo-300">
+                  Local Prisma Studio: open-database.bat (Port 5555)
                 </span>
               </div>
             </div>
 
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center pt-1">
               <div>
                 <h3 className="font-bold text-base text-slate-900">Registered Ecosystem Stakeholders in SQLite Database</h3>
                 <p className="text-xs text-slate-500">Live directory of Farmers, Commercial Buyers, Transporters, and Admins. Click "Edit" to modify any record directly.</p>
@@ -2296,6 +2434,15 @@ function MainApp() {
           const aiBtn = document.querySelector('button[aria-label="Toggle Kilimo AI"]');
           if (aiBtn) aiBtn.click();
         }}
+      />
+
+      {/* ========================================================= */}
+      {/* 👤 AUTHENTICATED USER PROFILE & SETTINGS MODAL           */}
+      {/* ========================================================= */}
+      <UserProfileModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        onProfileUpdated={loadRoleData}
       />
     </div>
   );
