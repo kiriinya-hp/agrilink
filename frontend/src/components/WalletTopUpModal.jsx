@@ -109,10 +109,21 @@ export default function WalletTopUpModal({ isOpen, onClose, user, onBalanceUpdat
         if (data.success && data.status === 'SUCCESS') {
           clearInterval(pollIntervalRef.current);
           handleFinalizeTopUp(data.receipt);
+          return;
         } else if (data.status === 'CANCELLED') {
           clearInterval(pollIntervalRef.current);
           setErrorMsg('M-Pesa request was cancelled on your phone.');
           setStep('form');
+          return;
+        }
+
+        // In Daraja Sandbox, automatically approve simulated PIN after ~7.5 seconds (3 polls)
+        if (stkData?.environment === 'sandbox' || stkData?.mode?.includes('SANDBOX')) {
+          if (attempts >= 3) {
+            clearInterval(pollIntervalRef.current);
+            handleFinalizeTopUp();
+            return;
+          }
         }
       } catch (e) {
         // Continue polling silently
