@@ -29,6 +29,8 @@ model User {
   orders           Order[]          @relation("BuyerOrders")
   shipments        Shipment[]       @relation("TransporterShipments")
   notifications    Notification[]
+  demands          BuyerDemandRequest[]
+  demandBids       DemandBid[]
 }
 
 model ProduceListing {
@@ -126,4 +128,37 @@ model Notification {
   createdAt DateTime @default(now())
 
   user      User     @relation(fields: [userId], references: [id])
+}
+
+model BuyerDemandRequest {
+  id               String      @id @default(auto()) @map("_id") @db.ObjectId
+  buyerId          String      @db.ObjectId
+  cropName         String
+  category         String      // HORTICULTURE, CEREAL, TUBER, LEGUME
+  requiredQty      Float       // in kg
+  targetPrice      Float       // per kg in USD
+  deliveryLocation String
+  targetDate       DateTime
+  qualityGrade     String      // GRADE_A, GRADE_B, STANDARD
+  status           String      @default("OPEN") // OPEN, FULFILLED, CLOSED
+  notes            String?
+  createdAt        DateTime    @default(now())
+
+  buyer            User        @relation(fields: [buyerId], references: [id])
+  bids             DemandBid[]
+}
+
+model DemandBid {
+  id           String             @id @default(auto()) @map("_id") @db.ObjectId
+  demandId     String             @db.ObjectId
+  farmerId     String             @db.ObjectId
+  offeredQty   Float
+  offeredPrice Float
+  farmLocation String
+  message      String?
+  status       String             @default("PENDING") // PENDING, ACCEPTED, DECLINED
+  createdAt    DateTime           @default(now())
+
+  demand       BuyerDemandRequest @relation(fields: [demandId], references: [id])
+  farmer       User               @relation(fields: [farmerId], references: [id])
 }

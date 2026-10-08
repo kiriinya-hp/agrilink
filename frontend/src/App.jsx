@@ -76,6 +76,7 @@ import AiMarketPricePredictorModal from './components/AiMarketPricePredictorModa
 import AdminSystemHealth from './components/AdminSystemHealth';
 import AdminEscrowDisputes from './components/AdminEscrowDisputes';
 import AdminBroadcastModal from './components/AdminBroadcastModal';
+import BuyerDemandBoard from './components/BuyerDemandBoard';
 
 
 const API_BASE = '/api';
@@ -94,6 +95,7 @@ function MainApp() {
 
   // Navigation Tabs for active role
   const [activeTab, setActiveTab] = useState('marketplace'); // 'marketplace', 'farmer', 'logistics', 'orders', 'analytics', 'admin-users'
+  const [marketplaceSubTab, setMarketplaceSubTab] = useState('listings'); // 'listings' | 'demands'
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState(null);
 
@@ -1060,8 +1062,51 @@ function MainApp() {
             {/* Kilimo Smart Agro-Climate & Harvest Advisory */}
             <KilimoWeatherAdvisory />
 
-            {/* Header Banner */}
-            <div className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-slate-900 text-white rounded-2xl p-6 sm:p-8 mb-6 shadow-lg relative overflow-hidden">
+            {/* Marketplace Sub-Navigation: Farm Harvest Listings vs. Buyer Demand Board */}
+            <div className="flex items-center gap-2 mb-6 p-1.5 bg-slate-100 rounded-2xl w-full sm:w-auto self-start border border-slate-200">
+              <button
+                onClick={() => setMarketplaceSubTab('listings')}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  marketplaceSubTab === 'listings'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Sprout className="w-4 h-4" />
+                <span>Farm Harvest Listings</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/20 font-bold">
+                  {listings.length}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setMarketplaceSubTab('demands')}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  marketplaceSubTab === 'demands'
+                    ? 'bg-teal-700 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <FileText className="w-4 h-4" />
+                <span>Buyer Demand Board (Wanted Produce)</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black">
+                  TENDERS
+                </span>
+              </button>
+            </div>
+
+            {marketplaceSubTab === 'demands' ? (
+              <BuyerDemandBoard 
+                user={user} 
+                token={token} 
+                apiBase={API_BASE} 
+                formatMoney={formatMoney} 
+                currency={currency} 
+              />
+            ) : (
+              <>
+                {/* Header Banner */}
+                <div className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-slate-900 text-white rounded-2xl p-6 sm:p-8 mb-6 shadow-lg relative overflow-hidden">
               <div className="max-w-2xl relative z-10">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold border border-emerald-400/30">
@@ -1244,8 +1289,10 @@ function MainApp() {
                 </div>
               ))}
             </div>
-          </div>
+          </>
         )}
+      </div>
+    )}
 
         {/* BUYER VIEW: ESCROW ORDERS & OTP VERIFICATION */}
         {user.role === 'BUYER' && activeTab === 'orders' && (

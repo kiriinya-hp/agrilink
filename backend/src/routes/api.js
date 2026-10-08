@@ -3504,6 +3504,365 @@ router.post('/admin/broadcast', requireAdmin, async (req, res) => {
   }
 });
 
+// ==========================================
+// BUYER DEMAND BOARD & WHOLESALE REVERSE TENDERS
+// ==========================================
+
+// Helper: Seed demo tenders if none exist
+async function ensureSeedDemands() {
+  try {
+    const count = await prisma.buyerDemandRequest.count();
+    if (count > 0) return;
+
+    const buyer = await prisma.user.findFirst({ where: { role: 'BUYER' } }) ||
+                  await prisma.user.findFirst();
+    if (!buyer) return;
+
+    const demoDemands = [
+      {
+        buyerId: buyer.id,
+        cropName: 'Roma Plum Tomatoes',
+        category: 'HORTICULTURE',
+        requiredQty: 5000,
+        targetPrice: 0.73, // ~KES 95/kg
+        deliveryLocation: 'Fresh Grocers Central Depot, Industrial Area, Nairobi',
+        targetDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+        qualityGrade: 'GRADE_A',
+        notes: 'Strictly firm, red-ripe fruit packed in returnable ventilated plastic crates. Moisture and pest free.'
+      },
+      {
+        buyerId: buyer.id,
+        cropName: 'Red Bulb Onions',
+        category: 'HORTICULTURE',
+        requiredQty: 8000,
+        targetPrice: 0.65, // ~KES 85/kg
+        deliveryLocation: 'Kongowea Wholesale Market Terminal, Mombasa',
+        targetDate: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
+        qualityGrade: 'STANDARD',
+        notes: 'Well-cured bulb onions with dry skins. Minimum diameter 45mm. Net bags preferred.'
+      },
+      {
+        buyerId: buyer.id,
+        cropName: 'Hass Avocados (Export Grade)',
+        category: 'HORTICULTURE',
+        requiredQty: 3500,
+        targetPrice: 1.08, // ~KES 140/kg
+        deliveryLocation: 'JKIA Cold-Storage Cargo Terminal, Nairobi',
+        targetDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
+        qualityGrade: 'GRADE_A',
+        notes: 'Export quality Hass avocados, dry matter minimum 23%. Clean skin without sun scorch.'
+      },
+      {
+        buyerId: buyer.id,
+        cropName: 'Dry White Maize Grains',
+        category: 'CEREAL',
+        requiredQty: 15000,
+        targetPrice: 0.34, // ~KES 44/kg
+        deliveryLocation: 'Millers Grain Depot, Eldoret Railhead',
+        targetDate: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000),
+        qualityGrade: 'GRADE_B',
+        notes: 'Moisture content strictly below 13.5%. Clean 90kg gunny bags, free from weevils and aflatoxin.'
+      }
+    ];
+
+    for (const d of demoDemands) {
+      await prisma.buyerDemandRequest.create({ data: d });
+    }
+    console.log('[Demand Board] Initialized 4 wholesale reverse tenders in MongoDB Atlas');
+  } catch (err) {
+    console.warn('[Demand Board] Seed warning:', err.message);
+  }
+}
+
+// 1. Fetch all wholesale demand requests
+router.get('/demands', async (req, res) => {
+  try {
+    await ensureSeedDemands();
+
+    const { category, search, status } = req.query;
+    const where = {};
+    if (status && status !== 'ALL') where.status = status;
+    if (category && category !== 'ALL') where.category = category;
+    if (search) {
+      where.OR = [
+        { cropName: { contains: search, mode: 'insensitive' } },
+        { deliveryLocation: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    const demands = await prisma.buyerDemandRequest.findMany({
+      where,
+      include: {
+        buyer: {
+          select: { id: true, name: true, businessName: true, phone: true, location: true, kycStatus: true }
+        },
+        bids: {
+          include: {
+            farmer: {
+              select: { id: true, name: true, businessName: true, phone: true, location: true }
+            }
+          },
+          orderBy: { createdAt: 'desc' }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    // Calculate metrics
+    let totalTonnageKg = 0;
+    let totalBudgetUsd = 0;
+    demands.forEach(d => {
+      totalTonnageKg += d.requiredQty;
+      totalBudgetUsd += (d.requiredQty * d.targetPrice);
+    });
+
+    res.json({
+      success: true,
+      metrics: {
+        totalTenders: demands.length,
+        totalTonnageTonnes: Number((totalTonnageKg / 1000).toFixed(1)),
+        totalBudgetUsd: Math.round(totalBudgetUsd),
+        totalBudgetKes: Math.round(totalBudgetUsd * 130)
+      },
+      demands
+    });
+  } catch (error) {
+    console.error('Fetch demands error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 2. Post a new buy request / tender (BUYER or ADMIN)
+router.post('/demands', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Authentication required to post buy requests' });
+    }
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    const { 
+      cropName, 
+      category = 'HORTICULTURE', 
+      requiredQty, 
+      targetPrice, 
+      deliveryLocation, 
+      targetDate, 
+      qualityGrade = 'GRADE_A', 
+      notes 
+    } = req.body;
+
+    if (!cropName || !requiredQty || !targetPrice || !deliveryLocation) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Crop name, quantity, target price, and delivery location are required' 
+      });
+    }
+
+    const newDemand = await prisma.buyerDemandRequest.create({
+      data: {
+        buyerId: decoded.id,
+        cropName: cropName.trim(),
+        category,
+        requiredQty: parseFloat(requiredQty),
+        targetPrice: parseFloat(targetPrice),
+        deliveryLocation: deliveryLocation.trim(),
+        targetDate: targetDate ? new Date(targetDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        qualityGrade,
+        notes: notes ? notes.trim() : null
+      },
+      include: {
+        buyer: { select: { id: true, name: true, businessName: true } }
+      }
+    });
+
+    // Notify farmers about the new wholesale demand
+    const farmers = await prisma.user.findMany({ where: { role: 'FARMER' }, select: { id: true } });
+    const targetKes = Math.round(newDemand.targetPrice * 130);
+    await Promise.all(
+      farmers.map(f =>
+        prisma.notification.create({
+          data: {
+            userId: f.id,
+            type: 'SYSTEM',
+            title: `📢 New Buyer Tender: ${newDemand.cropName}`,
+            message: `${newDemand.buyer.name} is seeking ${newDemand.requiredQty.toLocaleString()} kg of ${newDemand.cropName} at KES ${targetKes}/kg ($${newDemand.targetPrice.toFixed(2)}) for delivery to ${newDemand.deliveryLocation}. Submit your supply bid now!`
+          }
+        }).catch(() => {})
+      )
+    );
+
+    res.status(201).json({
+      success: true,
+      message: `Tender for ${newDemand.requiredQty} kg ${newDemand.cropName} published successfully!`,
+      demand: newDemand
+    });
+  } catch (error) {
+    console.error('Create demand error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 3. Farmer submits a supply bid / offer
+router.post('/demands/:id/bids', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Authentication required to submit bids' });
+    }
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    const { id } = req.params;
+    const { offeredQty, offeredPrice, farmLocation, message } = req.body;
+
+    if (!offeredQty || !offeredPrice) {
+      return res.status(400).json({ success: false, error: 'Offered quantity and price per kg are required' });
+    }
+
+    const demand = await prisma.buyerDemandRequest.findUnique({
+      where: { id },
+      include: { buyer: true }
+    });
+
+    if (!demand) {
+      return res.status(404).json({ success: false, error: 'Tender request not found' });
+    }
+
+    if (demand.status !== 'OPEN') {
+      return res.status(400).json({ success: false, error: 'This tender is no longer accepting bids' });
+    }
+
+    const bid = await prisma.demandBid.create({
+      data: {
+        demandId: id,
+        farmerId: decoded.id,
+        offeredQty: parseFloat(offeredQty),
+        offeredPrice: parseFloat(offeredPrice),
+        farmLocation: farmLocation ? farmLocation.trim() : 'Farm Shamba',
+        message: message ? message.trim() : null
+      },
+      include: {
+        farmer: { select: { id: true, name: true, businessName: true, phone: true } }
+      }
+    });
+
+    // Notify the buyer
+    const priceKes = Math.round(bid.offeredPrice * 130);
+    await prisma.notification.create({
+      data: {
+        userId: demand.buyerId,
+        type: 'SYSTEM',
+        title: `🌾 New Supply Bid: ${demand.cropName}`,
+        message: `${bid.farmer.name} has offered to supply ${bid.offeredQty.toLocaleString()} kg of ${demand.cropName} at KES ${priceKes}/kg ($${bid.offeredPrice.toFixed(2)}) from ${bid.farmLocation}.`
+      }
+    }).catch(() => {});
+
+    res.status(201).json({
+      success: true,
+      message: `Supply offer of ${bid.offeredQty} kg submitted to buyer!`,
+      bid
+    });
+  } catch (error) {
+    console.error('Submit bid error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 4. Buyer accepts a farmer's supply bid
+router.post('/demands/:id/accept-bid', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    const { id } = req.params;
+    const { bidId } = req.body;
+
+    const demand = await prisma.buyerDemandRequest.findUnique({
+      where: { id },
+      include: { bids: { include: { farmer: true } } }
+    });
+
+    if (!demand) {
+      return res.status(404).json({ success: false, error: 'Tender request not found' });
+    }
+
+    if (demand.buyerId !== decoded.id && decoded.role !== 'ADMIN') {
+      return res.status(403).json({ success: false, error: 'Only the buyer who posted this tender can accept offers' });
+    }
+
+    const selectedBid = demand.bids.find(b => b.id === bidId);
+    if (!selectedBid) {
+      return res.status(404).json({ success: false, error: 'Selected bid not found' });
+    }
+
+    // Mark selected bid ACCEPTED and tender FULFILLED
+    await prisma.demandBid.update({
+      where: { id: bidId },
+      data: { status: 'ACCEPTED' }
+    });
+
+    await prisma.buyerDemandRequest.update({
+      where: { id },
+      data: { status: 'FULFILLED' }
+    });
+
+    // Notify the farmer
+    await prisma.notification.create({
+      data: {
+        userId: selectedBid.farmerId,
+        type: 'SYSTEM',
+        title: `🎉 Offer Accepted! ${demand.cropName}`,
+        message: `Your supply offer for ${selectedBid.offeredQty} kg of ${demand.cropName} was accepted! Escrow settlement order has been reserved.`
+      }
+    }).catch(() => {});
+
+    res.json({
+      success: true,
+      message: `Bid by ${selectedBid.farmer.name} accepted! Tender marked as FULFILLED.`
+    });
+  } catch (error) {
+    console.error('Accept bid error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 5. Delete or close a tender
+router.delete('/demands/:id', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    const { id } = req.params;
+    const demand = await prisma.buyerDemandRequest.findUnique({ where: { id } });
+
+    if (!demand) {
+      return res.status(404).json({ success: false, error: 'Tender not found' });
+    }
+
+    if (demand.buyerId !== decoded.id && decoded.role !== 'ADMIN') {
+      return res.status(403).json({ success: false, error: 'Unauthorized to delete this tender' });
+    }
+
+    await prisma.demandBid.deleteMany({ where: { demandId: id } });
+    await prisma.buyerDemandRequest.delete({ where: { id } });
+
+    res.json({ success: true, message: 'Tender removed successfully' });
+  } catch (error) {
+    console.error('Delete demand error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;
 
 
