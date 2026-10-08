@@ -57,8 +57,19 @@ export default function Login({ onNavigateRegister, onNavigateAdmin, onNavigateF
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         <div className="flex justify-center">
-          <div className="w-14 h-14 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-xl shadow-emerald-500/30">
-            <Sprout className="w-8 h-8" />
+          <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white/10 border border-emerald-500/40 p-1 flex items-center justify-center shadow-xl shadow-emerald-500/20">
+            <img 
+              src="/agrilink-logo.png" 
+              alt="AgriLink Logo" 
+              className="w-full h-full object-contain"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'flex';
+              }}
+            />
+            <div className="w-full h-full bg-emerald-600 hidden items-center justify-center text-white rounded-xl">
+              <Sprout className="w-8 h-8" />
+            </div>
           </div>
         </div>
         <h2 className="mt-4 text-center text-3xl font-extrabold tracking-tight text-white">
