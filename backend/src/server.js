@@ -77,4 +77,28 @@ app.listen(PORT, async () => {
   } catch (err) {
     console.warn('Initial snapshot restore notice:', err.message);
   }
+
+  // ─── Self-Ping Keepalive (Render Free Tier) ───────────────────────────────
+  // Render free tier sleeps after 15 min of inactivity. This pings /health
+  // every 14 minutes so the app NEVER goes to sleep.
+  if (process.env.NODE_ENV === 'production') {
+    const APP_URL = process.env.RENDER_EXTERNAL_URL || `https://agrilink-pyrv.onrender.com`;
+    const PING_INTERVAL_MS = 14 * 60 * 1000; // 14 minutes
+
+    setInterval(async () => {
+      try {
+        const { default: https } = await import('https');
+        https.get(`${APP_URL}/health`, (res) => {
+          console.log(`[Keepalive] Self-ping OK — status ${res.statusCode} at ${new Date().toISOString()}`);
+        }).on('error', (err) => {
+          console.warn(`[Keepalive] Self-ping failed: ${err.message}`);
+        });
+      } catch (e) {
+        console.warn('[Keepalive] Self-ping error:', e.message);
+      }
+    }, PING_INTERVAL_MS);
+
+    console.log(`[Keepalive] ✅ Self-ping active — pinging ${APP_URL}/health every 14 minutes`);
+  }
+  // ─────────────────────────────────────────────────────────────────────────
 });
