@@ -5,7 +5,7 @@ import { PrismaClient } from '@prisma/client';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { triggerStkPush, queryStkPushStatus, getMpesaConfig, formatPhoneNumber } from '../services/mpesaService.js';
+import { triggerStkPush, queryStkPushStatus, getMpesaConfig, formatPhoneNumber, setStkStatus, getStkStatus } from '../services/mpesaService.js';
 import { 
   sendVerificationEmail, 
   sendPasswordResetEmail, 
@@ -1672,6 +1672,12 @@ router.post('/payments/mpesa/callback', async (req, res) => {
 
       console.log(`[M-PESA WEBHOOK] Payment CONFIRMED! Receipt: ${mpesaReceipt}, Amount: KES ${mpesaAmount}, Phone: ${mpesaPhone}`);
 
+      setStkStatus(checkoutRequestId, {
+        status: 'SUCCESS',
+        receipt: String(mpesaReceipt || `NLK${Date.now().toString().slice(-7)}`),
+        resultDesc: 'Payment confirmed via M-Pesa webhook.'
+      });
+
       // Update escrow transaction record if linked to an order
       await prisma.escrowTransaction.updateMany({
         where: { checkoutRequestId },
@@ -1681,13 +1687,59 @@ router.post('/payments/mpesa/callback', async (req, res) => {
         }
       });
     } else {
-      console.warn('[M-PESA WEBHOOK] Payment failed or cancelled:', callbackData?.ResultDesc);
+      const checkoutRequestId = callbackData?.CheckoutRequestID;
+      const desc = callbackData?.ResultDesc || 'Request cancelled by user on phone.';
+      console.warn(`[M-PESA WEBHOOK] Payment cancelled or failed for ${checkoutRequestId}:`, desc);
+
+      if (checkoutRequestId) {
+        setStkStatus(checkoutRequestId, {
+          status: 'CANCELLED',
+          resultCode: callbackData?.ResultCode || 1032,
+          resultDesc: desc
+        });
+
+        // Mark any escrow record as CANCELLED
+        await prisma.escrowTransaction.updateMany({
+          where: { checkoutRequestId },
+          data: { status: 'CANCELLED' }
+        });
+      }
     }
 
     res.json({ ResultCode: 0, ResultDesc: 'Accepted' });
   } catch (err) {
     console.error('Callback error:', err);
     res.status(500).json({ ResultCode: 1, ResultDesc: 'Failed' });
+  }
+});
+
+// Explicit user cancellation endpoint (when user clicks cancel on prompt or in modal)
+router.post('/payments/mpesa/cancel', async (req, res) => {
+  try {
+    const { checkoutRequestId, reason } = req.body;
+    if (!checkoutRequestId) {
+      return res.status(400).json({ success: false, error: 'CheckoutRequestID is required' });
+    }
+
+    setStkStatus(checkoutRequestId, {
+      status: 'CANCELLED',
+      resultCode: 1032,
+      resultDesc: reason || 'M-Pesa payment prompt was cancelled.'
+    });
+
+    // If linked to an escrow transaction, update its status
+    await prisma.escrowTransaction.updateMany({
+      where: { checkoutRequestId },
+      data: { status: 'CANCELLED' }
+    });
+
+    res.json({
+      success: true,
+      status: 'CANCELLED',
+      message: 'M-Pesa payment prompt cancelled successfully.'
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 

@@ -11,14 +11,15 @@ import {
   Smartphone,
   ArrowRight,
   Sparkles,
-  Check
+  Check,
+  XCircle
 } from 'lucide-react';
 import { USD_TO_KES } from './CurrencyUnitContext';
 
 const PRESET_AMOUNTS = [10, 25, 50, 100, 250];
 
 export default function WalletTopUpModal({ isOpen, onClose, user, onBalanceUpdated }) {
-  const [step, setStep] = useState('form'); // 'form' | 'awaiting_pin' | 'success'
+  const [step, setStep] = useState('form'); // 'form' | 'awaiting_pin' | 'cancelled' | 'success'
   const [amount, setAmount] = useState('50');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
@@ -112,8 +113,8 @@ export default function WalletTopUpModal({ isOpen, onClose, user, onBalanceUpdat
           return;
         } else if (data.status === 'CANCELLED') {
           clearInterval(pollIntervalRef.current);
-          setErrorMsg('M-Pesa request was cancelled on your phone.');
-          setStep('form');
+          setErrorMsg(data.resultDesc || 'M-Pesa payment prompt was cancelled by user.');
+          setStep('cancelled');
           return;
         }
 
@@ -134,6 +135,27 @@ export default function WalletTopUpModal({ isOpen, onClose, user, onBalanceUpdat
         clearInterval(pollIntervalRef.current);
       }
     }, 2500);
+  };
+
+  // Explicitly cancel the active M-Pesa prompt
+  const handleCancelPrompt = async (reason = 'Cancelled by user on AgriLink') => {
+    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    try {
+      if (stkData?.checkoutRequestId) {
+        await fetch('/api/payments/mpesa/cancel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            checkoutRequestId: stkData.checkoutRequestId,
+            reason
+          })
+        });
+      }
+    } catch (e) {
+      console.warn('Cancel notify error:', e);
+    }
+    setErrorMsg('M-Pesa payment prompt was cancelled.');
+    setStep('cancelled');
   };
 
   // Step 3: Finalize and credit account
@@ -345,35 +367,75 @@ export default function WalletTopUpModal({ isOpen, onClose, user, onBalanceUpdat
               <span>Awaiting PIN verification from Safaricom...</span>
             </div>
 
-            <div className="pt-2 space-y-2">
+            <div className="pt-2 flex items-center gap-2">
               <button
                 type="button"
-                disabled={loading}
-                onClick={() => handleFinalizeTopUp()}
-                className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/30 flex items-center justify-center gap-2 transition-all"
+                onClick={() => handleCancelPrompt('Cancelled by user')}
+                className="flex-1 py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
               >
-                {loading ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    Confirming Payment...
-                  </>
-                ) : (
-                  <>
-                    <Check className="w-4 h-4" />
-                    I have entered my PIN / Confirm Now
-                  </>
-                )}
+                <XCircle className="w-3.5 h-3.5" />
+                Cancel Payment Prompt
               </button>
-
               <button
                 type="button"
                 onClick={() => {
                   if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
                   setStep('form');
                 }}
-                className="text-xs text-slate-400 hover:text-slate-600 font-semibold"
+                className="flex-1 py-2 px-3 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-xl text-xs font-bold transition-colors"
               >
-                Change Phone Number or Amount
+                Edit Details
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 2.5: PAYMENT CANCELLED FEEDBACK */}
+        {step === 'cancelled' && (
+          <div className="mt-5 text-center space-y-4 animate-in zoom-in-95">
+            <div className="w-16 h-16 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto border-2 border-rose-300">
+              <XCircle className="w-10 h-10 text-rose-600" />
+            </div>
+
+            <div>
+              <h4 className="text-lg font-black text-slate-900">Payment Prompt Cancelled</h4>
+              <p className="text-xs text-rose-600 font-semibold mt-1">
+                {errorMsg || 'The M-Pesa transaction was cancelled on your phone or on the site.'}
+              </p>
+              <p className="text-[11px] text-slate-500 mt-1 max-w-xs mx-auto">
+                No funds were deducted from your M-Pesa account. You can retry anytime with another number or amount.
+              </p>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-xs text-slate-600 max-w-xs mx-auto space-y-1">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Status:</span>
+                <span className="font-bold text-rose-600">CANCELLED (ResultCode: 1032)</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Target Phone:</span>
+                <span className="font-mono font-bold text-slate-800">{stkData?.phone || phoneNumber}</span>
+              </div>
+            </div>
+
+            <div className="pt-2 flex gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 py-2.5 border border-slate-200 rounded-xl font-bold text-xs text-slate-600 hover:bg-slate-50"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setErrorMsg('');
+                  setStep('form');
+                }}
+                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-bold text-xs shadow-md shadow-emerald-600/30 flex items-center justify-center gap-1.5"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Retry Payment
               </button>
             </div>
           </div>

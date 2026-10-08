@@ -20,6 +20,23 @@ export const SANDBOX_DEFAULTS = {
   callbackUrl: 'https://agrilink-pyrv.onrender.com/api/payments/mpesa/callback'
 };
 
+// In-memory status registry for active STK push sessions
+const stkStatusRegistry = new Map();
+
+export function setStkStatus(checkoutRequestId, data) {
+  if (!checkoutRequestId) return;
+  const existing = stkStatusRegistry.get(checkoutRequestId) || {};
+  stkStatusRegistry.set(checkoutRequestId, {
+    ...existing,
+    ...data,
+    updatedAt: Date.now()
+  });
+}
+
+export function getStkStatus(checkoutRequestId) {
+  return stkStatusRegistry.get(checkoutRequestId) || null;
+}
+
 /**
  * Get current M-Pesa runtime configuration
  */
@@ -249,6 +266,28 @@ export async function queryStkPushStatus({ checkoutRequestId }) {
   const activeShortcode = isProd ? config.shortcode : SANDBOX_DEFAULTS.shortcode;
   const activePasskey = isProd ? config.passkey : SANDBOX_DEFAULTS.passkey;
 
+  // First check if an explicit status or cancellation was registered
+  const recorded = getStkStatus(checkoutRequestId);
+  if (recorded) {
+    if (recorded.status === 'CANCELLED') {
+      return {
+        completed: true,
+        status: 'CANCELLED',
+        resultCode: 1032,
+        resultDesc: recorded.resultDesc || 'M-Pesa payment prompt was cancelled by user.'
+      };
+    }
+    if (recorded.status === 'SUCCESS') {
+      return {
+        completed: true,
+        status: 'SUCCESS',
+        resultCode: 0,
+        resultDesc: 'Payment confirmed successfully.',
+        receipt: recorded.receipt || `NLK${Date.now().toString().slice(-7)}`
+      };
+    }
+  }
+
   if (token && checkoutRequestId) {
     const password = Buffer.from(`${activeShortcode}${activePasskey}${timestamp}`).toString('base64');
     try {
@@ -270,16 +309,20 @@ export async function queryStkPushStatus({ checkoutRequestId }) {
       console.log('[M-PESA DARAJA] Query Status Response:', data);
 
       if (data.ResultCode === '0' || data.ResultCode === 0) {
+        const receipt = `NLK${Date.now().toString().slice(-7)}`;
+        setStkStatus(checkoutRequestId, { status: 'SUCCESS', receipt });
         return {
           completed: true,
           status: 'SUCCESS',
           resultCode: data.ResultCode,
           resultDesc: data.ResultDesc || 'The service request is processed successfully.',
-          receipt: `NLK${Date.now().toString().slice(-7)}`
+          receipt
         };
       }
 
-      if (data.ResultCode === '1032' || data.ResultCode === 1032) {
+      // ResultCode 1032: Request cancelled by user
+      if (data.ResultCode === '1032' || data.ResultCode === 1032 || String(data.ResultDesc || '').toLowerCase().includes('cancel')) {
+        setStkStatus(checkoutRequestId, { status: 'CANCELLED', resultDesc: 'Request was cancelled by user on phone.' });
         return {
           completed: true,
           status: 'CANCELLED',
