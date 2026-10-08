@@ -629,8 +629,21 @@ function MainApp() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-200">
-                <Sprout className="w-6 h-6" />
+              <div className="w-10 h-10 rounded-xl overflow-hidden bg-white border border-emerald-600/30 flex items-center justify-center shadow-md shadow-emerald-500/10">
+                <img 
+                  src="/agrilink-logo.png" 
+                  alt="AgriLink Logo" 
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    if (e.currentTarget.nextElementSibling) {
+                      e.currentTarget.nextElementSibling.style.display = 'flex';
+                    }
+                  }} 
+                />
+                <div className="w-full h-full bg-emerald-600 hidden items-center justify-center text-white">
+                  <Sprout className="w-6 h-6" />
+                </div>
               </div>
               <div>
                 <span className="font-extrabold text-xl tracking-tight text-slate-900">
