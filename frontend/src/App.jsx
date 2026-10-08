@@ -41,7 +41,8 @@ import {
   Download,
   Upload,
   Activity,
-  Megaphone
+  Megaphone,
+  TrendingUp
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
