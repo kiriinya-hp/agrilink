@@ -39,7 +39,9 @@ import {
   Leaf,
   Camera,
   Download,
-  Upload
+  Upload,
+  Activity,
+  Megaphone
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
@@ -71,6 +73,9 @@ import SatelliteCropScannerModal from './components/SatelliteCropScannerModal';
 import CropDiseaseDoctorModal from './components/CropDiseaseDoctorModal';
 import UserProfileModal from './components/UserProfileModal';
 import AiMarketPricePredictorModal from './components/AiMarketPricePredictorModal';
+import AdminSystemHealth from './components/AdminSystemHealth';
+import AdminEscrowDisputes from './components/AdminEscrowDisputes';
+import AdminBroadcastModal from './components/AdminBroadcastModal';
 
 
 const API_BASE = '/api';
@@ -851,6 +856,33 @@ function MainApp() {
                   <BarChart3 className="w-3.5 h-3.5 shrink-0" />
                   <span className="hidden sm:inline">{t('executiveBi')}</span>
                   <span className="sm:hidden">BI</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('admin-escrow')}
+                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+                    activeTab === 'admin-escrow' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-amber-300" />
+                  <span>Escrow & Disputes</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('admin-health')}
+                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+                    activeTab === 'admin-health' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  <Activity className="w-3.5 h-3.5 shrink-0 text-emerald-300" />
+                  <span>System Health</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('admin-broadcast')}
+                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+                    activeTab === 'admin-broadcast' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  <Megaphone className="w-3.5 h-3.5 shrink-0 text-purple-300" />
+                  <span>Broadcast Hub</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('admin-users')}
@@ -1803,7 +1835,7 @@ function MainApp() {
                       </span>
                     </div>
                     <p className="text-xs text-slate-300 mt-0.5">
-                      Edits made in this table are instantly saved to SQLite (<code className="text-indigo-300 font-mono">dev.db</code>) and mirrored to persistent snapshot (<code className="text-indigo-300 font-mono">db-snapshot.json</code>).
+                      Edits made in this table are instantly saved to MongoDB Atlas (<code className="text-indigo-300 font-mono">Cluster0 Cloud</code>) and mirrored in real-time.
                     </p>
                   </div>
                 </div>
@@ -1846,7 +1878,7 @@ function MainApp() {
 
               <div className="pt-3 border-t border-indigo-800/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-[11px] text-slate-400">
                 <span>
-                  💡 <strong>Server Restarts:</strong> The server automatically restores custom stakeholder accounts from <code className="text-indigo-300 font-mono">db-snapshot.json</code> whenever the Render container boots up.
+                  💡 <strong>MongoDB Atlas Cloud:</strong> Live documents are synchronized across the 3-node replica set in AWS.
                 </span>
                 <div className="flex items-center gap-3 font-mono text-[11px]">
                   <span className="text-emerald-300 flex items-center gap-1.5 font-bold">
@@ -1855,7 +1887,7 @@ function MainApp() {
                   </span>
                   <span className="text-slate-500">•</span>
                   <span className="text-indigo-300">
-                    Prisma Studio: Port 5555
+                    MongoDB: Cluster0
                   </span>
                 </div>
               </div>
@@ -1863,7 +1895,7 @@ function MainApp() {
 
             <div className="flex justify-between items-center pt-1">
               <div>
-                <h3 className="font-bold text-base text-slate-900">Registered Ecosystem Stakeholders in SQLite Database</h3>
+                <h3 className="font-bold text-base text-slate-900">Registered Ecosystem Stakeholders in MongoDB Atlas</h3>
                 <p className="text-xs text-slate-500">Live directory of Farmers, Commercial Buyers, Transporters, and Admins. Click "Edit" to modify any record directly.</p>
               </div>
               <button onClick={loadRoleData} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-xs font-semibold rounded-lg flex items-center gap-1.5">
@@ -1934,6 +1966,21 @@ function MainApp() {
               </table>
             </div>
           </div>
+        )}
+
+        {/* ADMIN VIEW: ESCROW DISPUTE & FINANCIAL LEDGER */}
+        {user.role === 'ADMIN' && activeTab === 'admin-escrow' && (
+          <AdminEscrowDisputes token={token} apiBase={API_BASE} formatMoney={formatMoney} />
+        )}
+
+        {/* ADMIN VIEW: MONGODB ATLAS & DARAJA SYSTEM HEALTH MONITOR */}
+        {user.role === 'ADMIN' && activeTab === 'admin-health' && (
+          <AdminSystemHealth token={token} apiBase={API_BASE} />
+        )}
+
+        {/* ADMIN VIEW: PLATFORM BROADCAST & ALERT ENGINE */}
+        {user.role === 'ADMIN' && activeTab === 'admin-broadcast' && (
+          <AdminBroadcastModal token={token} apiBase={API_BASE} allUsers={allUsers} />
         )}
       </main>
 

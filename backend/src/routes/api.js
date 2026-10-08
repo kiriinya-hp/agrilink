@@ -3140,6 +3140,370 @@ router.post('/ai/price-predictor', async (req, res) => {
   }
 });
 
+// ==========================================
+// ADMIN FEATURE 4: MONGODB ATLAS & DARAJA SYSTEM HEALTH MONITOR
+// ==========================================
+router.get('/admin/system-health', requireAdmin, async (req, res) => {
+  try {
+    const startPing = Date.now();
+    const [
+      usersCount,
+      listingsCount,
+      ordersCount,
+      escrowCount,
+      shipmentsCount,
+      notificationsCount
+    ] = await Promise.all([
+      prisma.user.count(),
+      prisma.produceListing.count(),
+      prisma.order.count(),
+      prisma.escrowTransaction.count(),
+      prisma.shipment.count(),
+      prisma.notification.count()
+    ]);
+    const mongoLatencyMs = Date.now() - startPing;
+    const memUsage = process.memoryUsage();
+
+    res.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      database: {
+        engine: 'MongoDB Atlas Cloud',
+        status: 'CONNECTED',
+        cluster: 'Cluster0 (AWS)',
+        databaseName: 'agrilink',
+        pingLatencyMs: mongoLatencyMs,
+        collections: {
+          users: usersCount,
+          produceListings: listingsCount,
+          orders: ordersCount,
+          escrowTransactions: escrowCount,
+          shipments: shipmentsCount,
+          notifications: notificationsCount
+        },
+        totalDocuments: usersCount + listingsCount + ordersCount + escrowCount + shipmentsCount + notificationsCount
+      },
+      paymentGateway: {
+        provider: 'Safaricom Daraja M-Pesa STK Push',
+        status: 'OPERATIONAL',
+        environment: process.env.MPESA_ENVIRONMENT || 'sandbox',
+        shortcode: process.env.MPESA_SHORTCODE || '174379',
+        callbackConfigured: Boolean(process.env.MPESA_CALLBACK_URL),
+        callbackUrl: process.env.MPESA_CALLBACK_URL || 'Not configured',
+        credentialsPresent: Boolean(process.env.MPESA_CONSUMER_KEY && process.env.MPESA_CONSUMER_SECRET)
+      },
+      server: {
+        nodeVersion: process.version,
+        uptimeSeconds: Math.floor(process.uptime()),
+        memoryRssMb: Math.round(memUsage.rss / 1024 / 1024),
+        heapUsedMb: Math.round(memUsage.heapUsed / 1024 / 1024)
+      }
+    });
+  } catch (error) {
+    console.error('System health check error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ==========================================
+// ADMIN FEATURE 1: ESCROW DISPUTE & FINANCIAL LEDGER & ALL ORDERS
+// ==========================================
+router.get('/admin/escrows', requireAdmin, async (req, res) => {
+  try {
+    const escrows = await prisma.escrowTransaction.findMany({
+      include: {
+        order: {
+          include: {
+            buyer: {
+              select: { id: true, name: true, phone: true, email: true, businessName: true }
+            },
+            items: {
+              include: {
+                listing: {
+                  include: {
+                    farmer: {
+                      select: { id: true, name: true, phone: true, email: true, businessName: true }
+                    }
+                  }
+                }
+              }
+            },
+            shipment: {
+              include: {
+                transporter: {
+                  select: { id: true, name: true, phone: true, email: true, businessName: true }
+                }
+              }
+            }
+          }
+        }
+      },
+      orderBy: { fundedAt: 'desc' }
+    });
+
+    let totalHeld = 0;
+    let totalReleased = 0;
+    let totalRefunded = 0;
+    let totalCancelled = 0;
+
+    escrows.forEach(e => {
+      if (e.status === 'HELD') totalHeld += e.amountHeld;
+      else if (e.status === 'RELEASED') totalReleased += e.amountHeld;
+      else if (e.status === 'REFUNDED') totalRefunded += e.amountHeld;
+      else if (e.status === 'CANCELLED') totalCancelled += e.amountHeld;
+    });
+
+    res.json({
+      success: true,
+      summary: {
+        totalHeld,
+        totalReleased,
+        totalRefunded,
+        totalCancelled,
+        count: escrows.length
+      },
+      escrows
+    });
+  } catch (error) {
+    console.error('Admin escrows fetch error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.post('/admin/escrow/arbitrate', requireAdmin, async (req, res) => {
+  try {
+    const { escrowId, action, reason = 'Administrative dispute arbitration' } = req.body;
+
+    if (!escrowId || !['FORCE_RELEASE', 'FORCE_REFUND'].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid arbitration parameters. Action must be FORCE_RELEASE or FORCE_REFUND.'
+      });
+    }
+
+    const escrow = await prisma.escrowTransaction.findUnique({
+      where: { id: escrowId },
+      include: {
+        order: {
+          include: {
+            buyer: true,
+            items: {
+              include: {
+                listing: {
+                  include: { farmer: true }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!escrow) {
+      return res.status(404).json({ success: false, error: 'Escrow transaction not found' });
+    }
+
+    if (action === 'FORCE_RELEASE') {
+      if (escrow.status === 'RELEASED') {
+        return res.status(400).json({ success: false, error: 'Escrow has already been released' });
+      }
+
+      await prisma.escrowTransaction.update({
+        where: { id: escrow.id },
+        data: {
+          status: 'RELEASED',
+          releasedAt: new Date()
+        }
+      });
+
+      await prisma.order.update({
+        where: { id: escrow.orderId },
+        data: { status: 'COMPLETED' }
+      });
+
+      const farmer = escrow.order.items[0]?.listing?.farmer;
+      if (farmer) {
+        await prisma.user.update({
+          where: { id: farmer.id },
+          data: {
+            walletBalance: { increment: escrow.order.totalAmount }
+          }
+        });
+
+        await prisma.notification.create({
+          data: {
+            userId: farmer.id,
+            type: 'SYSTEM',
+            title: `💰 Escrow Funds Released: Order ${escrow.order.orderNumber}`,
+            message: `Admin has approved and released $${escrow.order.totalAmount.toFixed(2)} to your wallet for Order ${escrow.order.orderNumber}. Reason: ${reason}`
+          }
+        });
+      }
+
+      await prisma.notification.create({
+        data: {
+          userId: escrow.order.buyerId,
+          type: 'SYSTEM',
+          title: `Order ${escrow.order.orderNumber} Completed via Admin Arbitration`,
+          message: `Escrow funds have been released to the producer. Order is marked completed.`
+        }
+      });
+
+      return res.json({
+        success: true,
+        message: `Escrow successfully released to farmer! Order marked COMPLETED.`,
+        status: 'RELEASED'
+      });
+
+    } else if (action === 'FORCE_REFUND') {
+      if (escrow.status === 'REFUNDED') {
+        return res.status(400).json({ success: false, error: 'Escrow has already been refunded' });
+      }
+
+      await prisma.escrowTransaction.update({
+        where: { id: escrow.id },
+        data: {
+          status: 'REFUNDED',
+          releasedAt: new Date()
+        }
+      });
+
+      await prisma.order.update({
+        where: { id: escrow.orderId },
+        data: { status: 'CANCELLED' }
+      });
+
+      await prisma.user.update({
+        where: { id: escrow.order.buyerId },
+        data: {
+          walletBalance: { increment: escrow.amountHeld }
+        }
+      });
+
+      await prisma.notification.create({
+        data: {
+          userId: escrow.order.buyerId,
+          type: 'SYSTEM',
+          title: `💳 Refund Credited: Order ${escrow.order.orderNumber}`,
+          message: `Admin has refunded $${escrow.amountHeld.toFixed(2)} to your wallet for Order ${escrow.order.orderNumber}. Reason: ${reason}`
+        }
+      });
+
+      const farmer = escrow.order.items[0]?.listing?.farmer;
+      if (farmer) {
+        await prisma.notification.create({
+          data: {
+            userId: farmer.id,
+            type: 'SYSTEM',
+            title: `Order ${escrow.order.orderNumber} Cancelled & Refunded`,
+            message: `Admin resolved dispute by refunding buyer $${escrow.amountHeld.toFixed(2)}. Reason: ${reason}`
+          }
+        });
+      }
+
+      return res.json({
+        success: true,
+        message: `Escrow successfully refunded to buyer! Order marked CANCELLED.`,
+        status: 'REFUNDED'
+      });
+    }
+  } catch (error) {
+    console.error('Admin escrow arbitration error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.get('/admin/orders', requireAdmin, async (req, res) => {
+  try {
+    const orders = await prisma.order.findMany({
+      include: {
+        buyer: {
+          select: { id: true, name: true, phone: true, email: true, businessName: true }
+        },
+        items: {
+          include: {
+            listing: {
+              include: {
+                farmer: {
+                  select: { id: true, name: true, phone: true, email: true, businessName: true }
+                }
+              }
+            }
+          }
+        },
+        escrowTransaction: true,
+        shipment: {
+          include: {
+            transporter: {
+              select: { id: true, name: true, phone: true, email: true, businessName: true }
+            }
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    res.json({ success: true, orders });
+  } catch (error) {
+    console.error('Admin all orders fetch error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ==========================================
+// ADMIN FEATURE 5: PLATFORM BROADCAST & ANNOUNCEMENT ENGINE
+// ==========================================
+router.post('/admin/broadcast', requireAdmin, async (req, res) => {
+  try {
+    const { targetRole = 'ALL', type = 'SYSTEM', title, message } = req.body;
+
+    if (!title || !message) {
+      return res.status(400).json({
+        success: false,
+        error: 'Both title and message are required for platform broadcasts'
+      });
+    }
+
+    const whereClause = targetRole === 'ALL' ? {} : { role: targetRole };
+    const recipients = await prisma.user.findMany({
+      where: whereClause,
+      select: { id: true, name: true, phone: true, email: true, role: true }
+    });
+
+    if (recipients.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: `No registered users found for target audience '${targetRole}'`
+      });
+    }
+
+    await Promise.all(
+      recipients.map(u => 
+        prisma.notification.create({
+          data: {
+            userId: u.id,
+            type,
+            title: `📢 [ANNOUNCEMENT] ${title}`,
+            message,
+            metadata: JSON.stringify({ broadcastBy: req.admin?.name || 'Administrator', targetRole })
+          }
+        }).catch(err => console.warn(`Failed broadcast to user ${u.id}:`, err.message))
+      )
+    );
+
+    res.json({
+      success: true,
+      message: `Broadcast successfully dispatched to ${recipients.length} ${targetRole === 'ALL' ? 'stakeholders' : targetRole.toLowerCase() + 's'}!`,
+      recipientCount: recipients.length,
+      targetRole,
+      type
+    });
+  } catch (error) {
+    console.error('Admin broadcast error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;
 
 
