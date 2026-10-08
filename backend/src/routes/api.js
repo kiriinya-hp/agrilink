@@ -2995,7 +2995,6 @@ router.post('/satellite/crop-health', async (req, res) => {
         spectralHeatmap: [
           { zone: 'North Quadrant', ndvi: Number((ndvi + 0.02).toFixed(2)), status: 'Dense Canopy', color: '#10B981' },
           { zone: 'Center Furrows', ndvi: Number((ndvi).toFixed(2)), status: 'Optimal Vigor', color: '#059669' },
-          { zone: 'South Edge', ndvi: Number((ndvi - 0.03).toFixed(2)), status: 'Moderate Vigor', color: '#34D399' },
           { zone: 'Irrigation Ditch Zone', ndvi: Number((ndvi + 0.04).toFixed(2)), status: 'High Hydration', color: '#047857' }
         ]
       }
@@ -3005,5 +3004,142 @@ router.post('/satellite/crop-health', async (req, res) => {
   }
 });
 
+// ==========================================
+// 4. AI AGRONOMY & MARKET PRICE PREDICTOR
+// Multi-Factor Predictive Intelligence for Kenyan Food Markets
+// ==========================================
+router.post('/ai/price-predictor', async (req, res) => {
+  try {
+    const { 
+      cropName = 'Tomatoes', 
+      county = 'Kiambu', 
+      acreage = 1, 
+      targetHarvestMonth = 'November' 
+    } = req.body;
+
+    // Comprehensive East African Commodity Benchmarks & Volatility Patterns
+    const COMMODITY_MODELS = {
+      'Tomatoes': {
+        currentKes: 105,
+        baseVol: 0.18,
+        costPerAcreKes: 85000,
+        avgYieldKgPerAcre: 6000,
+        highSeason: ['March', 'April', 'November', 'December'],
+        majorHubs: ['Nairobi Wakulima', 'Kongowea', 'Kisumu Jubilee'],
+        factors: 'Susceptible to early/late blight during rainy seasons. Heavy price spike during El Niño or holiday quarters.'
+      },
+      'Red Bulb Onions': {
+        currentKes: 95,
+        baseVol: 0.12,
+        costPerAcreKes: 70000,
+        avgYieldKgPerAcre: 7500,
+        highSeason: ['January', 'February', 'August', 'September'],
+        majorHubs: ['Wakulima Market', 'Nakuru Top Market', 'Eldoret Wholesale'],
+        factors: 'Import competition from Tanzania influences market rates; curing quality directly dictates grade premium.'
+      },
+      'Shangi Potatoes': {
+        currentKes: 52,
+        baseVol: 0.15,
+        costPerAcreKes: 55000,
+        avgYieldKgPerAcre: 9000,
+        highSeason: ['June', 'July', 'December', 'January'],
+        majorHubs: ['Wakulima', 'Mombasa', 'Thika Wholesale'],
+        factors: 'Perishable nature leads to rapid farmgate price drops during glut; cold storage or fast logistics guarantees 35% higher return.'
+      },
+      'Dry White Maize': {
+        currentKes: 46,
+        baseVol: 0.08,
+        costPerAcreKes: 38000,
+        avgYieldKgPerAcre: 2800,
+        highSeason: ['May', 'June', 'July'],
+        majorHubs: ['NCPB Silos', 'Eldoret Terminal', 'Nairobi Millers'],
+        factors: 'Post-harvest aflatoxin testing and NCPB purchasing floor price stabilize national wholesale averages.'
+      },
+      'Cabbages': {
+        currentKes: 35,
+        baseVol: 0.20,
+        costPerAcreKes: 42000,
+        avgYieldKgPerAcre: 8000,
+        highSeason: ['October', 'November', 'December'],
+        majorHubs: ['Limuru Market', 'Nairobi Wakulima', 'Machakos'],
+        factors: 'High transport bulkiness; close proximity to urban centers yields top net margin.'
+      },
+      'Watermelons': {
+        currentKes: 40,
+        baseVol: 0.14,
+        costPerAcreKes: 65000,
+        avgYieldKgPerAcre: 10000,
+        highSeason: ['December', 'January', 'February'],
+        majorHubs: ['Kongowea Mombasa', 'Nairobi City Market', 'Malindi'],
+        factors: 'Coastal and dryland river irrigation crops peak during warm months.'
+      }
+    };
+
+    const model = COMMODITY_MODELS[cropName] || {
+      currentKes: 75,
+      baseVol: 0.12,
+      costPerAcreKes: 50000,
+      avgYieldKgPerAcre: 5000,
+      highSeason: ['November', 'December'],
+      majorHubs: ['Nairobi Wakulima', 'Kongowea'],
+      factors: 'Consistent staple demand across wholesale consumer markets.'
+    };
+
+    // Calculate projection dynamics
+    const isHighSeason = model.highSeason.includes(targetHarvestMonth);
+    const demandMultiplier = isHighSeason ? 1.25 : 0.95;
+    const projectedPriceKes = Math.round(model.currentKes * demandMultiplier);
+    const lowRangeKes = Math.round(projectedPriceKes * 0.90);
+    const highRangeKes = Math.round(projectedPriceKes * 1.15);
+
+    const totalEstYieldKg = Math.round(model.avgYieldKgPerAcre * parseFloat(acreage || 1));
+    const projectedGrossKes = totalEstYieldKg * projectedPriceKes;
+    const totalEstCostKes = Math.round(model.costPerAcreKes * parseFloat(acreage || 1));
+    const projectedNetProfitKes = projectedGrossKes - totalEstCostKes;
+    const roiPercentage = Math.round((projectedNetProfitKes / totalEstCostKes) * 100);
+
+    const priceConfidence = isHighSeason ? 88 : 82;
+    const marketRecommendation = roiPercentage > 50 
+      ? 'EXCELLENT OPPORTUNITY: High market demand projected. Pre-list in Chama Aggregation Pool or contract ahead.'
+      : roiPercentage > 20
+      ? 'MODERATE PROFIT: Viable production margin. Maintain strict crop protection against fungal blights to protect yield.'
+      : 'CAUTION: High supply expected. Consider intercropping or staggered planting to target late market windows.';
+
+    res.json({
+      success: true,
+      cropName,
+      county,
+      acreage: parseFloat(acreage || 1),
+      targetHarvestMonth,
+      currentBenchmarkKes: model.currentKes,
+      projectedPriceKes,
+      predictedRange: {
+        lowKes: lowRangeKes,
+        highKes: highRangeKes
+      },
+      confidenceScore: priceConfidence,
+      economics: {
+        estimatedYieldKg: totalEstYieldKg,
+        projectedGrossRevenueKes: projectedGrossKes,
+        estimatedTotalInputCostKes: totalEstCostKes,
+        projectedNetProfitKes: projectedNetProfitKes,
+        roiPercentage,
+        currencyUsdApprox: {
+          projectedPriceUsd: Number((projectedPriceKes / 130).toFixed(2)),
+          projectedNetProfitUsd: Number((projectedNetProfitKes / 130).toFixed(2))
+        }
+      },
+      seasonalTrend: isHighSeason ? 'BULLISH_PEAK' : 'STABLE_AVERAGE',
+      marketRecommendation,
+      wholesaleTerminalHubs: model.majorHubs,
+      agronomicGuidance: model.factors
+    });
+  } catch (error) {
+    console.error('Price predictor error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;
+
 

@@ -70,6 +70,7 @@ import AiNegotiationModal from './components/AiNegotiationModal';
 import SatelliteCropScannerModal from './components/SatelliteCropScannerModal';
 import CropDiseaseDoctorModal from './components/CropDiseaseDoctorModal';
 import UserProfileModal from './components/UserProfileModal';
+import AiMarketPricePredictorModal from './components/AiMarketPricePredictorModal';
 
 
 const API_BASE = '/api';
@@ -142,6 +143,8 @@ function MainApp() {
   const [satelliteLocation, setSatelliteLocation] = useState('Kinangop, Nyandarua County');
   const [showCropDoctor, setShowCropDoctor] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showAiPricePredictor, setShowAiPricePredictor] = useState(false);
+  const [trackingMapOrder, setTrackingMapOrder] = useState(null);
   const [dbSyncing, setDbSyncing] = useState(false);
 
 
@@ -1292,6 +1295,14 @@ function MainApp() {
                               <FileText className="w-3.5 h-3.5 text-indigo-600" />
                               <span>View Tax Invoice & Waybill</span>
                             </button>
+                            <button
+                              type="button"
+                              onClick={() => setTrackingMapOrder(order)}
+                              className="w-full mt-1.5 py-1.5 px-3 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-lg text-emerald-800 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors"
+                            >
+                              <Truck className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>Live GPS Tracking Map</span>
+                            </button>
                           </div>
                         )}
                       </div>
@@ -1331,11 +1342,19 @@ function MainApp() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setShowAiPricePredictor(true)}
+                  className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
+                >
+                  <TrendingUp className="w-4 h-4 text-slate-950" />
+                  <span>AI Price Forecast</span>
+                </button>
                 <button
                   type="button"
                   onClick={() => setShowCropDoctor(true)}
-                  className="w-full sm:w-auto px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
+                  className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
                 >
                   <Camera className="w-4 h-4" />
                   <span>Diagnose Crop Now</span>
@@ -2442,6 +2461,72 @@ function MainApp() {
           if (aiBtn) aiBtn.click();
         }}
       />
+
+      {/* ========================================================= */}
+      {/* 📈 AI AGRONOMY & MARKET PRICE PREDICTOR MODAL             */}
+      {/* ========================================================= */}
+      <AiMarketPricePredictorModal
+        isOpen={showAiPricePredictor}
+        onClose={() => setShowAiPricePredictor(false)}
+        onPreListHarvest={({ cropName, unitPrice, location }) => {
+          setNewListing(prev => ({
+            ...prev,
+            cropName,
+            unitPrice: unitPrice.toFixed(2),
+            location: location || prev.location
+          }));
+          showNotification(`Pre-filled listing with AI forecasted price: $${unitPrice.toFixed(2)}/kg!`);
+        }}
+      />
+
+      {/* ========================================================= */}
+      {/* 🚚 LIVE GPS DELIVERY TRACKING MAP POPUP (BUYER / SELLER)  */}
+      {/* ========================================================= */}
+      {trackingMapOrder && (
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-4xl w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto space-y-4">
+            <div className="flex justify-between items-center border-b pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center border border-emerald-500/20">
+                  <Truck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base text-slate-900">
+                    Live GPS Cargo Route: Order #{trackingMapOrder.orderNumber}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {trackingMapOrder.items?.[0]?.cropName} ({trackingMapOrder.items?.[0]?.quantity} kg) • Escrow Status: {trackingMapOrder.status}
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setTrackingMapOrder(null)}
+                className="text-slate-400 hover:text-slate-600 font-bold p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <DriverLiveMap
+              activeOrders={[trackingMapOrder]}
+              availableShipments={[]}
+              onAcceptShipment={() => {}}
+              onUpdateTransitStatus={() => {}}
+              user={user}
+            />
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setTrackingMapOrder(null)}
+                className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-colors"
+              >
+                Close Tracking Map
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ========================================================= */}
       {/* 👤 AUTHENTICATED USER PROFILE & SETTINGS MODAL           */}
