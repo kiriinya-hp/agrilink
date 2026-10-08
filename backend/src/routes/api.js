@@ -10,7 +10,9 @@ import {
   sendVerificationEmail, 
   sendPasswordResetEmail, 
   sendDisbursementNotification,
-  sendSMSNotification 
+  sendSMSNotification,
+  sendBroadcastNotificationEmail,
+  sendSystemAlertEmail
 } from '../services/notificationService.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -1224,14 +1226,27 @@ router.post('/wallet/topup', async (req, res) => {
       data: { walletBalance: { increment: addAmt } }
     });
 
+    const topupMsg = `Your AgriLink balance has been credited with $${addAmt.toFixed(2)} (approx. KES ${Math.round(addAmt * 130).toLocaleString()}) via ${paymentMethod}. New balance: $${updatedUser.walletBalance.toFixed(2)}.`;
     await prisma.notification.create({
       data: {
         userId,
         type: 'WALLET_TOPUP',
         title: 'Wallet Top-up Confirmed',
-        message: `Your AgriLink balance has been credited with $${addAmt.toFixed(2)} via ${paymentMethod}. New balance: $${updatedUser.walletBalance.toFixed(2)}.`
+        message: topupMsg
       }
     });
+
+    // Send email receipt if user has an email address
+    if (updatedUser.email) {
+      sendSystemAlertEmail({
+        to: updatedUser.email,
+        userName: updatedUser.name || 'Partner',
+        subject: `✅ AgriLink Wallet Credited: $${addAmt.toFixed(2)} — Receipt`,
+        title: 'Wallet Top-up Confirmed',
+        message: topupMsg,
+        badge: 'Wallet Receipt'
+      }).catch(e => console.warn(`Could not email wallet receipt to ${updatedUser.email}:`, e.message));
+    }
 
     res.json({
       success: true,
@@ -1293,6 +1308,19 @@ router.post('/wallet/withdraw', async (req, res) => {
 
       return updated;
     });
+
+    const withdrawMsg = `Payout of $${withdrawAmt.toFixed(2)} (approx. KES ${Math.round(withdrawAmt * 130).toLocaleString()}) to ${destination} has been approved and disbursed. Payout Ref: ${reference}. Remaining balance: $${updatedUser.walletBalance.toFixed(2)}.`;
+    // Send email payout confirmation
+    if (user.email) {
+      sendSystemAlertEmail({
+        to: user.email,
+        userName: user.name || 'Partner',
+        subject: `💰 AgriLink Payout Disbursed: $${withdrawAmt.toFixed(2)} — Ref: ${reference}`,
+        title: 'Withdrawal Disbursed',
+        message: withdrawMsg,
+        badge: 'Payout Confirmed'
+      }).catch(e => console.warn(`Could not email withdrawal receipt to ${user.email}:`, e.message));
+    }
 
     res.json({
       success: true,
@@ -1523,32 +1551,59 @@ router.post('/orders/:id/dispute', async (req, res) => {
 
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      include: { items: { include: { listing: true } }, shipment: true }
+      include: { items: { include: { listing: { include: { farmer: { select: { id: true, name: true, email: true } } } } } }, shipment: true }
     });
 
     if (!order) return res.status(404).json({ success: false, error: 'Order not found' });
 
     const disputeTicket = `DSP-${Math.floor(100000 + Math.random() * 900000)}`;
+    const buyerDisputeMsg = `Your inspection claim regarding Order #${order.orderNumber} has been logged. Escrow auto-settlement is paused pending verification. Category: ${issueCategory || reason}. Ticket: #${disputeTicket}`;
 
     await prisma.notification.create({
       data: {
         userId,
         type: 'DISPUTE_FILED',
         title: `Quality Claim Filed #${disputeTicket}`,
-        message: `Your inspection claim regarding Order #${order.orderNumber} has been logged. Escrow auto-settlement is paused pending verification. Category: ${issueCategory || reason}.`
+        message: buyerDisputeMsg
       }
     });
 
-    const farmerId = order.items[0]?.listing?.farmerId;
+    // Fetch the buyer to send email
+    const buyer = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, name: true, email: true } });
+    if (buyer?.email) {
+      sendSystemAlertEmail({
+        to: buyer.email,
+        userName: buyer.name || 'Buyer',
+        subject: `⚠️ AgriLink Dispute Filed: Order #${order.orderNumber} — Ticket #${disputeTicket}`,
+        title: `Quality Claim Filed: Order #${order.orderNumber}`,
+        message: buyerDisputeMsg,
+        badge: 'Dispute Ticket Raised'
+      }).catch(e => console.warn(`Could not email buyer dispute notice to ${buyer.email}:`, e.message));
+    }
+
+    const farmerEntity = order.items[0]?.listing?.farmer;
+    const farmerId = farmerEntity?.id;
     if (farmerId) {
+      const farmerDisputeMsg = `Buyer filed an inspection claim for Order #${order.orderNumber}: "${description || reason}". Escrow disbursement is currently under dispute review. Ticket: #${disputeTicket}`;
       await prisma.notification.create({
         data: {
           userId: farmerId,
           type: 'DISPUTE_ALERT',
           title: `Inspection Claim Notice #${disputeTicket}`,
-          message: `Buyer filed an inspection claim for Order #${order.orderNumber}: "${description || reason}". Escrow disbursement is currently under dispute review.`
+          message: farmerDisputeMsg
         }
       });
+
+      if (farmerEntity?.email) {
+        sendSystemAlertEmail({
+          to: farmerEntity.email,
+          userName: farmerEntity.name || 'Farmer',
+          subject: `⚠️ AgriLink Dispute Alert: Order #${order.orderNumber} — Ticket #${disputeTicket}`,
+          title: `Inspection Claim Notice: Order #${order.orderNumber}`,
+          message: farmerDisputeMsg,
+          badge: 'Dispute Alert'
+        }).catch(e => console.warn(`Could not email farmer dispute notice to ${farmerEntity.email}:`, e.message));
+      }
     }
 
     res.json({
@@ -1794,14 +1849,27 @@ router.post('/wallet/topup/confirm', async (req, res) => {
       data: { walletBalance: { increment: addAmt } }
     });
 
+    const mpesaTopupMsg = `M-Pesa deposit of $${addAmt.toFixed(2)} (approx. KES ${Math.round(addAmt * 130).toLocaleString()}) — Receipt #${mpesaReceipt} — has been credited to your escrow wallet. New balance: $${updatedUser.walletBalance.toFixed(2)}.`;
     await prisma.notification.create({
       data: {
         userId,
         type: 'WALLET_TOPUP',
         title: 'M-Pesa Top-Up Confirmed',
-        message: `M-Pesa deposit of $${addAmt.toFixed(2)} (Receipt #${mpesaReceipt}) credited to your escrow wallet. New balance: $${updatedUser.walletBalance.toFixed(2)}.`
+        message: mpesaTopupMsg
       }
     });
+
+    // Send email receipt if user has an email
+    if (updatedUser.email) {
+      sendSystemAlertEmail({
+        to: updatedUser.email,
+        userName: updatedUser.name || 'Partner',
+        subject: `✅ M-Pesa Deposit Confirmed: $${addAmt.toFixed(2)} — Receipt #${mpesaReceipt}`,
+        title: 'M-Pesa Top-Up Confirmed',
+        message: mpesaTopupMsg,
+        badge: 'M-Pesa Receipt'
+      }).catch(e => console.warn(`Could not email M-Pesa receipt to ${updatedUser.email}:`, e.message));
+    }
 
     // Auto-save snapshot
     await autoSaveSnapshot();
@@ -3338,6 +3406,18 @@ router.post('/admin/escrow/arbitrate', requireAdmin, async (req, res) => {
             message: `Admin has approved and released $${escrow.order.totalAmount.toFixed(2)} to your wallet for Order ${escrow.order.orderNumber}. Reason: ${reason}`
           }
         });
+
+        // Dispatch Email to Farmer
+        if (farmer.email) {
+          sendSystemAlertEmail({
+            to: farmer.email,
+            userName: farmer.name,
+            subject: `💰 Escrow Funds Released: Order ${escrow.order.orderNumber}`,
+            title: `Escrow Funds Released to Your Wallet`,
+            message: `Admin has approved and released $${escrow.order.totalAmount.toFixed(2)} (approx KES ${Math.round(escrow.order.totalAmount * 130).toLocaleString()}) to your AgriLink wallet for Order ${escrow.order.orderNumber}.\nReason: ${reason}`,
+            badge: 'Escrow Released'
+          }).catch(err => console.warn('Could not email farmer:', err.message));
+        }
       }
 
       await prisma.notification.create({
@@ -3348,6 +3428,18 @@ router.post('/admin/escrow/arbitrate', requireAdmin, async (req, res) => {
           message: `Escrow funds have been released to the producer. Order is marked completed.`
         }
       });
+
+      // Dispatch Email to Buyer
+      if (escrow.order.buyer?.email) {
+        sendSystemAlertEmail({
+          to: escrow.order.buyer.email,
+          userName: escrow.order.buyer.name,
+          subject: `Order ${escrow.order.orderNumber} Completed via Admin Arbitration`,
+          title: `Order ${escrow.order.orderNumber} Closed & Released`,
+          message: `Escrow funds have been successfully cleared and released to the farmer for Order ${escrow.order.orderNumber}.\nReason: ${reason}`,
+          badge: 'Arbitration Complete'
+        }).catch(err => console.warn('Could not email buyer:', err.message));
+      }
 
       return res.json({
         success: true,
@@ -3389,6 +3481,18 @@ router.post('/admin/escrow/arbitrate', requireAdmin, async (req, res) => {
         }
       });
 
+      // Dispatch Email to Buyer
+      if (escrow.order.buyer?.email) {
+        sendSystemAlertEmail({
+          to: escrow.order.buyer.email,
+          userName: escrow.order.buyer.name,
+          subject: `💳 Refund Credited: Order ${escrow.order.orderNumber}`,
+          title: `Escrow Refund Credited to Wallet`,
+          message: `Admin has resolved the dispute and refunded $${escrow.amountHeld.toFixed(2)} (approx KES ${Math.round(escrow.amountHeld * 130).toLocaleString()}) to your AgriLink wallet for Order ${escrow.order.orderNumber}.\nReason: ${reason}`,
+          badge: 'Refund Approved'
+        }).catch(err => console.warn('Could not email buyer:', err.message));
+      }
+
       const farmer = escrow.order.items[0]?.listing?.farmer;
       if (farmer) {
         await prisma.notification.create({
@@ -3399,6 +3503,18 @@ router.post('/admin/escrow/arbitrate', requireAdmin, async (req, res) => {
             message: `Admin resolved dispute by refunding buyer $${escrow.amountHeld.toFixed(2)}. Reason: ${reason}`
           }
         });
+
+        // Dispatch Email to Farmer
+        if (farmer.email) {
+          sendSystemAlertEmail({
+            to: farmer.email,
+            userName: farmer.name,
+            subject: `Order ${escrow.order.orderNumber} Cancelled & Refunded`,
+            title: `Dispute Arbitrated: Order Cancelled`,
+            message: `Admin resolved the dispute by refunding buyer $${escrow.amountHeld.toFixed(2)} for Order ${escrow.order.orderNumber}.\nReason: ${reason}`,
+            badge: 'Dispute Resolved'
+          }).catch(err => console.warn('Could not email farmer:', err.message));
+        }
       }
 
       return res.json({
@@ -3477,6 +3593,7 @@ router.post('/admin/broadcast', requireAdmin, async (req, res) => {
       });
     }
 
+    // 1. Save In-App Notifications in MongoDB Atlas
     await Promise.all(
       recipients.map(u => 
         prisma.notification.create({
@@ -3485,16 +3602,57 @@ router.post('/admin/broadcast', requireAdmin, async (req, res) => {
             type,
             title: `📢 [ANNOUNCEMENT] ${title}`,
             message,
-            metadata: JSON.stringify({ broadcastBy: req.admin?.name || 'Administrator', targetRole })
+            metadata: JSON.stringify({ broadcastBy: req.admin?.name || 'Administrator', targetRole, channel: type })
           }
-        }).catch(err => console.warn(`Failed broadcast to user ${u.id}:`, err.message))
+        }).catch(err => console.warn(`Failed broadcast notification to user ${u.id}:`, err.message))
       )
     );
 
+    // 2. Dispatch Live Emails via Gmail SMTP / Brevo / Resend
+    let emailsSent = 0;
+    if (type === 'EMAIL' || type === 'SYSTEM' || type === 'ALL') {
+      const emailDispatches = recipients
+        .filter(u => u.email)
+        .map(async (u) => {
+          try {
+            const res = await sendBroadcastNotificationEmail({
+              to: u.email,
+              userName: u.name,
+              title,
+              message,
+              targetRole,
+              broadcastBy: req.admin?.name || 'AgriLink Operations Team'
+            });
+            if (res.sent || res.success) emailsSent++;
+          } catch (e) {
+            console.warn(`Could not dispatch broadcast email to ${u.email}:`, e.message);
+          }
+        });
+      await Promise.all(emailDispatches);
+    }
+
+    // 3. Dispatch Live SMS via Africa's Talking / Brevo SMS
+    let smsSent = 0;
+    if (type === 'SMS') {
+      const smsDispatches = recipients
+        .filter(u => u.phone)
+        .map(async (u) => {
+          try {
+            const res = await sendSMSNotification(u.phone, `[AgriLink Alert] ${title}: ${message}`);
+            if (res.sent || res.success) smsSent++;
+          } catch (e) {
+            console.warn(`Could not dispatch broadcast SMS to ${u.phone}:`, e.message);
+          }
+        });
+      await Promise.all(smsDispatches);
+    }
+
     res.json({
       success: true,
-      message: `Broadcast successfully dispatched to ${recipients.length} ${targetRole === 'ALL' ? 'stakeholders' : targetRole.toLowerCase() + 's'}!`,
+      message: `Broadcast successfully dispatched via ${type} to ${recipients.length} ${targetRole === 'ALL' ? 'stakeholders' : targetRole.toLowerCase() + 's'}!`,
       recipientCount: recipients.length,
+      emailsSent,
+      smsSent,
       targetRole,
       type
     });
@@ -3678,8 +3836,9 @@ router.post('/demands', async (req, res) => {
     });
 
     // Notify farmers about the new wholesale demand
-    const farmers = await prisma.user.findMany({ where: { role: 'FARMER' }, select: { id: true } });
+    const farmers = await prisma.user.findMany({ where: { role: 'FARMER' }, select: { id: true, name: true, email: true } });
     const targetKes = Math.round(newDemand.targetPrice * 130);
+    const tenderMsg = `${newDemand.buyer.name} is seeking ${newDemand.requiredQty.toLocaleString()} kg of ${newDemand.cropName} at KES ${targetKes}/kg ($${newDemand.targetPrice.toFixed(2)}) for delivery to ${newDemand.deliveryLocation}. Submit your supply bid now!`;
     await Promise.all(
       farmers.map(f =>
         prisma.notification.create({
@@ -3687,10 +3846,26 @@ router.post('/demands', async (req, res) => {
             userId: f.id,
             type: 'SYSTEM',
             title: `📢 New Buyer Tender: ${newDemand.cropName}`,
-            message: `${newDemand.buyer.name} is seeking ${newDemand.requiredQty.toLocaleString()} kg of ${newDemand.cropName} at KES ${targetKes}/kg ($${newDemand.targetPrice.toFixed(2)}) for delivery to ${newDemand.deliveryLocation}. Submit your supply bid now!`
+            message: tenderMsg
           }
         }).catch(() => {})
       )
+    );
+
+    // Dispatch live emails to all farmers who have an email address
+    await Promise.all(
+      farmers
+        .filter(f => f.email)
+        .map(f =>
+          sendSystemAlertEmail({
+            to: f.email,
+            userName: f.name || 'Farmer',
+            subject: `📢 New Buyer Tender: ${newDemand.cropName} — AgriLink`,
+            title: `New Wholesale Tender: ${newDemand.cropName}`,
+            message: tenderMsg,
+            badge: 'Wholesale Tender Alert'
+          }).catch(e => console.warn(`Could not email farmer ${f.email}:`, e.message))
+        )
     );
 
     res.status(201).json({
@@ -3748,16 +3923,29 @@ router.post('/demands/:id/bids', async (req, res) => {
       }
     });
 
-    // Notify the buyer
+    // Notify the buyer (in-app + email)
     const priceKes = Math.round(bid.offeredPrice * 130);
+    const bidMsg = `${bid.farmer.name} has offered to supply ${bid.offeredQty.toLocaleString()} kg of ${demand.cropName} at KES ${priceKes}/kg ($${bid.offeredPrice.toFixed(2)}) from ${bid.farmLocation}.`;
     await prisma.notification.create({
       data: {
         userId: demand.buyerId,
         type: 'SYSTEM',
         title: `🌾 New Supply Bid: ${demand.cropName}`,
-        message: `${bid.farmer.name} has offered to supply ${bid.offeredQty.toLocaleString()} kg of ${demand.cropName} at KES ${priceKes}/kg ($${bid.offeredPrice.toFixed(2)}) from ${bid.farmLocation}.`
+        message: bidMsg
       }
     }).catch(() => {});
+
+    // Send live email to the buyer if they have an email address
+    if (demand.buyer?.email) {
+      sendSystemAlertEmail({
+        to: demand.buyer.email,
+        userName: demand.buyer.name || 'Buyer',
+        subject: `🌾 New Supply Bid on Your Tender: ${demand.cropName} — AgriLink`,
+        title: `New Supply Bid: ${demand.cropName}`,
+        message: bidMsg,
+        badge: 'Supply Bid Received'
+      }).catch(e => console.warn(`Could not email buyer ${demand.buyer.email}:`, e.message));
+    }
 
     res.status(201).json({
       success: true,
@@ -3812,15 +4000,28 @@ router.post('/demands/:id/accept-bid', async (req, res) => {
       data: { status: 'FULFILLED' }
     });
 
-    // Notify the farmer
+    // Notify the farmer (in-app + email)
+    const acceptedMsg = `Your supply offer for ${selectedBid.offeredQty} kg of ${demand.cropName} was accepted! Escrow settlement order has been reserved. Please prepare your consignment for delivery.`;
     await prisma.notification.create({
       data: {
         userId: selectedBid.farmerId,
         type: 'SYSTEM',
         title: `🎉 Offer Accepted! ${demand.cropName}`,
-        message: `Your supply offer for ${selectedBid.offeredQty} kg of ${demand.cropName} was accepted! Escrow settlement order has been reserved.`
+        message: acceptedMsg
       }
     }).catch(() => {});
+
+    // Send live email to the farmer
+    if (selectedBid.farmer?.email) {
+      sendSystemAlertEmail({
+        to: selectedBid.farmer.email,
+        userName: selectedBid.farmer.name || 'Farmer',
+        subject: `🎉 Your Bid Was Accepted: ${demand.cropName} — AgriLink`,
+        title: `Supply Bid Accepted: ${demand.cropName}`,
+        message: acceptedMsg,
+        badge: 'Bid Accepted 🎉'
+      }).catch(e => console.warn(`Could not email farmer ${selectedBid.farmer.email}:`, e.message));
+    }
 
     res.json({
       success: true,

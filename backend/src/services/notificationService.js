@@ -668,3 +668,114 @@ export async function sendDisbursementNotification({ order, settlement, buyer, f
     farmerWhatsAppLink
   };
 }
+
+/**
+ * Universal Stakeholder Alert Email
+ */
+export async function sendSystemAlertEmail({ to, userName = 'Valued Partner', subject, title, message, badge = 'Official Notification' }) {
+  if (!to) return { success: false, error: 'No recipient email' };
+
+  const emailSubject = subject || `🔔 AgriLink: ${title}`;
+  const text = `${title}\n\nHello ${userName},\n\n${message}\n\n© 2026 AgriLink Agribusiness SCM Platform`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <title>${title}</title>
+    </head>
+    <body style="margin: 0; padding: 24px 12px; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+        <tr>
+          <td style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); padding: 30px; text-align: center; color: #ffffff;">
+            <div style="display: inline-block; padding: 5px 12px; background: rgba(52, 211, 153, 0.2); border: 1px solid #34d399; border-radius: 9999px; margin-bottom: 10px;">
+              <span style="color: #6ee7b7; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">${badge}</span>
+            </div>
+            <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: #ffffff;">${title}</h1>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 30px; color: #1e293b;">
+            <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.6;">
+              Hello <strong>${userName}</strong>,
+            </p>
+            <div style="background-color: #f8fafc; border-left: 4px solid #10b981; border-radius: 8px; padding: 16px 20px; font-size: 14px; line-height: 1.7; color: #334155; margin-bottom: 20px;">
+              ${message.replace(/\n/g, '<br/>')}
+            </div>
+            <p style="margin: 0; font-size: 12px; color: #64748b;">
+              You received this message because you are a registered user on the AgriLink Agribusiness B2B SCM platform.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color: #f1f5f9; padding: 16px 30px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
+            AgriLink Kenya Agribusiness SCM • Nairobi Central Operations HQ
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+
+  return sendEmailMessage({ to, subject: emailSubject, html, text, userName });
+}
+
+/**
+ * Platform Broadcast Announcement Email
+ */
+export async function sendBroadcastNotificationEmail({ to, userName = 'Valued Partner', title, message, targetRole = 'ALL', broadcastBy = 'Administrator' }) {
+  if (!to) return { success: false, error: 'No recipient email' };
+
+  const subject = `📢 AgriLink Announcement: ${title}`;
+  const text = `📢 AgriLink Announcement: ${title}\n\nHello ${userName},\n\n${message}\n\nTarget Audience: ${targetRole}\nIssued by: ${broadcastBy}\n\n© 2026 AgriLink Agribusiness SCM Platform`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <title>${title}</title>
+    </head>
+    <body style="margin: 0; padding: 24px 12px; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+        <tr>
+          <td style="background: linear-gradient(135deg, #4338ca 0%, #0f172a 100%); padding: 32px; text-align: center; color: #ffffff;">
+            <div style="display: inline-block; padding: 6px 14px; background: rgba(165, 180, 252, 0.2); border: 1px solid #818cf8; border-radius: 9999px; margin-bottom: 12px;">
+              <span style="color: #c7d2fe; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">📢 Official Platform Broadcast</span>
+            </div>
+            <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: #ffffff;">${title}</h1>
+            <p style="margin: 6px 0 0; font-size: 12px; color: #94a3b8;">Issued by: ${broadcastBy}</p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding: 32px; color: #1e293b;">
+            <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.6;">
+              Hello <strong>${userName}</strong>,
+            </p>
+            <div style="background-color: #f8fafc; border-left: 4px solid #6366f1; border-radius: 8px; padding: 18px 20px; font-size: 14px; line-height: 1.7; color: #334155; margin-bottom: 24px;">
+              ${message.replace(/\n/g, '<br/>')}
+            </div>
+
+            <div style="background-color: #f1f5f9; padding: 12px 16px; border-radius: 8px; font-size: 12px; color: #64748b;">
+              <span><strong>Audience:</strong> ${targetRole === 'ALL' ? 'All Registered Stakeholders' : targetRole}</span> • 
+              <span><strong>Platform:</strong> AgriLink Kenya Agribusiness SCM</span>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="background-color: #f8fafc; padding: 18px 32px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
+            AgriLink Communications • Kenya B2B Agribusiness SCM • Nairobi, Kenya
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+
+  return sendEmailMessage({ to, subject, html, text, userName });
+}
+
+export { sendEmailMessage };
