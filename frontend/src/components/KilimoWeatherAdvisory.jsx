@@ -10,6 +10,8 @@ import {
   CheckCircle, 
   Compass, 
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   Sparkles,
   Wind,
   Navigation,
@@ -24,6 +26,13 @@ export default function KilimoWeatherAdvisory() {
   const [selectedRegionIndex, setSelectedRegionIndex] = useState(0);
   const [locatingUser, setLocatingUser] = useState(false);
   const [userLocationWeather, setUserLocationWeather] = useState(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setIsCollapsed(true);
+    }
+  }, []);
 
   useEffect(() => {
     loadWeatherData();
@@ -97,36 +106,50 @@ export default function KilimoWeatherAdvisory() {
     <div className="bg-white rounded-3xl p-5 sm:p-6 mb-6 shadow-xs border border-slate-200/80 transition-all hover:border-emerald-300">
       
       {/* Top Header & Live Environment Radar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between pb-4 border-b border-slate-100 gap-3">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/15">
+      <div className="flex items-center justify-between pb-3 border-b border-slate-100 gap-2">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="relative shrink-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/15">
               <CloudSun className="w-5 h-5" />
             </div>
-            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border-2 border-white"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border border-white"></span>
             </span>
           </div>
 
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-extrabold text-sm text-slate-900 tracking-tight">
-                Live Agro-Climate & Harvest Radar
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <h3 className="font-extrabold text-xs sm:text-sm text-slate-900 tracking-tight truncate">
+                Agro-Climate Radar
               </h3>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-extrabold flex items-center gap-1">
+              <span className="text-[9px] sm:text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-extrabold flex items-center gap-1">
                 <Radio className="w-2.5 h-2.5 text-emerald-600 animate-pulse" />
-                REAL-TIME SATELLITE
+                LIVE SATELLITE
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Live temperature, moisture & transit corridor conditions for {advisoryData?.aiForecastDate || 'Today'}
+            <p className="text-[11px] sm:text-xs text-slate-500 truncate">
+              {current.region.split('&')[0].trim()} • {current.tempC}°C • {current.condition}
             </p>
           </div>
         </div>
 
-        {/* Region Selector Pills & Live GPS Action */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+        {/* Expand / Collapse Button */}
+        <button
+          type="button"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors flex items-center gap-1 text-xs font-bold shrink-0 border border-slate-200/60"
+          title={isCollapsed ? 'Expand Weather Radar' : 'Collapse Weather Radar'}
+        >
+          <span className="text-[11px]">{isCollapsed ? 'Radar' : 'Hide'}</span>
+          {isCollapsed ? <ChevronDown className="w-3.5 h-3.5 text-emerald-600" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-500" />}
+        </button>
+      </div>
+
+      {!isCollapsed && (
+        <>
+          {/* Region Selector Pills & Live GPS Action */}
+          <div className="flex items-center gap-1.5 overflow-x-auto py-3 border-b border-slate-100 scrollbar-none">
           <button
             type="button"
             onClick={handleUseLiveGPS}
@@ -170,9 +193,8 @@ export default function KilimoWeatherAdvisory() {
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
-      </div>
 
-      {/* Main Real-Time Meteorological Grid */}
+        {/* Main Real-Time Meteorological Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
         
         {/* Weather Metrics Card */}
@@ -281,7 +303,8 @@ export default function KilimoWeatherAdvisory() {
         </div>
 
       </div>
-
-    </div>
+    </>
+  )}
+</div>
   );
 }

@@ -43,8 +43,8 @@ export default function CommodityPriceTicker() {
   return (
     <>
       {/* Sleek Live Price Ticker Strip */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 text-white rounded-2xl px-4 py-2.5 mb-6 shadow-md border border-slate-700/60 overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 text-white rounded-2xl px-3.5 py-2 sm:px-4 sm:py-2.5 mb-3 sm:mb-6 shadow-md border border-slate-700/60 overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
           
           {/* Ticker Title Badge */}
           <div className="flex items-center gap-2 shrink-0">
