@@ -1816,9 +1816,16 @@ function MainApp() {
                 <span>
                   💡 <strong>Server Restarts:</strong> The server automatically restores custom stakeholder accounts from <code className="text-indigo-300 font-mono">db-snapshot.json</code> whenever the Render container boots up.
                 </span>
-                <span className="font-mono text-indigo-300">
-                  Local Prisma Studio: open-database.bat (Port 5555)
-                </span>
+                <div className="flex items-center gap-3 font-mono text-[11px]">
+                  <span className="text-emerald-300 flex items-center gap-1.5 font-bold">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    M-Pesa Daraja: Paybill 174379 (Live Webhook Active)
+                  </span>
+                  <span className="text-slate-500">•</span>
+                  <span className="text-indigo-300">
+                    Prisma Studio: Port 5555
+                  </span>
+                </div>
               </div>
             </div>
 

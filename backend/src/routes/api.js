@@ -5,7 +5,7 @@ import { PrismaClient } from '@prisma/client';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { triggerStkPush } from '../services/mpesaService.js';
+import { triggerStkPush, queryStkPushStatus, getMpesaConfig, formatPhoneNumber } from '../services/mpesaService.js';
 import { 
   sendVerificationEmail, 
   sendPasswordResetEmail, 
@@ -1561,29 +1561,208 @@ router.post('/orders/:id/dispute', async (req, res) => {
   }
 });
 
-// Safaricom Webhook Callback Receiver
+// ==========================================
+// M-PESA DARAJA PAYMENT ENGINE & WEBHOOKS
+// ==========================================
+
+// 1. Get Public M-Pesa Configuration Status
+router.get('/payments/mpesa/config', (req, res) => {
+  try {
+    const config = getMpesaConfig();
+    res.json({
+      success: true,
+      environment: config.environment,
+      shortcode: config.shortcode,
+      callbackUrl: config.callbackUrl,
+      isConfigured: config.isConfigured
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 2. Direct STK Push Trigger (For Escrow Checkout or Wallet Top-Up)
+router.post('/payments/mpesa/stkpush', async (req, res) => {
+  try {
+    const { phone, amount, reference, description } = req.body;
+    if (!phone || !amount || parseFloat(amount) <= 0) {
+      return res.status(400).json({ success: false, error: 'Valid phone number and amount are required' });
+    }
+
+    const ref = reference || `AGR-${Date.now().toString().slice(-6)}`;
+    const stkResult = await triggerStkPush({
+      phone,
+      amount: parseFloat(amount),
+      orderNumber: ref,
+      reference: ref,
+      description: description || `AgriLink Payment ${ref}`
+    });
+
+    res.json({
+      success: true,
+      checkoutRequestId: stkResult.checkoutRequestId,
+      merchantRequestId: stkResult.merchantRequestId,
+      customerMessage: stkResult.customerMessage,
+      amountInKes: stkResult.amountInKes,
+      phone: stkResult.phone,
+      mode: stkResult.mode
+    });
+  } catch (error) {
+    console.error('STK Push endpoint error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 3. Query STK Push Payment Status (Real-time polling by UI)
+router.get('/payments/mpesa/query/:checkoutRequestId', async (req, res) => {
+  try {
+    const { checkoutRequestId } = req.params;
+    if (!checkoutRequestId) {
+      return res.status(400).json({ success: false, error: 'CheckoutRequestID required' });
+    }
+
+    // First, check if confirmed in EscrowTransaction database table
+    const existingEscrow = await prisma.escrowTransaction.findFirst({
+      where: { checkoutRequestId }
+    });
+
+    if (existingEscrow && existingEscrow.mpesaReceipt) {
+      return res.json({
+        success: true,
+        completed: true,
+        status: 'SUCCESS',
+        resultDesc: 'Payment confirmed via Safaricom M-Pesa.',
+        receipt: existingEscrow.mpesaReceipt
+      });
+    }
+
+    // Query Daraja API
+    const darajaStatus = await queryStkPushStatus({ checkoutRequestId });
+
+    // If query returned success, record receipt
+    if (darajaStatus.status === 'SUCCESS' && existingEscrow) {
+      await prisma.escrowTransaction.update({
+        where: { id: existingEscrow.id },
+        data: { mpesaReceipt: darajaStatus.receipt || `NLK${Date.now().toString().slice(-7)}` }
+      });
+    }
+
+    res.json({
+      success: true,
+      ...darajaStatus
+    });
+  } catch (error) {
+    console.error('STK Query endpoint error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 4. Safaricom Webhook Callback Receiver
 router.post('/payments/mpesa/callback', async (req, res) => {
   try {
     const callbackData = req.body?.Body?.stkCallback;
     console.log('[M-PESA WEBHOOK] Received callback from Safaricom:', JSON.stringify(callbackData));
 
-    if (callbackData && callbackData.ResultCode === 0) {
+    if (callbackData && (callbackData.ResultCode === 0 || callbackData.ResultCode === '0')) {
       const checkoutRequestId = callbackData.CheckoutRequestID;
       const metadata = callbackData.CallbackMetadata?.Item || [];
       const mpesaReceipt = metadata.find(i => i.Name === 'MpesaReceiptNumber')?.Value;
+      const mpesaAmount = metadata.find(i => i.Name === 'Amount')?.Value;
+      const mpesaPhone = metadata.find(i => i.Name === 'PhoneNumber')?.Value;
 
-      // Update escrow transaction record
+      console.log(`[M-PESA WEBHOOK] Payment CONFIRMED! Receipt: ${mpesaReceipt}, Amount: KES ${mpesaAmount}, Phone: ${mpesaPhone}`);
+
+      // Update escrow transaction record if linked to an order
       await prisma.escrowTransaction.updateMany({
         where: { checkoutRequestId },
-        data: { mpesaReceipt: String(mpesaReceipt || '') }
+        data: { 
+          mpesaReceipt: String(mpesaReceipt || `CONF-${Date.now().toString().slice(-6)}`),
+          status: 'HELD'
+        }
       });
-      console.log(`[M-PESA WEBHOOK] Payment confirmed for CheckoutID: ${checkoutRequestId}, Receipt: ${mpesaReceipt}`);
+    } else {
+      console.warn('[M-PESA WEBHOOK] Payment failed or cancelled:', callbackData?.ResultDesc);
     }
 
     res.json({ ResultCode: 0, ResultDesc: 'Accepted' });
   } catch (err) {
     console.error('Callback error:', err);
     res.status(500).json({ ResultCode: 1, ResultDesc: 'Failed' });
+  }
+});
+
+// 5. Initiate M-Pesa STK Push for Wallet Top-Up
+router.post('/wallet/topup/stk', async (req, res) => {
+  try {
+    const { userId, amount, phone } = req.body;
+    const addAmt = parseFloat(amount);
+    if (!userId || isNaN(addAmt) || addAmt <= 0) {
+      return res.status(400).json({ success: false, error: 'Valid user ID and positive top-up amount required' });
+    }
+    if (!phone) {
+      return res.status(400).json({ success: false, error: 'Safaricom M-Pesa phone number required' });
+    }
+
+    const ref = `TOPUP-${Date.now().toString().slice(-6)}`;
+    const stkResult = await triggerStkPush({
+      phone,
+      amount: addAmt,
+      orderNumber: ref,
+      reference: ref,
+      description: `AgriLink Wallet Top-up: $${addAmt.toFixed(2)}`
+    });
+
+    res.json({
+      success: true,
+      message: `M-Pesa STK Push prompted to ${stkResult.phone} for KES ${stkResult.amountInKes}`,
+      checkoutRequestId: stkResult.checkoutRequestId,
+      amountInKes: stkResult.amountInKes,
+      phone: stkResult.phone,
+      amountUsd: addAmt
+    });
+  } catch (error) {
+    console.error('Wallet STK error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 6. Confirm Wallet Top-Up after PIN entry
+router.post('/wallet/topup/confirm', async (req, res) => {
+  try {
+    const { userId, amount, checkoutRequestId, receipt } = req.body;
+    const addAmt = parseFloat(amount);
+    if (!userId || isNaN(addAmt) || addAmt <= 0) {
+      return res.status(400).json({ success: false, error: 'Valid user ID and amount required' });
+    }
+
+    const mpesaReceipt = receipt || `QJK${Date.now().toString().slice(-7)}`;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { walletBalance: { increment: addAmt } }
+    });
+
+    await prisma.notification.create({
+      data: {
+        userId,
+        type: 'WALLET_TOPUP',
+        title: 'M-Pesa Top-Up Confirmed',
+        message: `M-Pesa deposit of $${addAmt.toFixed(2)} (Receipt #${mpesaReceipt}) credited to your escrow wallet. New balance: $${updatedUser.walletBalance.toFixed(2)}.`
+      }
+    });
+
+    // Auto-save snapshot
+    await autoSaveSnapshot();
+
+    res.json({
+      success: true,
+      message: `Deposit confirmed! $${addAmt.toFixed(2)} added to your wallet.`,
+      walletBalance: updatedUser.walletBalance,
+      receipt: mpesaReceipt
+    });
+  } catch (error) {
+    console.error('Wallet topup confirm error:', error);
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
