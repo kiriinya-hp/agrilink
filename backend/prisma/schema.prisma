@@ -1,6 +1,6 @@
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -8,11 +8,11 @@ generator client {
 }
 
 model User {
-  id               String           @id @default(uuid())
+  id               String           @id @default(auto()) @map("_id") @db.ObjectId
   name             String
   email            String           @unique
   phone            String           @unique
-  password         String           // Hashed password via bcrypt
+  password         String
   role             String           // FARMER, BUYER, TRANSPORTER, ADMIN
   kycStatus        String           @default("VERIFIED") // PENDING, VERIFIED, REJECTED
   isEmailVerified  Boolean          @default(false)
@@ -32,8 +32,8 @@ model User {
 }
 
 model ProduceListing {
-  id           String      @id @default(uuid())
-  farmerId     String
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  farmerId     String      @db.ObjectId
   cropName     String
   category     String      // HORTICULTURE, CEREAL, TUBER, LEGUME
   availableQty Float
@@ -45,19 +45,19 @@ model ProduceListing {
   imageUrl     String?
   createdAt    DateTime    @default(now())
 
-  farmer       User        @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+  farmer       User        @relation(fields: [farmerId], references: [id])
   orderItems   OrderItem[]
 }
 
 model Order {
-  id                 String             @id @default(uuid())
+  id                 String             @id @default(auto()) @map("_id") @db.ObjectId
   orderNumber        String             @unique
-  buyerId            String
+  buyerId            String             @db.ObjectId
   totalAmount        Float
   transportFee       Float              @default(0.0)
   platformFee        Float              @default(0.0)
   grandTotal         Float
-  status             String             @default("PENDING") 
+  status             String             @default("PENDING")
   // Statuses: PENDING, ESCROW_FUNDED, DISPATCH_READY, IN_TRANSIT, ARRIVED, COMPLETED, CANCELLED
   deliveryAddress    String
   notes              String?
@@ -70,54 +70,54 @@ model Order {
 }
 
 model OrderItem {
-  id        String         @id @default(uuid())
-  orderId   String
-  listingId String
+  id        String         @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String         @db.ObjectId
+  listingId String         @db.ObjectId
   cropName  String
   quantity  Float
   unitPrice Float
   subtotal  Float
 
-  order     Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order     Order          @relation(fields: [orderId], references: [id])
   listing   ProduceListing @relation(fields: [listingId], references: [id])
 }
 
 model EscrowTransaction {
-  id                String    @id @default(uuid())
-  orderId           String    @unique
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  orderId           String    @unique @db.ObjectId
   reference         String    @unique
   paymentGateway    String    @default("MPESA_STK") // MPESA_STK, CARD, STRIPE
   amountHeld        Float
-  status            String    @default("HELD") // HELD, RELEASED, REFUNDED
+  status            String    @default("HELD") // HELD, RELEASED, REFUNDED, CANCELLED
   checkoutRequestId String?
   merchantRequestId String?
   mpesaReceipt      String?
   fundedAt          DateTime  @default(now())
   releasedAt        DateTime?
 
-  order             Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order             Order     @relation(fields: [orderId], references: [id])
 }
 
 model Shipment {
-  id              String    @id @default(uuid())
-  orderId         String    @unique
-  transporterId   String?
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  orderId         String    @unique @db.ObjectId
+  transporterId   String?   @db.ObjectId
   vehicleReg      String?
   pickupLocation  String
   dropoffLocation String
-  transitStatus   String    @default("PENDING_ASSIGNMENT") 
+  transitStatus   String    @default("PENDING_ASSIGNMENT")
   // Statuses: PENDING_ASSIGNMENT, ASSIGNED, PICKED_UP, IN_TRANSIT, ARRIVED, DELIVERED
   confirmationOtp String
   dispatchedAt    DateTime?
   deliveredAt     DateTime?
 
-  order           Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order           Order     @relation(fields: [orderId], references: [id])
   transporter     User?     @relation("TransporterShipments", fields: [transporterId], references: [id])
 }
 
 model Notification {
-  id        String   @id @default(uuid())
-  userId    String
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
   type      String   // EMAIL, SMS, WHATSAPP, SYSTEM
   title     String
   message   String
@@ -125,5 +125,5 @@ model Notification {
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
 }
