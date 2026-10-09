@@ -42,7 +42,8 @@ import {
   Upload,
   Activity,
   Megaphone,
-  TrendingUp
+  TrendingUp,
+  Film
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
@@ -79,11 +80,11 @@ import AdminEscrowDisputes from './components/AdminEscrowDisputes';
 import AdminBroadcastModal from './components/AdminBroadcastModal';
 import BuyerDemandBoard from './components/BuyerDemandBoard';
 import MobileToolsSheetModal from './components/MobileToolsSheetModal';
-
+import IntroVideoSplash from './components/IntroVideoSplash';
 
 const API_BASE = '/api';
 
-function MainApp() {
+function MainApp({ onReplayIntro }) {
   const { user, token, logout, refreshUser } = useAuth();
   const { formatMoney, currency } = useCurrency();
   const { t, language } = useLanguage();
@@ -672,6 +673,17 @@ function MainApp() {
                 <span className="hidden sm:inline-block ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                   Enterprise SCM
                 </span>
+                {onReplayIntro && (
+                  <button
+                    type="button"
+                    onClick={onReplayIntro}
+                    className="hidden sm:inline-flex items-center gap-1.5 ml-2.5 px-2.5 py-0.5 rounded-full bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 border border-slate-200 hover:border-emerald-200 text-[11px] font-bold transition-all shadow-2xs cursor-pointer"
+                    title="Watch AgriLink intro video"
+                  >
+                    <Film className="w-3 h-3 text-emerald-600" />
+                    <span>Watch Intro</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -2852,20 +2864,40 @@ function MainApp() {
           setShowMobileToolsSheet(false);
           setShowProfileModal(true);
         }}
+        onReplayIntro={() => {
+          setShowMobileToolsSheet(false);
+          if (onReplayIntro) onReplayIntro();
+        }}
       />
     </div>
   );
 }
 
 export default function App() {
+  const [showIntro, setShowIntro] = useState(() => {
+    // If user is directly accessing secret admin portal, do not show intro
+    const isAdmin = new URLSearchParams(window.location.search).get('admin') === '1';
+    if (isAdmin) return false;
+    // Check if user already saw the intro in this browser session
+    return !sessionStorage.getItem('agrilink_intro_seen');
+  });
+
+  const handleIntroComplete = () => {
+    sessionStorage.setItem('agrilink_intro_seen', 'true');
+    setShowIntro(false);
+  };
+
   return (
-    <AuthProvider>
-      <LanguageProvider>
-        <CurrencyUnitProvider>
-          <MainApp />
-        </CurrencyUnitProvider>
-      </LanguageProvider>
-    </AuthProvider>
+    <>
+      {showIntro && <IntroVideoSplash onComplete={handleIntroComplete} />}
+      <AuthProvider>
+        <LanguageProvider>
+          <CurrencyUnitProvider>
+            <MainApp onReplayIntro={() => setShowIntro(true)} />
+          </CurrencyUnitProvider>
+        </LanguageProvider>
+      </AuthProvider>
+    </>
   );
 }
 

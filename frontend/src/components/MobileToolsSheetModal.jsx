@@ -14,7 +14,8 @@ import {
   User, 
   Sparkles,
   ShieldCheck,
-  ChevronRight
+  ChevronRight,
+  Film
 } from 'lucide-react';
 import { LanguageSwitcher } from './LanguageContext';
 import { CurrencyUnitBar } from './CurrencyUnitContext';
@@ -33,7 +34,8 @@ export default function MobileToolsSheetModal({
   onOpenPricePredictor,
   onOpenTopUp,
   onOpenWithdraw,
-  onOpenProfile
+  onOpenProfile,
+  onReplayIntro
 }) {
   if (!isOpen) return null;
 
@@ -125,7 +127,18 @@ export default function MobileToolsSheetModal({
       badge: 'AI Model',
       badgeColor: 'bg-emerald-700 text-white',
       onClick: onOpenPricePredictor
-    }
+    },
+    ...(onReplayIntro ? [{
+      id: 'intro-video',
+      title: 'Play Intro Video',
+      desc: 'AgriLink ecosystem visual walkthrough',
+      icon: Film,
+      iconColor: 'text-amber-600',
+      bgColor: 'bg-amber-50 border-amber-200',
+      badge: 'Cinematic',
+      badgeColor: 'bg-amber-600 text-white',
+      onClick: onReplayIntro
+    }] : [])
   ];
 
   return (
