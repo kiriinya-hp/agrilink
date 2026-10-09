@@ -2879,11 +2879,15 @@ export default function App() {
     const isAdmin = new URLSearchParams(window.location.search).get('admin') === '1';
     if (isAdmin) return false;
     // Check if user already saw the intro in this browser session
-    return !sessionStorage.getItem('Mazao Hub_intro_seen');
+    return !(
+      sessionStorage.getItem('mazaohub_intro_seen') || 
+      sessionStorage.getItem('agrilink_intro_seen') ||
+      sessionStorage.getItem('Mazao Hub_intro_seen')
+    );
   });
 
   const handleIntroComplete = () => {
-    sessionStorage.setItem('Mazao Hub_intro_seen', 'true');
+    sessionStorage.setItem('mazaohub_intro_seen', 'true');
     setShowIntro(false);
   };
 

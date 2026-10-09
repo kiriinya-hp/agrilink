@@ -202,11 +202,11 @@ export const TRANSLATIONS = {
 
 export function LanguageProvider({ children }) {
   const [language, setLanguage] = useState(() => {
-    return localStorage.getItem('Mazao Hub_lang') || 'en';
+    return localStorage.getItem('mazaohub_lang') || localStorage.getItem('agrilink_lang') || localStorage.getItem('Mazao Hub_lang') || 'en';
   });
 
   useEffect(() => {
-    localStorage.setItem('Mazao Hub_lang', language);
+    localStorage.setItem('mazaohub_lang', language);
   }, [language]);
 
   const t = (key, fallback = '') => {
