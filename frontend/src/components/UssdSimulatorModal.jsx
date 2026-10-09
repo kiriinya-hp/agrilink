@@ -171,7 +171,7 @@ export default function UssdSimulatorModal({ isOpen, onClose }) {
               ) : (
                 <div className="text-center py-6">
                   <span className="text-sm font-bold block">{dialCode}</span>
-                  <span className="text-[10px] text-slate-700 block mt-1">Press CALL to dial AgriLink</span>
+                  <span className="text-[10px] text-slate-700 block mt-1">Press CALL to dial Mazao Hub</span>
                 </div>
               )}
             </div>

@@ -17,7 +17,7 @@ export const SANDBOX_DEFAULTS = {
   passkey: 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919',
   consumerKey: 'f8DaHHItZVLlhpHzIetzce64aXgwZPqDVLkcMnnscgVB13Es',
   consumerSecret: 'mmNRKCh91Cg1FyBGkI0FYbluTiEO3EoLN5ovuKRbLqswyf2TSfAoi9WAsIt9SUGX',
-  callbackUrl: 'https://agrilink-pyrv.onrender.com/api/payments/mpesa/callback'
+  callbackUrl: 'https://Mazao Hub-pyrv.onrender.com/api/payments/mpesa/callback'
 };
 
 // In-memory status registry for active STK push sessions
@@ -171,8 +171,8 @@ export async function triggerStkPush({ phone, amount, orderNumber, reference, de
           PartyB: activeShortcode,
           PhoneNumber: formattedPhone,
           CallBackURL: activeCallback,
-          AccountReference: orderNumber || 'AGRILINK',
-          TransactionDesc: description || `AgriLink: ${orderNumber || reference}`
+          AccountReference: orderNumber || 'Mazao Hub',
+          TransactionDesc: description || `Mazao Hub: ${orderNumber || reference}`
         },
         { 
           headers: { Authorization: `Bearer ${activeToken}` },
@@ -214,8 +214,8 @@ export async function triggerStkPush({ phone, amount, orderNumber, reference, de
                 PartyB: SANDBOX_DEFAULTS.shortcode,
                 PhoneNumber: formattedPhone,
                 CallBackURL: SANDBOX_DEFAULTS.callbackUrl,
-                AccountReference: orderNumber || 'AGRILINK',
-                TransactionDesc: description || `AgriLink Sandbox: ${orderNumber || reference}`
+                AccountReference: orderNumber || 'Mazao Hub',
+                TransactionDesc: description || `Mazao Hub Sandbox: ${orderNumber || reference}`
               },
               { headers: { Authorization: `Bearer ${sAuth.token}` }, timeout: 12000 }
             );

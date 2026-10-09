@@ -52,8 +52,8 @@ const QUICK_PROMPTS_EN = [
     icon: Sprout,
     color: 'text-purple-600 bg-purple-50 border-purple-200',
     title: 'How to Post Your Harvest',
-    subtitle: 'Step-by-step farmer guide to listing produce on AgriLink',
-    query: 'How do I post my farm harvest on AgriLink as a farmer?'
+    subtitle: 'Step-by-step farmer guide to listing produce on Mazao Hub',
+    query: 'How do I post my farm harvest on Mazao Hub as a farmer?'
   }
 ];
 
@@ -275,7 +275,7 @@ export default function KilimoAIAssistant({
       if (q.includes('kutoa') || q.includes('toa') || q.includes('pesa') || q.includes('withdraw')) {
         return {
           isSwahili: true,
-          text: `Sawa sawa kabisa! Kutoa pesa zako hapa AgriLink ni rahisi sana na haina wasiwasi wowote:
+          text: `Sawa sawa kabisa! Kutoa pesa zako hapa Mazao Hub ni rahisi sana na haina wasiwasi wowote:
 
 1. **Bofya Kitufe cha 'Withdraw'** kwenye menyu ya juu ya tovuti (au bonyeza kitufe hapo chini).
 2. **Chagua Unakotaka Pesa Ziende**:
@@ -309,7 +309,7 @@ export default function KilimoAIAssistant({
       // Swahili: Default
       return {
         isSwahili: true,
-        text: `Karibu sana AgriLink! Mimi ni **Kilimo AI**, msaidizi wako wa kidijitali.
+        text: `Karibu sana Mazao Hub! Mimi ni **Kilimo AI**, msaidizi wako wa kidijitali.
 
 Hapa unaweza:
 • Kuuza mavuno yako moja kwa moja kutoka shambani.
@@ -369,7 +369,7 @@ Every diagnosis includes exact chemical dosage per 20L knapsack sprayer, pre-har
     // 3. HOW TO BUY & PAY WITH ESCROW
     if (q.includes('buy') || q.includes('order') || q.includes('purchase') || q.includes('checkout') || q.includes('how to buy')) {
       return {
-        text: `🛒 **How to Purchase Produce via Escrow on AgriLink:**
+        text: `🛒 **How to Purchase Produce via Escrow on Mazao Hub:**
 
 1. **Browse Marketplace**: Click **'Marketplace'** to view active farmer batches, grades, and farm locations.
 2. **Order or Negotiate**:
@@ -426,7 +426,7 @@ Every diagnosis includes exact chemical dosage per 20L knapsack sprayer, pre-har
     // 6. ESCROW & 4-DIGIT OTP
     if (q.includes('escrow') || q.includes('otp') || q.includes('safe') || q.includes('scam') || q.includes('security') || q.includes('protection')) {
       return {
-        text: `🔒 **How AgriLink Smart Escrow & OTP Protect You:**
+        text: `🔒 **How Mazao Hub Smart Escrow & OTP Protect You:**
 
 • **Buyer Peace of Mind**: Your money is held in an encrypted digital vault. The farmer does NOT get paid until you receive and inspect the goods.
 • **Farmer Assurance**: Farmers harvest and load trucks knowing 100% of the funds are already deposited and verified in escrow.
@@ -483,7 +483,7 @@ Every diagnosis includes exact chemical dosage per 20L knapsack sprayer, pre-har
 
     // DEFAULT RESPONSE
     return {
-      text: `Regarding "${query}": **Kilimo AI** is here to empower your agribusiness journey on AgriLink.
+      text: `Regarding "${query}": **Kilimo AI** is here to empower your agribusiness journey on Mazao Hub.
 
 We connect verified Kenyan farmers with bulk commercial buyers and professional drivers. All payments are backed by Safaricom M-Pesa smart escrow, transparent wholesale pricing across Wakulima and Kongowea, and instant M-Pesa B2C wallet withdrawals.
 
@@ -593,7 +593,7 @@ How would you like to proceed?`,
                         Active
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Your AgriLink Assistant & Agronomist</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">Your Mazao Hub Assistant & Agronomist</p>
                   </div>
                 </div>
 
@@ -697,8 +697,8 @@ How would you like to proceed?`,
                       </h4>
                       <p className="text-xs text-slate-500 leading-relaxed">
                         {language === 'sw' 
-                          ? 'Uliza kuhusu bei za mazao, usalama wa pesa kwa Escrow, kutoa pesa kwa M-Pesa, au uelekezwe jinsi ya kutumia AgriLink.'
-                          : 'Ask about live wholesale prices, Escrow security, instant M-Pesa withdrawals, or how to navigate AgriLink.'}
+                          ? 'Uliza kuhusu bei za mazao, usalama wa pesa kwa Escrow, kutoa pesa kwa M-Pesa, au uelekezwe jinsi ya kutumia Mazao Hub.'
+                          : 'Ask about live wholesale prices, Escrow security, instant M-Pesa withdrawals, or how to navigate Mazao Hub.'}
                       </p>
                     </div>
 

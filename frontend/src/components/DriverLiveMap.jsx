@@ -167,32 +167,44 @@ export default function DriverLiveMap({
 
   // 2. Leaflet OpenStreetMap Real Initialization
   useEffect(() => {
-    if (!mapContainerRef.current) return;
+    // Use rAF + small delay so the DOM container is guaranteed to be painted
+    // (critical when mounted inside a modal/popup with overflow-y-auto)
+    let rafId;
+    let timeoutId;
+    let map = null;
 
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.remove();
-      mapInstanceRef.current = null;
-    }
+    const initMap = () => {
+      if (!mapContainerRef.current) return;
 
-    const midLat = (pickupCoords[0] + dropoffCoords[0]) / 2;
-    const midLng = (pickupCoords[1] + dropoffCoords[1]) / 2;
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
 
-    const map = L.map(mapContainerRef.current, {
-      center: [midLat, midLng],
-      zoom: 8,
-      zoomControl: false
-    });
+      const midLat = (pickupCoords[0] + dropoffCoords[0]) / 2;
+      const midLng = (pickupCoords[1] + dropoffCoords[1]) / 2;
 
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
+      map = L.map(mapContainerRef.current, {
+        center: [midLat, midLng],
+        zoom: 8,
+        zoomControl: false
+      });
 
-    const tileUrl = mapStyle === 'topo'
-      ? 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
-      : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    L.tileLayer(tileUrl, {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+      // Force Leaflet to recalculate container size (fixes blank-tile bug in modals)
+      setTimeout(() => {
+        if (map) map.invalidateSize();
+      }, 150);
+
+      const tileUrl = mapStyle === 'topo'
+        ? 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
+        : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+      L.tileLayer(tileUrl, {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
 
     // Custom Map Markers
     const farmIcon = L.divIcon({
@@ -314,14 +326,22 @@ export default function DriverLiveMap({
 
     mapInstanceRef.current = map;
     map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+  }; // end initMap
 
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
-    };
-  }, [mapStyle, selectedOrderId, selectedPreviewShipmentId, transitStatus, deviceGps]);
+  // Defer init until after the modal/container paints (fixes blank map in popups)
+  rafId = requestAnimationFrame(() => {
+    timeoutId = setTimeout(initMap, 80);
+  });
+
+  return () => {
+    if (rafId) cancelAnimationFrame(rafId);
+    if (timeoutId) clearTimeout(timeoutId);
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove();
+      mapInstanceRef.current = null;
+    }
+  };
+}, [mapStyle, selectedOrderId, selectedPreviewShipmentId, transitStatus, deviceGps]);
 
   const recenterRoute = () => {
     if (mapInstanceRef.current && routePolylineRef.current) {
@@ -531,11 +551,12 @@ export default function DriverLiveMap({
             <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex flex-col justify-between">
               <div>
                 <span className="text-[10px] uppercase font-mono text-slate-400 font-bold block">Advance Real Transit Milestone</span>
-                <span className="font-bold text-slate-800 text-xs mt-1 block">Current Status: <strong className="text-emerald-700">{transitStatus.replace('_', ' ')}</strong></span>
+                <span className="font-bold text-slate-800 text-xs mt-1 block">Current Status: <strong className="text-emerald-700">{transitStatus.replaceAll('_', ' ')}</strong></span>
               </div>
 
               <div className="flex gap-1.5 mt-2">
-                {transitStatus === 'ASSIGNED' && (
+                {/* Show "Mark Picked Up" for both ASSIGNED and PENDING_ASSIGNMENT */}
+                {(transitStatus === 'ASSIGNED' || transitStatus === 'PENDING_ASSIGNMENT') && (
                   <button
                     onClick={() => onUpdateTransitStatus && onUpdateTransitStatus(currentActiveOrder.shipment.id, 'PICKED_UP')}
                     className="w-full py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs shadow-sm transition-colors"

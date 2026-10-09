@@ -450,7 +450,7 @@ export default function Register({ onNavigateLogin }) {
               </button>
 
               <div className="mt-5 pt-4 border-t border-slate-700/60 text-center">
-                <span className="text-xs text-slate-400">Already registered on AgriLink? </span>
+                <span className="text-xs text-slate-400">Already registered on Mazao Hub? </span>
                 <button
                   onClick={onNavigateLogin}
                   className="text-xs font-bold text-emerald-400 hover:text-emerald-300"

@@ -138,7 +138,7 @@ export default function WalletTopUpModal({ isOpen, onClose, user, onBalanceUpdat
   };
 
   // Explicitly cancel the active M-Pesa prompt
-  const handleCancelPrompt = async (reason = 'Cancelled by user on AgriLink') => {
+  const handleCancelPrompt = async (reason = 'Cancelled by user on Mazao Hub') => {
     if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     try {
       if (stkData?.checkoutRequestId) {
@@ -209,7 +209,7 @@ export default function WalletTopUpModal({ isOpen, onClose, user, onBalanceUpdat
               <Wallet className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-base text-slate-900">AgriLink Escrow Wallet</h3>
+              <h3 className="font-bold text-base text-slate-900">Mazao Hub Escrow Wallet</h3>
               <p className="text-xs text-slate-500 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 Safaricom Daraja M-Pesa Express
@@ -305,7 +305,7 @@ export default function WalletTopUpModal({ isOpen, onClose, user, onBalanceUpdat
 
             <div className="bg-emerald-50/70 border border-emerald-200/80 p-3 rounded-xl flex items-center gap-2.5 text-[11px] text-emerald-900">
               <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>Funds are protected under AgriLink smart escrow and immediately usable for produce orders.</span>
+              <span>Funds are protected under Mazao Hub Smart Escrow and immediately usable for produce orders.</span>
             </div>
 
             <div className="flex gap-2 pt-1">

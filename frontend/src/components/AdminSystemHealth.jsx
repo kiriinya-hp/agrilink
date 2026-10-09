@@ -235,7 +235,7 @@ export default function AdminSystemHealth({ token, apiBase }) {
                 </h3>
                 <p className="text-xs text-slate-500">Document density across all synchronized Prisma MongoDB collections.</p>
               </div>
-              <span className="text-xs font-mono font-bold text-slate-400">Database: agrilink</span>
+              <span className="text-xs font-mono font-bold text-slate-400">Database: Mazao Hub</span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-2">

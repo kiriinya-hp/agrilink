@@ -43,23 +43,23 @@ export const DASHBOARD_THEMES = [
 export default function DashboardBackground({ activeTab = 'marketplace', language = 'en' }) {
   // Saved user preference (auto, farmers, crops, drivers, buyers)
   const [selectedThemeId, setSelectedThemeId] = useState(() => {
-    return localStorage.getItem('agrilink_bg_theme') || 'auto';
+    return localStorage.getItem('Mazao Hub_bg_theme') || 'auto';
   });
 
   // Opacity intensity: 'vivid' (more visible photo), 'balanced' (standard), 'subtle' (lightest)
   const [intensity, setIntensity] = useState(() => {
-    return localStorage.getItem('agrilink_bg_intensity') || 'balanced';
+    return localStorage.getItem('Mazao Hub_bg_intensity') || 'balanced';
   });
 
   const [isWidgetExpanded, setIsWidgetExpanded] = useState(false);
 
   // Persist preference
   useEffect(() => {
-    localStorage.setItem('agrilink_bg_theme', selectedThemeId);
+    localStorage.setItem('Mazao Hub_bg_theme', selectedThemeId);
   }, [selectedThemeId]);
 
   useEffect(() => {
-    localStorage.setItem('agrilink_bg_intensity', intensity);
+    localStorage.setItem('Mazao Hub_bg_intensity', intensity);
   }, [intensity]);
 
   // Determine effective theme when 'auto' is selected

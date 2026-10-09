@@ -131,7 +131,7 @@ export default function MobileToolsSheetModal({
     ...(onReplayIntro ? [{
       id: 'intro-video',
       title: 'Play Intro Video',
-      desc: 'AgriLink ecosystem visual walkthrough',
+      desc: 'Mazao Hub ecosystem visual walkthrough',
       icon: Film,
       iconColor: 'text-amber-600',
       bgColor: 'bg-amber-50 border-amber-200',
@@ -162,7 +162,7 @@ export default function MobileToolsSheetModal({
             </div>
             <div>
               <h3 className="font-extrabold text-sm text-slate-900 leading-tight">
-                AgriLink Smart Hub
+                Mazao Hub Smart Hub
               </h3>
               <p className="text-[11px] text-slate-500">
                 AI Agricultural Engines & Commercial SCM Tools

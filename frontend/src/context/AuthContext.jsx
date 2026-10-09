@@ -5,14 +5,14 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
-      const savedUser = localStorage.getItem('agrilink_user');
+      const savedUser = localStorage.getItem('Mazao Hub_user');
       return savedUser ? JSON.parse(savedUser) : null;
     } catch {
       return null;
     }
   });
 
-  const [token, setToken] = useState(() => localStorage.getItem('agrilink_token') || null);
+  const [token, setToken] = useState(() => localStorage.getItem('Mazao Hub_token') || null);
   const [loading, setLoading] = useState(true);
 
   // Validate session on app launch
@@ -26,7 +26,7 @@ export function AuthProvider({ children }) {
           const data = await res.json();
           if (data.success) {
             setUser(data.user);
-            localStorage.setItem('agrilink_user', JSON.stringify(data.user));
+            localStorage.setItem('Mazao Hub_user', JSON.stringify(data.user));
           } else {
             logout();
           }
@@ -50,8 +50,8 @@ export function AuthProvider({ children }) {
 
     setToken(data.token);
     setUser(data.user);
-    localStorage.setItem('agrilink_token', data.token);
-    localStorage.setItem('agrilink_user', JSON.stringify(data.user));
+    localStorage.setItem('Mazao Hub_token', data.token);
+    localStorage.setItem('Mazao Hub_user', JSON.stringify(data.user));
     return data.user;
   };
 
@@ -66,8 +66,8 @@ export function AuthProvider({ children }) {
 
     setToken(data.token);
     setUser(data.user);
-    localStorage.setItem('agrilink_token', data.token);
-    localStorage.setItem('agrilink_user', JSON.stringify(data.user));
+    localStorage.setItem('Mazao Hub_token', data.token);
+    localStorage.setItem('Mazao Hub_user', JSON.stringify(data.user));
     return data.user;
   };
 
@@ -93,8 +93,8 @@ export function AuthProvider({ children }) {
 
     setToken(data.token);
     setUser(data.user);
-    localStorage.setItem('agrilink_token', data.token);
-    localStorage.setItem('agrilink_user', JSON.stringify(data.user));
+    localStorage.setItem('Mazao Hub_token', data.token);
+    localStorage.setItem('Mazao Hub_user', JSON.stringify(data.user));
     return data.user;
   };
 
@@ -109,8 +109,8 @@ export function AuthProvider({ children }) {
 
     setToken(data.token);
     setUser(data.user);
-    localStorage.setItem('agrilink_token', data.token);
-    localStorage.setItem('agrilink_user', JSON.stringify(data.user));
+    localStorage.setItem('Mazao Hub_token', data.token);
+    localStorage.setItem('Mazao Hub_user', JSON.stringify(data.user));
     return data.user;
   };
 
@@ -130,16 +130,16 @@ export function AuthProvider({ children }) {
 
     setToken(data.token);
     setUser(data.user);
-    localStorage.setItem('agrilink_token', data.token);
-    localStorage.setItem('agrilink_user', JSON.stringify(data.user));
+    localStorage.setItem('Mazao Hub_token', data.token);
+    localStorage.setItem('Mazao Hub_user', JSON.stringify(data.user));
     return data.user;
   };
 
   const logout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem('agrilink_token');
-    localStorage.removeItem('agrilink_user');
+    localStorage.removeItem('Mazao Hub_token');
+    localStorage.removeItem('Mazao Hub_user');
   };
 
   const refreshUser = async () => {
@@ -151,7 +151,7 @@ export function AuthProvider({ children }) {
       const data = await res.json();
       if (data.success) {
         setUser(data.user);
-        localStorage.setItem('agrilink_user', JSON.stringify(data.user));
+        localStorage.setItem('Mazao Hub_user', JSON.stringify(data.user));
       }
     } catch (err) {
       console.error('Refresh user error:', err);
@@ -172,7 +172,7 @@ export function AuthProvider({ children }) {
     if (!data.success) throw new Error(data.error);
 
     setUser(data.user);
-    localStorage.setItem('agrilink_user', JSON.stringify(data.user));
+    localStorage.setItem('Mazao Hub_user', JSON.stringify(data.user));
     return data.user;
   };
 

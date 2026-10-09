@@ -59,8 +59,8 @@ export default function Login({ onNavigateRegister, onNavigateAdmin, onNavigateF
         <div className="flex justify-center">
           <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white/10 border border-emerald-500/40 p-1 flex items-center justify-center shadow-xl shadow-emerald-500/20">
             <img 
-              src="/agrilink-logo.png" 
-              alt="AgriLink Logo" 
+              src="/Mazao Hub-logo.png" 
+              alt="Mazao Hub Logo" 
               className="w-full h-full object-contain"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
@@ -189,7 +189,7 @@ export default function Login({ onNavigateRegister, onNavigateAdmin, onNavigateF
             <div className="grid grid-cols-3 gap-1.5 text-[10px]">
               <button
                 type="button"
-                onClick={() => quickFill('farmer@agrilink.co.ke', 'Password123!')}
+                onClick={() => quickFill('farmer@Mazao Hub.co.ke', 'Password123!')}
                 className="p-1.5 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-800 text-slate-600 rounded border border-slate-200 font-semibold text-center transition-colors"
               >
                 👨‍🌾 Farmer

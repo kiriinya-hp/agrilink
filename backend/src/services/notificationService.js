@@ -16,7 +16,7 @@ const {
   SMTP_PORT = 587,
   SMTP_USER,
   SMTP_PASS,
-  SMTP_FROM = 'AgriLink Security <notifications@agrilink.co.ke>'
+  SMTP_FROM = 'Mazao Hub Security <notifications@mazaohub.co.ke>'
 } = process.env;
 
 // SMTP status tracking
@@ -72,7 +72,7 @@ if (GMAIL_USER && GMAIL_APP_PASSWORD && !GMAIL_USER.includes('your_email')) {
 
 const getSenderAddress = () => {
   if (GMAIL_USER && !GMAIL_USER.includes('your_email')) {
-    return `AgriLink Security <${GMAIL_USER.trim()}>`;
+    return `Mazao Hub Security <${GMAIL_USER.trim()}>`;
   }
   return SMTP_FROM;
 };
@@ -85,11 +85,11 @@ async function sendEmailMessage({ to, subject, html, text, userName = 'Partner' 
   if (BREVO_API_KEY) {
     try {
       console.log(`[EMAIL] Dispatching via Brevo HTTPS API to ${to}...`);
-      const senderEmail = GMAIL_USER ? GMAIL_USER.trim() : 'agrilink287@gmail.com';
+      const senderEmail = GMAIL_USER ? GMAIL_USER.trim() : 'Mazao Hub287@gmail.com';
       const brevoRes = await axios.post(
         'https://api.brevo.com/v3/smtp/email',
         {
-          sender: { name: 'AgriLink Security', email: senderEmail },
+          sender: { name: 'Mazao Hub Security', email: senderEmail },
           to: [{ email: to, name: userName }],
           subject,
           htmlContent: html,
@@ -119,7 +119,7 @@ async function sendEmailMessage({ to, subject, html, text, userName = 'Partner' 
       const resendRes = await axios.post(
         'https://api.resend.com/emails',
         {
-          from: 'AgriLink Security <onboarding@resend.dev>',
+          from: 'Mazao Hub Security <onboarding@resend.dev>',
           to: [to],
           subject,
           html,
@@ -208,7 +208,7 @@ export async function sendSMSNotification(phone, message) {
         ? 'https://api.sandbox.africastalking.com/version1/messaging'
         : 'https://api.africastalking.com/version1/messaging';
 
-      const senderId = process.env.AT_SENDER_ID || (AT_USERNAME !== 'sandbox' ? 'agrilink' : undefined);
+      const senderId = process.env.AT_SENDER_ID || (AT_USERNAME !== 'sandbox' ? 'Mazao Hub' : undefined);
       const params = new URLSearchParams();
       params.append('username', AT_USERNAME);
       params.append('to', `+${sanitized}`);
@@ -259,7 +259,7 @@ export async function sendSMSNotification(phone, message) {
       const brevoSmsRes = await axios.post(
         'https://api.brevo.com/v3/transactionalSMS/send',
         {
-          sender: 'AgriLink',
+          sender: 'Mazao Hub',
           recipient: sanitized,
           content: message
         },
@@ -288,8 +288,8 @@ export async function sendSMSNotification(phone, message) {
  * Send 6-digit Email Verification OTP
  */
 export async function sendVerificationEmail(email, code, userName = 'Valued Partner') {
-  const subject = `🔐 AgriLink Security: ${code} is your Account Verification Code`;
-  const text = `AgriLink Security Verification Code: ${code}\n\nHello ${userName},\n\nUse this 6-digit code to verify your AgriLink account: ${code}\nThis code expires in 15 minutes. Never share this code with anyone.\n\n© 2026 AgriLink Agribusiness SCM Platform`;
+  const subject = `🔐 Mazao Hub Security: ${code} is your Account Verification Code`;
+  const text = `Mazao Hub Security Verification Code: ${code}\n\nHello ${userName},\n\nUse this 6-digit code to verify your Mazao Hub account: ${code}\nThis code expires in 15 minutes. Never share this code with anyone.\n\n© 2026 Mazao Hub Agribusiness SCM Platform`;
   
   const html = `
     <!DOCTYPE html>
@@ -297,7 +297,7 @@ export async function sendVerificationEmail(email, code, userName = 'Valued Part
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Verify Your AgriLink Account</title>
+      <title>Verify Your Mazao Hub Account</title>
     </head>
     <body style="margin: 0; padding: 24px 12px; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 580px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
@@ -322,7 +322,7 @@ export async function sendVerificationEmail(email, code, userName = 'Valued Part
               Hello <strong style="color: #0f172a;">${userName}</strong>,
             </p>
             <p style="margin: 0 0 24px; font-size: 14px; line-height: 1.6; color: #475569;">
-              Thank you for registering on AgriLink. To finalize your account setup and activate your verified badge, enter this 6-digit one-time authorization code:
+              Thank you for registering on Mazao Hub. To finalize your account setup and activate your verified badge, enter this 6-digit one-time authorization code:
             </p>
 
             <!-- OTP Code Display Card -->
@@ -341,12 +341,12 @@ export async function sendVerificationEmail(email, code, userName = 'Valued Part
             <!-- Security Advisory Strip -->
             <div style="background-color: #f8fafc; border-left: 4px solid #059669; padding: 14px 16px; border-radius: 0 8px 8px 0; margin-bottom: 24px;">
               <p style="margin: 0; font-size: 12px; color: #334155; line-height: 1.5;">
-                <strong style="color: #0f172a;">Security Advisory:</strong> AgriLink support agents will never call or message asking for your password, M-Pesa PIN, or this OTP code.
+                <strong style="color: #0f172a;">Security Advisory:</strong> Mazao Hub support agents will never call or message asking for your password, M-Pesa PIN, or this OTP code.
               </p>
             </div>
 
             <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #64748b;">
-              If you did not initiate this registration request, please disregard this email or contact security at <a href="mailto:agrilink287@gmail.com" style="color: #059669; text-decoration: none; font-weight: bold;">agrilink287@gmail.com</a>.
+              If you did not initiate this registration request, please disregard this email or contact security at <a href="mailto:Mazao Hub287@gmail.com" style="color: #059669; text-decoration: none; font-weight: bold;">Mazao Hub287@gmail.com</a>.
             </p>
           </td>
         </tr>
@@ -355,7 +355,7 @@ export async function sendVerificationEmail(email, code, userName = 'Valued Part
         <tr>
           <td style="background-color: #f1f5f9; padding: 20px 32px; border-top: 1px solid #e2e8f0; text-align: center;">
             <p style="margin: 0 0 6px; font-size: 12px; font-weight: 700; color: #475569;">
-              AgriLink B2B Agribusiness SCM Platform
+              Mazao Hub B2B Agribusiness SCM Platform
             </p>
             <p style="margin: 0; font-size: 11px; color: #94a3b8; line-height: 1.4;">
               Nairobi, Kenya • Automated Notification Dispatcher • Ref: ${Math.random().toString(36).substring(2, 9).toUpperCase()}
@@ -391,8 +391,8 @@ export async function sendVerificationEmail(email, code, userName = 'Valued Part
  * Send 6-digit Password Reset OTP
  */
 export async function sendPasswordResetEmail(email, code, userName = 'Valued Partner') {
-  const subject = `🔒 AgriLink Security: ${code} is your Password Recovery Code`;
-  const text = `AgriLink Password Recovery Code: ${code}\n\nHello ${userName},\n\nUse this 6-digit code to reset your AgriLink password: ${code}\nValid for 15 minutes. If you did not request this, secure your account immediately.\n\n© 2026 AgriLink Agribusiness SCM Platform`;
+  const subject = `🔒 Mazao Hub Security: ${code} is your Password Recovery Code`;
+  const text = `Mazao Hub Password Recovery Code: ${code}\n\nHello ${userName},\n\nUse this 6-digit code to reset your Mazao Hub password: ${code}\nValid for 15 minutes. If you did not request this, secure your account immediately.\n\n© 2026 Mazao Hub Agribusiness SCM Platform`;
   
   const html = `
     <!DOCTYPE html>
@@ -425,7 +425,7 @@ export async function sendPasswordResetEmail(email, code, userName = 'Valued Par
               Hello <strong style="color: #0f172a;">${userName}</strong>,
             </p>
             <p style="margin: 0 0 24px; font-size: 14px; line-height: 1.6; color: #475569;">
-              We received an authorization request to reset the password for your AgriLink account associated with <strong style="color: #0f172a;">${email}</strong>. Use the 6-digit security code below to establish a new password:
+              We received an authorization request to reset the password for your Mazao Hub account associated with <strong style="color: #0f172a;">${email}</strong>. Use the 6-digit security code below to establish a new password:
             </p>
 
             <!-- Reset Code Card -->
@@ -453,7 +453,7 @@ export async function sendPasswordResetEmail(email, code, userName = 'Valued Par
         <tr>
           <td style="background-color: #f1f5f9; padding: 20px 32px; border-top: 1px solid #e2e8f0; text-align: center;">
             <p style="margin: 0 0 6px; font-size: 12px; font-weight: 700; color: #475569;">
-              AgriLink Agribusiness SCM Platform
+              Mazao Hub Agribusiness SCM Platform
             </p>
             <p style="margin: 0; font-size: 11px; color: #94a3b8;">
               Ref: PWD-${Math.random().toString(36).substring(2, 9).toUpperCase()}
@@ -503,9 +503,9 @@ export async function sendDisbursementNotification({ order, settlement, buyer, f
   const platformFeeKes = Math.round(settlement.platformFee * 130).toLocaleString();
 
   // 1. Text for SMS & WhatsApp
-  const smsMessage = `AgriLink ESCROW DISBURSED: Order #${orderNumber} (${quantity}kg ${cropName}) delivery confirmed. Farmer received KES ${farmerPayoutKes} ($${farmerPayout}). Driver received KES ${transporterPayoutKes} ($${transporterPayout}). Delivery OTP verified.`;
+  const smsMessage = `Mazao Hub Escrow DISBURSED: Order #${orderNumber} (${quantity}kg ${cropName}) delivery confirmed. Farmer received KES ${farmerPayoutKes} ($${farmerPayout}). Driver received KES ${transporterPayoutKes} ($${transporterPayout}). Delivery OTP verified.`;
 
-  const whatsappMessage = `*AGRILINK OFFICIAL DISBURSEMENT CERTIFICATE*\n` +
+  const whatsappMessage = `*Mazao Hub OFFICIAL DISBURSEMENT CERTIFICATE*\n` +
     `---------------------------------------\n` +
     `*Order Number:* #${orderNumber}\n` +
     `*Status:* COMPLETED & ATOMICALLY SETTLED\n` +
@@ -519,7 +519,7 @@ export async function sendDisbursementNotification({ order, settlement, buyer, f
     `---------------------------------------\n` +
     `✓ Verified via Physical Delivery Inspection OTP.\n` +
     `✓ Funds released directly to recipient accounts.\n` +
-    `Thank you for trusting AgriLink!`;
+    `Thank you for trusting Mazao Hub!`;
 
   // WhatsApp click-to-chat links
   const buyerWhatsAppLink = buyer?.phone
@@ -591,7 +591,7 @@ export async function sendDisbursementNotification({ order, settlement, buyer, f
 
         <tr>
           <td style="background-color: #f1f5f9; padding: 18px 32px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
-            AgriLink Escrow Engine • Safaricom B2C Certified • Ref: ESC-${order.id.substring(0, 8).toUpperCase()}
+            Mazao Hub Escrow Engine • Safaricom B2C Certified • Ref: ESC-${order.id.substring(0, 8).toUpperCase()}
           </td>
         </tr>
       </table>
@@ -628,7 +628,7 @@ export async function sendDisbursementNotification({ order, settlement, buyer, f
           userId: farmer.id,
           type: 'SMS',
           title: `Escrow Funds Credited: $${farmerPayout}`,
-          message: `Delivery confirmed for Order #${orderNumber}! $${farmerPayout} has been credited to your AgriLink wallet for 200kg ${cropName}.`,
+          message: `Delivery confirmed for Order #${orderNumber}! $${farmerPayout} has been credited to your Mazao Hub Wallet for 200kg ${cropName}.`,
           metadata: JSON.stringify({
             orderNumber,
             farmerPayout,
@@ -646,7 +646,7 @@ export async function sendDisbursementNotification({ order, settlement, buyer, f
     try {
       await sendEmailMessage({
         to: buyer.email,
-        subject: `AgriLink Settlement: Official Receipt for Order #${orderNumber}`,
+        subject: `Mazao Hub Settlement: Official Receipt for Order #${orderNumber}`,
         html: buyerHtmlReceipt,
         text: smsMessage,
         userName: buyer.name || 'Valued Customer'
@@ -675,8 +675,8 @@ export async function sendDisbursementNotification({ order, settlement, buyer, f
 export async function sendSystemAlertEmail({ to, userName = 'Valued Partner', subject, title, message, badge = 'Official Notification' }) {
   if (!to) return { success: false, error: 'No recipient email' };
 
-  const emailSubject = subject || `🔔 AgriLink: ${title}`;
-  const text = `${title}\n\nHello ${userName},\n\n${message}\n\n© 2026 AgriLink Agribusiness SCM Platform`;
+  const emailSubject = subject || `🔔 Mazao Hub: ${title}`;
+  const text = `${title}\n\nHello ${userName},\n\n${message}\n\n© 2026 Mazao Hub Agribusiness SCM Platform`;
 
   const html = `
     <!DOCTYPE html>
@@ -704,13 +704,13 @@ export async function sendSystemAlertEmail({ to, userName = 'Valued Partner', su
               ${message.replace(/\n/g, '<br/>')}
             </div>
             <p style="margin: 0; font-size: 12px; color: #64748b;">
-              You received this message because you are a registered user on the AgriLink Agribusiness B2B SCM platform.
+              You received this message because you are a registered user on the Mazao Hub Agribusiness B2B SCM platform.
             </p>
           </td>
         </tr>
         <tr>
           <td style="background-color: #f1f5f9; padding: 16px 30px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
-            AgriLink Kenya Agribusiness SCM • Nairobi Central Operations HQ
+            Mazao Hub Kenya Agribusiness SCM • Nairobi Central Operations HQ
           </td>
         </tr>
       </table>
@@ -727,8 +727,8 @@ export async function sendSystemAlertEmail({ to, userName = 'Valued Partner', su
 export async function sendBroadcastNotificationEmail({ to, userName = 'Valued Partner', title, message, targetRole = 'ALL', broadcastBy = 'Administrator' }) {
   if (!to) return { success: false, error: 'No recipient email' };
 
-  const subject = `📢 AgriLink Announcement: ${title}`;
-  const text = `📢 AgriLink Announcement: ${title}\n\nHello ${userName},\n\n${message}\n\nTarget Audience: ${targetRole}\nIssued by: ${broadcastBy}\n\n© 2026 AgriLink Agribusiness SCM Platform`;
+  const subject = `📢 Mazao Hub Announcement: ${title}`;
+  const text = `📢 Mazao Hub Announcement: ${title}\n\nHello ${userName},\n\n${message}\n\nTarget Audience: ${targetRole}\nIssued by: ${broadcastBy}\n\n© 2026 Mazao Hub Agribusiness SCM Platform`;
 
   const html = `
     <!DOCTYPE html>
@@ -760,14 +760,14 @@ export async function sendBroadcastNotificationEmail({ to, userName = 'Valued Pa
 
             <div style="background-color: #f1f5f9; padding: 12px 16px; border-radius: 8px; font-size: 12px; color: #64748b;">
               <span><strong>Audience:</strong> ${targetRole === 'ALL' ? 'All Registered Stakeholders' : targetRole}</span> • 
-              <span><strong>Platform:</strong> AgriLink Kenya Agribusiness SCM</span>
+              <span><strong>Platform:</strong> Mazao Hub Kenya Agribusiness SCM</span>
             </div>
           </td>
         </tr>
 
         <tr>
           <td style="background-color: #f8fafc; padding: 18px 32px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
-            AgriLink Communications • Kenya B2B Agribusiness SCM • Nairobi, Kenya
+            Mazao Hub Communications • Kenya B2B Agribusiness SCM • Nairobi, Kenya
           </td>
         </tr>
       </table>

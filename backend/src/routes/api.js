@@ -21,7 +21,7 @@ const SNAPSHOT_FILE = path.join(__dirname, '../../prisma/db-snapshot.json');
 
 const router = express.Router();
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'agrilink_secret_jwt_key_2026';
+const JWT_SECRET = process.env.JWT_SECRET || 'mazaohub_secret_jwt_key_2026';
 
 // Helper: Auto-save database snapshot to JSON file
 export async function autoSaveSnapshot() {
@@ -123,7 +123,7 @@ function requireAdmin(req, res, next) {
     if (decoded.role !== 'ADMIN') {
       return res.status(403).json({
         success: false,
-        error: 'Access denied. This section is restricted to AgriLink Administrators only.'
+        error: 'Access denied. This section is restricted to Mazao Hub Administrators only.'
       });
     }
     req.admin = decoded;
@@ -211,7 +211,7 @@ router.post('/auth/register', async (req, res) => {
 
     if (newUser.phone) {
       try {
-        await sendSMSNotification(newUser.phone, `AgriLink Security: ${verificationCode} is your Account Verification Code. Valid for 15 mins.`);
+        await sendSMSNotification(newUser.phone, `Mazao Hub Security: ${verificationCode} is your Account Verification Code. Valid for 15 mins.`);
       } catch (smsErr) {
         console.warn('Initial verification SMS log:', smsErr.message);
       }
@@ -259,7 +259,7 @@ router.post('/auth/send-verification', async (req, res) => {
 
     if (user.phone) {
       try {
-        await sendSMSNotification(user.phone, `AgriLink Security: ${code} is your Account Verification Code. Valid for 15 mins.`);
+        await sendSMSNotification(user.phone, `Mazao Hub Security: ${code} is your Account Verification Code. Valid for 15 mins.`);
       } catch (smsErr) {
         console.warn('Resend verification SMS log:', smsErr.message);
       }
@@ -303,7 +303,7 @@ router.post('/auth/verify-email', async (req, res) => {
         userId: user.id,
         type: 'EMAIL',
         title: 'Email Verified Successfully',
-        message: 'Your email address has been verified. You now enjoy priority B2B trade matching on AgriLink.'
+        message: 'Your email address has been verified. You now enjoy priority B2B trade matching on Mazao Hub.'
       }
     });
 
@@ -403,7 +403,7 @@ router.post('/auth/google-login', async (req, res) => {
         data: {
           userId: user.id,
           type: 'SYSTEM',
-          title: 'Welcome to AgriLink',
+          title: 'Karibu Mazao Hub',
           message: 'Your account was created via 1-Click Google Sign-In with verified status.'
         }
       });
@@ -413,7 +413,7 @@ router.post('/auth/google-login', async (req, res) => {
     const { password: _, ...userWithoutPassword } = user;
     res.json({
       success: true,
-      message: `Welcome to AgriLink, ${user.name}!`,
+      message: `Karibu Mazao Hub, ${user.name}!`,
       token,
       user: userWithoutPassword
     });
@@ -480,7 +480,7 @@ router.post('/auth/forgot-password', async (req, res) => {
     let smsSent = false;
     if (user.phone) {
       try {
-        const smsRes = await sendSMSNotification(user.phone, `AgriLink Security: ${resetCode} is your Password Reset Code. Valid for 15 mins.`);
+        const smsRes = await sendSMSNotification(user.phone, `Mazao Hub Security: ${resetCode} is your Password Reset Code. Valid for 15 mins.`);
         smsSent = smsRes?.sent === true;
       } catch (smsErr) {
         console.warn('Forgot password SMS log:', smsErr.message);
@@ -1315,7 +1315,7 @@ router.post('/escrow/deposit', async (req, res) => {
             userId: order.buyerId,
             type: 'WALLET_DEBIT',
             title: 'Payment Deducted & Locked in Escrow',
-            message: `KSh / $${order.grandTotal.toFixed(2)} has been deducted from your account and locked in AgriLink Smart Escrow for Order #${order.orderNumber}. Available balance: $${updatedBuyer.walletBalance.toFixed(2)}.`
+            message: `KSh / $${order.grandTotal.toFixed(2)} has been deducted from your account and locked in Mazao Hub Smart Escrow for Order #${order.orderNumber}. Available balance: $${updatedBuyer.walletBalance.toFixed(2)}.`
           }
         });
       }
@@ -1361,7 +1361,7 @@ router.post('/wallet/topup', async (req, res) => {
       data: { walletBalance: { increment: addAmt } }
     });
 
-    const topupMsg = `Your AgriLink balance has been credited with $${addAmt.toFixed(2)} (approx. KES ${Math.round(addAmt * 130).toLocaleString()}) via ${paymentMethod}. New balance: $${updatedUser.walletBalance.toFixed(2)}.`;
+    const topupMsg = `Your Mazao Hub balance has been credited with $${addAmt.toFixed(2)} (approx. KES ${Math.round(addAmt * 130).toLocaleString()}) via ${paymentMethod}. New balance: $${updatedUser.walletBalance.toFixed(2)}.`;
     await prisma.notification.create({
       data: {
         userId,
@@ -1376,7 +1376,7 @@ router.post('/wallet/topup', async (req, res) => {
       sendSystemAlertEmail({
         to: updatedUser.email,
         userName: updatedUser.name || 'Partner',
-        subject: `✅ AgriLink Wallet Credited: $${addAmt.toFixed(2)} — Receipt`,
+        subject: `✅ Mazao Hub Wallet Credited: $${addAmt.toFixed(2)} — Receipt`,
         title: 'Wallet Top-up Confirmed',
         message: topupMsg,
         badge: 'Wallet Receipt'
@@ -1450,7 +1450,7 @@ router.post('/wallet/withdraw', async (req, res) => {
       sendSystemAlertEmail({
         to: user.email,
         userName: user.name || 'Partner',
-        subject: `💰 AgriLink Payout Disbursed: $${withdrawAmt.toFixed(2)} — Ref: ${reference}`,
+        subject: `💰 Mazao Hub Payout Disbursed: $${withdrawAmt.toFixed(2)} — Ref: ${reference}`,
         title: 'Withdrawal Disbursed',
         message: withdrawMsg,
         badge: 'Payout Confirmed'
@@ -1709,7 +1709,7 @@ router.post('/orders/:id/dispute', async (req, res) => {
       sendSystemAlertEmail({
         to: buyer.email,
         userName: buyer.name || 'Buyer',
-        subject: `⚠️ AgriLink Dispute Filed: Order #${order.orderNumber} — Ticket #${disputeTicket}`,
+        subject: `⚠️ Mazao Hub Dispute Filed: Order #${order.orderNumber} — Ticket #${disputeTicket}`,
         title: `Quality Claim Filed: Order #${order.orderNumber}`,
         message: buyerDisputeMsg,
         badge: 'Dispute Ticket Raised'
@@ -1733,7 +1733,7 @@ router.post('/orders/:id/dispute', async (req, res) => {
         sendSystemAlertEmail({
           to: farmerEntity.email,
           userName: farmerEntity.name || 'Farmer',
-          subject: `⚠️ AgriLink Dispute Alert: Order #${order.orderNumber} — Ticket #${disputeTicket}`,
+          subject: `⚠️ Mazao Hub Dispute Alert: Order #${order.orderNumber} — Ticket #${disputeTicket}`,
           title: `Inspection Claim Notice: Order #${order.orderNumber}`,
           message: farmerDisputeMsg,
           badge: 'Dispute Alert'
@@ -1785,7 +1785,7 @@ router.post('/payments/mpesa/stkpush', async (req, res) => {
       amount: parseFloat(amount),
       orderNumber: ref,
       reference: ref,
-      description: description || `AgriLink Payment ${ref}`
+      description: description || `Mazao Hub Payment ${ref}`
     });
 
     res.json({
@@ -1951,7 +1951,7 @@ router.post('/wallet/topup/stk', async (req, res) => {
       amount: addAmt,
       orderNumber: ref,
       reference: ref,
-      description: `AgriLink Wallet Top-up: $${addAmt.toFixed(2)}`
+      description: `Mazao Hub Wallet Top-up: $${addAmt.toFixed(2)}`
     });
 
     res.json({
@@ -2548,7 +2548,7 @@ router.post('/chama/pools', async (req, res) => {
       currentVolumeKg: 0,
       unitPriceKes: parseFloat(unitPriceKes),
       unitPriceUsd: parseFloat((parseFloat(unitPriceKes) / 130).toFixed(2)),
-      hubLocation: hubLocation || 'Regional AgriLink Hub',
+      hubLocation: hubLocation || 'Regional Mazao Hub',
       destinationHub: destinationHub || 'Nairobi Central Wholesale Depot',
       dispatchDate: new Date(Date.now() + parseInt(dispatchDays) * 86400000).toISOString(),
       organizerFarmer: organizerFarmer || 'Verified Farmer Collective',
@@ -2751,7 +2751,7 @@ let ALERT_SUBSCRIPTIONS = [
     targetPriceKes: 90,
     channel: 'SMS',
     phone: '+254712345678',
-    email: 'buyer@agrilink.co.ke',
+    email: 'buyer@mazaohub.co.ke',
     active: true,
     createdAt: new Date().toISOString()
   },
@@ -2763,7 +2763,7 @@ let ALERT_SUBSCRIPTIONS = [
     targetPriceKes: 130,
     channel: 'WHATSAPP',
     phone: '+254712345678',
-    email: 'buyer@agrilink.co.ke',
+    email: 'buyer@mazaohub.co.ke',
     active: true,
     createdAt: new Date().toISOString()
   }
@@ -2862,7 +2862,7 @@ router.post('/ussd', async (req, res) => {
 
     if (parts.length === 0) {
       // Main Menu
-      response = `CON Welcome to AgriLink Kenya SCM (*384*50#)
+      response = `CON Karibu Mazao Hub Kenya SCM (*384*50#)
 1. Wholesale Market Prices
 2. Fast-List Farm Harvest
 3. Check M-Pesa Escrow Balance
@@ -2884,7 +2884,7 @@ router.post('/ussd', async (req, res) => {
           '4': { name: 'Dry White Maize', wakulima: 48, kongowea: 54, nakuru: 45 }
         };
         const c = cropMap[parts[1]] || cropMap['1'];
-        response = `END AgriLink Wholesale Index (${c.name}/kg):
+        response = `END Mazao Hub Wholesale Index (${c.name}/kg):
 • Nairobi Wakulima: KES ${c.wakulima}
 • Mombasa Kongowea: KES ${c.kongowea}
 • Nakuru Wakiri: KES ${c.nakuru}
@@ -2921,7 +2921,7 @@ To order or list, dial *384*50# again.`;
           }).catch(() => {});
         }
 
-        response = `END Hongera! Your harvest of ${qty} kg ${crop} at KES ${price}/kg has been published on AgriLink B2B SCM. Buyers have been notified!`;
+        response = `END Hongera! Your harvest of ${qty} kg ${crop} at KES ${price}/kg has been published on Mazao Hub B2B SCM. Buyers have been notified!`;
       }
     } else if (parts[0] === '3') {
       // 3. Check M-Pesa Escrow Balance
@@ -2930,8 +2930,8 @@ To order or list, dial *384*50# again.`;
       const balanceUsd = sampleUser?.walletBalance || 0;
       const balanceKes = Math.round(balanceUsd * 130);
 
-      response = `END AgriLink Escrow Wallet:
-Account: ${sampleUser?.name || 'AgriLink User'}
+      response = `END Mazao Hub Escrow Wallet:
+Account: ${sampleUser?.name || 'Mazao Hub User'}
 Available Balance: KES ${balanceKes.toLocaleString()} ($${balanceUsd.toFixed(2)})
 Escrow Protected: Yes
 Payouts processed within 60s via M-Pesa B2C.`;
@@ -2950,7 +2950,7 @@ Payouts processed within 60s via M-Pesa B2C.`;
 Shipment #${shipment.id.slice(0, 8)} confirmed.
 Escrow payout of KES ${(shipment.transitStatus || 0)} released to farmer & driver. Asante!`;
         } else {
-          response = `END OTP Verified via AgriLink Escrow Clearing Gateway.
+          response = `END OTP Verified via Mazao Hub Escrow Clearing Gateway.
 Produce delivery confirmed. Escrow settlement released immediately.`;
         }
       }
@@ -2970,7 +2970,7 @@ Produce delivery confirmed. Escrow settlement released immediately.`;
           '4': { county: 'Meru', temp: '24°C', rain: 'Scattered Mist (30%)', advice: 'Favorable transport conditions on Meru-Nairobi corridor.' }
         };
         const w = countyMap[parts[1]] || countyMap['1'];
-        response = `END AgriLink Agro-Weather (${w.county}):
+        response = `END Mazao Hub Agro-Weather (${w.county}):
 Temp: ${w.temp} | Rain: ${w.rain}
 Kilimo Advisory: ${w.advice}`;
       }
@@ -3374,7 +3374,7 @@ router.get('/admin/system-health', requireAdmin, async (req, res) => {
         engine: 'MongoDB Atlas Cloud',
         status: 'CONNECTED',
         cluster: 'Cluster0 (AWS)',
-        databaseName: 'agrilink',
+        databaseName: 'Mazao Hub',
         pingLatencyMs: mongoLatencyMs,
         collections: {
           users: usersCount,
@@ -3549,7 +3549,7 @@ router.post('/admin/escrow/arbitrate', requireAdmin, async (req, res) => {
             userName: farmer.name,
             subject: `💰 Escrow Funds Released: Order ${escrow.order.orderNumber}`,
             title: `Escrow Funds Released to Your Wallet`,
-            message: `Admin has approved and released $${escrow.order.totalAmount.toFixed(2)} (approx KES ${Math.round(escrow.order.totalAmount * 130).toLocaleString()}) to your AgriLink wallet for Order ${escrow.order.orderNumber}.\nReason: ${reason}`,
+            message: `Admin has approved and released $${escrow.order.totalAmount.toFixed(2)} (approx KES ${Math.round(escrow.order.totalAmount * 130).toLocaleString()}) to your Mazao Hub Wallet for Order ${escrow.order.orderNumber}.\nReason: ${reason}`,
             badge: 'Escrow Released'
           }).catch(err => console.warn('Could not email farmer:', err.message));
         }
@@ -3623,7 +3623,7 @@ router.post('/admin/escrow/arbitrate', requireAdmin, async (req, res) => {
           userName: escrow.order.buyer.name,
           subject: `💳 Refund Credited: Order ${escrow.order.orderNumber}`,
           title: `Escrow Refund Credited to Wallet`,
-          message: `Admin has resolved the dispute and refunded $${escrow.amountHeld.toFixed(2)} (approx KES ${Math.round(escrow.amountHeld * 130).toLocaleString()}) to your AgriLink wallet for Order ${escrow.order.orderNumber}.\nReason: ${reason}`,
+          message: `Admin has resolved the dispute and refunded $${escrow.amountHeld.toFixed(2)} (approx KES ${Math.round(escrow.amountHeld * 130).toLocaleString()}) to your Mazao Hub Wallet for Order ${escrow.order.orderNumber}.\nReason: ${reason}`,
           badge: 'Refund Approved'
         }).catch(err => console.warn('Could not email buyer:', err.message));
       }
@@ -3756,7 +3756,7 @@ router.post('/admin/broadcast', requireAdmin, async (req, res) => {
               title,
               message,
               targetRole,
-              broadcastBy: req.admin?.name || 'AgriLink Operations Team'
+              broadcastBy: req.admin?.name || 'Mazao Hub Operations Team'
             });
             if (res.sent || res.success) emailsSent++;
           } catch (e) {
@@ -3773,7 +3773,7 @@ router.post('/admin/broadcast', requireAdmin, async (req, res) => {
         .filter(u => u.phone)
         .map(async (u) => {
           try {
-            const res = await sendSMSNotification(u.phone, `[AgriLink Alert] ${title}: ${message}`);
+            const res = await sendSMSNotification(u.phone, `[Mazao Hub Alert] ${title}: ${message}`);
             if (res.sent || res.success) smsSent++;
           } catch (e) {
             console.warn(`Could not dispatch broadcast SMS to ${u.phone}:`, e.message);
@@ -3995,7 +3995,7 @@ router.post('/demands', async (req, res) => {
           sendSystemAlertEmail({
             to: f.email,
             userName: f.name || 'Farmer',
-            subject: `📢 New Buyer Tender: ${newDemand.cropName} — AgriLink`,
+            subject: `📢 New Buyer Tender: ${newDemand.cropName} — Mazao Hub`,
             title: `New Wholesale Tender: ${newDemand.cropName}`,
             message: tenderMsg,
             badge: 'Wholesale Tender Alert'
@@ -4075,7 +4075,7 @@ router.post('/demands/:id/bids', async (req, res) => {
       sendSystemAlertEmail({
         to: demand.buyer.email,
         userName: demand.buyer.name || 'Buyer',
-        subject: `🌾 New Supply Bid on Your Tender: ${demand.cropName} — AgriLink`,
+        subject: `🌾 New Supply Bid on Your Tender: ${demand.cropName} — Mazao Hub`,
         title: `New Supply Bid: ${demand.cropName}`,
         message: bidMsg,
         badge: 'Supply Bid Received'
@@ -4151,7 +4151,7 @@ router.post('/demands/:id/accept-bid', async (req, res) => {
       sendSystemAlertEmail({
         to: selectedBid.farmer.email,
         userName: selectedBid.farmer.name || 'Farmer',
-        subject: `🎉 Your Bid Was Accepted: ${demand.cropName} — AgriLink`,
+        subject: `🎉 Your Bid Was Accepted: ${demand.cropName} — Mazao Hub`,
         title: `Supply Bid Accepted: ${demand.cropName}`,
         message: acceptedMsg,
         badge: 'Bid Accepted 🎉'

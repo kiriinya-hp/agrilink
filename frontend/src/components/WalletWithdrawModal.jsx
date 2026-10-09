@@ -176,7 +176,7 @@ export default function WalletWithdrawModal({ isOpen, onClose, user, onBalanceUp
               </div>
               <div className="flex justify-between text-slate-500">
                 <span>Transaction Fee:</span>
-                <span className="font-bold text-emerald-700">$0.00 (AgriLink Promo)</span>
+                <span className="font-bold text-emerald-700">$0.00 (Mazao Hub Promo)</span>
               </div>
             </div>
 

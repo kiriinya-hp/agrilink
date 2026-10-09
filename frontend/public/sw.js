@@ -1,5 +1,5 @@
-// AgriLink Offline-First Service Worker
-const CACHE_NAME = 'agrilink-v2-cache';
+// Mazao Hub Offline-First Service Worker
+const CACHE_NAME = 'mazaohub-v2-cache';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

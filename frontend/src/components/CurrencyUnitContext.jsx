@@ -15,19 +15,19 @@ export const USD_TO_KES = 130.0;
 export function CurrencyUnitProvider({ children }) {
   // Saved user preferences in localStorage
   const [currency, setCurrency] = useState(() => {
-    return localStorage.getItem('agrilink_currency') || 'KES';
+    return localStorage.getItem('Mazao Hub_currency') || 'KES';
   });
 
   const [unit, setUnit] = useState(() => {
-    return localStorage.getItem('agrilink_unit') || 'kg';
+    return localStorage.getItem('Mazao Hub_unit') || 'kg';
   });
 
   useEffect(() => {
-    localStorage.setItem('agrilink_currency', currency);
+    localStorage.setItem('Mazao Hub_currency', currency);
   }, [currency]);
 
   useEffect(() => {
-    localStorage.setItem('agrilink_unit', unit);
+    localStorage.setItem('Mazao Hub_unit', unit);
   }, [unit]);
 
   // Formatter for flat totals (e.g. wallet balances, order grand totals)

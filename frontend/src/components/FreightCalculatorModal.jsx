@@ -127,7 +127,7 @@ export default function FreightCalculatorModal({
 
   const handleCopyQuote = () => {
     if (!quote) return;
-    const text = `🚚 AgriLink Freight Quote:
+    const text = `🚚 Mazao Hub Freight Quote:
 • Route: ${quote.origin} ➔ ${quote.destination} (${quote.distanceKm} km, ~${quote.estimatedHours} hrs)
 • Cargo: ${quote.cargoWeightKg} kg via ${quote.vehicle} ${quote.coldChain ? '(Refrigerated)' : ''}
 • Freight Cost: KES ${quote.breakdownKes.total.toLocaleString()} ($${quote.breakdownUsd.total})
