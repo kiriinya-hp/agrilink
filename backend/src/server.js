@@ -26,7 +26,7 @@ app.use((req, res, next) => {
 app.get('/health', (req, res) => {
   res.json({
     status: 'online',
-    service: 'Mazao Hub API Service',
+    service: 'AgriShamba API Service',
     timestamp: new Date().toISOString()
   });
 });
@@ -66,7 +66,7 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, async () => {
   console.log(`=========================================`);
-  console.log(`🌾 Mazao Hub Backend API running on port ${PORT}`);
+  console.log(`🌾 AgriShamba Backend API running on port ${PORT}`);
   console.log(`🚀 Health Check: http://localhost:${PORT}/health`);
   console.log(`📡 API Base:     http://localhost:${PORT}/api`);
   console.log(`=========================================`);
@@ -82,7 +82,7 @@ app.listen(PORT, async () => {
   // Render free tier sleeps after 15 min of inactivity. This pings /health
   // every 14 minutes so the app NEVER goes to sleep.
   if (process.env.NODE_ENV === 'production') {
-    const APP_URL = process.env.RENDER_EXTERNAL_URL || `https://Mazao Hub-pyrv.onrender.com`;
+    const APP_URL = process.env.RENDER_EXTERNAL_URL || `https://AgriShamba-pyrv.onrender.com`;
     const PING_INTERVAL_MS = 14 * 60 * 1000; // 14 minutes
 
     setInterval(async () => {

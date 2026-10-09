@@ -59,8 +59,8 @@ export default function Login({ onNavigateRegister, onNavigateAdmin, onNavigateF
         <div className="flex justify-center">
           <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white/10 border border-emerald-500/40 p-1 flex items-center justify-center shadow-xl shadow-emerald-500/20">
             <img 
-              src="/mazaohub-logo.png" 
-              alt="Mazao Hub Logo" 
+              src="/AgriShamba-logo.png" 
+              alt="AgriShamba Logo" 
               className="w-full h-full object-contain"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
@@ -73,7 +73,7 @@ export default function Login({ onNavigateRegister, onNavigateAdmin, onNavigateF
           </div>
         </div>
         <h2 className="mt-4 text-center text-3xl font-extrabold tracking-tight text-white">
-          Mazao<span className="text-emerald-500">Hub</span> — Sign In
+          Agri<span className="text-emerald-500">Shamba</span> — Sign In
         </h2>
         <p className="mt-2 text-center text-xs text-slate-400 font-medium">
           Toka Shambani Hadi Sokoni — B2B Agri SCM & Escrow System
@@ -189,7 +189,7 @@ export default function Login({ onNavigateRegister, onNavigateAdmin, onNavigateF
             <div className="grid grid-cols-3 gap-1.5 text-[10px]">
               <button
                 type="button"
-                onClick={() => quickFill('farmer@Mazao Hub.co.ke', 'Password123!')}
+                onClick={() => quickFill('farmer@AgriShamba.co.ke', 'Password123!')}
                 className="p-1.5 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-800 text-slate-600 rounded border border-slate-200 font-semibold text-center transition-colors"
               >
                 👨‍🌾 Farmer

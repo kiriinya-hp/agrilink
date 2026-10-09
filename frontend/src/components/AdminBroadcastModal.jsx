@@ -47,7 +47,7 @@ export default function AdminBroadcastModal({ token, apiBase, allUsers = [] }) {
       title: 'Scheduled Escrow Clearing Maintenance',
       role: 'ALL',
       channel: 'SYSTEM',
-      body: 'Mazao Hub platform will undergo routine database synchronization tonight from 2:00 AM to 2:30 AM EAT. Active escrow transactions remain fully secure.'
+      body: 'AgriShamba platform will undergo routine database synchronization tonight from 2:00 AM to 2:30 AM EAT. Active escrow transactions remain fully secure.'
     }
   ];
 

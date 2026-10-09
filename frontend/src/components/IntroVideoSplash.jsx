@@ -134,7 +134,7 @@ export default function IntroVideoSplash({ onComplete }) {
 
               <div className="space-y-1.5">
                 <h3 className="text-white text-lg sm:text-xl font-black tracking-tight">
-                  Mazao Hub Premiere
+                  AgriShamba Premiere
                 </h3>
                 <p className="text-emerald-300 text-xs sm:text-sm font-semibold">
                   Tap anywhere to play with HD sound
@@ -171,7 +171,7 @@ export default function IntroVideoSplash({ onComplete }) {
             <Sprout className="w-3 h-3 text-white" />
           </div>
           <span className="font-extrabold text-xs tracking-tight">
-            Mazao<span className="text-emerald-400">Hub</span>
+            Agri<span className="text-emerald-400">Shamba</span>
           </span>
         </div>
 

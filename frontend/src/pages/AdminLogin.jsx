@@ -5,7 +5,7 @@ import AuthAnimatedBackground from '../components/AuthAnimatedBackground';
 
 export default function AdminLogin({ onNavigateUserLogin }) {
   const { adminLogin } = useAuth();
-  const [identifier, setIdentifier] = useState('admin@Mazao Hub.co.ke');
+  const [identifier, setIdentifier] = useState('admin@AgriShamba.co.ke');
   const [password, setPassword] = useState('Password123!');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -73,7 +73,7 @@ export default function AdminLogin({ onNavigateUserLogin }) {
                 <input
                   type="text"
                   required
-                  placeholder="admin@Mazao Hub.co.ke"
+                  placeholder="admin@AgriShamba.co.ke"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   className="block w-full pl-10 pr-3 py-2.5 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"

@@ -48,14 +48,14 @@ export default function ReceiptModal({ order, onClose }) {
 
   // Transporter & Driver Info
   const shipment = order.shipment || {};
-  const transporterName = shipment.transporter?.name || 'Mazao Hub Verified Freight Carrier';
+  const transporterName = shipment.transporter?.name || 'AgriShamba Verified Freight Carrier';
   const transporterPhone = shipment.transporter?.phone || '+254 700 000 000';
   const pickupLocation = shipment.pickupLocation || item.listing?.location || 'Origin Farm Depot, Kenya';
   const dropoffLocation = shipment.dropoffLocation || order.deliveryAddress || 'Central Wholesale Depot, Nairobi';
 
   // WhatsApp share summary text
   const whatsappMessage = activeDoc === 'invoice'
-    ? `*Mazao Hub OFFICIAL TAX INVOICE*\n` +
+    ? `*AgriShamba OFFICIAL TAX INVOICE*\n` +
       `---------------------------------------\n` +
       `*Invoice No:* ${invoiceNumber}\n` +
       `*Order Ref:* ${order.orderNumber}\n` +
@@ -66,13 +66,13 @@ export default function ReceiptModal({ order, onClose }) {
       `---------------------------------------\n` +
       `*Produce Value:* KES ${produceTotalKes.toLocaleString()} ($${produceTotalUsd.toFixed(2)})\n` +
       `*Logistics Freight:* KES ${transportFeeKes.toLocaleString()} ($${transportFeeUsd.toFixed(2)})\n` +
-      `*Mazao Hub Escrow Fee (5%):* KES ${platformFeeKes.toLocaleString()} ($${platformFeeUsd.toFixed(2)})\n` +
+      `*AgriShamba Escrow Fee (5%):* KES ${platformFeeKes.toLocaleString()} ($${platformFeeUsd.toFixed(2)})\n` +
       `*TOTAL INVOICE VALUE:* KES ${grandTotalKes.toLocaleString()} ($${grandTotalUsd.toFixed(2)})\n` +
       `---------------------------------------\n` +
       `*Payment Ref:* ${order.escrowTransaction?.reference || 'ESC-MPESA-' + order.orderNumber}\n` +
       `*Verification:* Safaricom M-Pesa Rails & Delivery OTP Audited.\n` +
-      `Mazao Hub Enterprise SCM Kenya`
-    : `*Mazao Hub CONSIGNMENT WAYBILL & GATE PASS*\n` +
+      `AgriShamba Enterprise SCM Kenya`
+    : `*AgriShamba CONSIGNMENT WAYBILL & GATE PASS*\n` +
       `---------------------------------------\n` +
       `*Waybill No:* ${waybillNumber}\n` +
       `*Order Ref:* ${order.orderNumber}\n` +
@@ -92,7 +92,7 @@ export default function ReceiptModal({ order, onClose }) {
 
   // Generate SVG QR Code pattern visually
   const qrSvgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(
-    `https://Mazao Hub.co.ke/verify?order=${order.orderNumber}&type=${activeDoc}&amt=${grandTotalKes}`
+    `https://AgriShamba.co.ke/verify?order=${order.orderNumber}&type=${activeDoc}&amt=${grandTotalKes}`
   )}`;
 
   return (
@@ -134,7 +134,7 @@ export default function ReceiptModal({ order, onClose }) {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-600">
-                  Mazao Hub Document Suite
+                  AgriShamba Document Suite
                 </span>
                 <span className="text-[9px] font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
                   ETR Verified
@@ -191,22 +191,22 @@ export default function ReceiptModal({ order, onClose }) {
         {/* ======================================================== */}
         <div id="printable-document-sheet" className="py-4 space-y-5 bg-white text-slate-800 text-xs">
 
-          {/* DOCUMENT HEADER: Mazao Hub Official Letterhead */}
+          {/* DOCUMENT HEADER: AgriShamba Official Letterhead */}
           <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4">
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-2xl tracking-tight text-slate-900">
-                  Mazao<span className="text-emerald-600">Hub</span>
+                  Agri<span className="text-emerald-600">Shamba</span>
                 </span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
                   Kenya B2B Agribusiness SCM
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 mt-1 max-w-sm">
-                Mazao Hub Commodity Clearing House & Escrow Hub<br />
+                AgriShamba Commodity Clearing House & Escrow Hub<br />
                 Kilimo Towers, Upper Hill, Nairobi, Kenya<br />
                 KRA PIN: <strong>P051982401Z</strong> | ETR Ref: <strong>ETR-AL-{order.orderNumber}</strong><br />
-                Support: info@Mazao Hub.co.ke | +254 700 000 000
+                Support: info@AgriShamba.co.ke | +254 700 000 000
               </p>
             </div>
 
@@ -325,10 +325,10 @@ export default function ReceiptModal({ order, onClose }) {
                       </td>
                     </tr>
 
-                    {/* Mazao Hub Platform Escrow & Clearing Fee */}
+                    {/* AgriShamba Platform Escrow & Clearing Fee */}
                     <tr className="hover:bg-slate-50/50">
                       <td className="py-2.5 px-3" colSpan="3">
-                        <span className="font-bold text-slate-800 block">Mazao Hub Escrow & Quality Assurance Fee (5%)</span>
+                        <span className="font-bold text-slate-800 block">AgriShamba Escrow & Quality Assurance Fee (5%)</span>
                         <span className="text-[10px] text-slate-500">
                           Safaricom M-Pesa automated trust custody & OTP arbitration
                         </span>
@@ -369,7 +369,7 @@ export default function ReceiptModal({ order, onClose }) {
                     </h5>
                     <p className="text-[11px] text-emerald-800 mt-0.5 leading-relaxed">
                       Payment Ref: <strong className="font-mono">{order.escrowTransaction?.reference || 'ESC-MPESA-' + order.orderNumber}</strong><br />
-                      This electronic tax invoice constitutes a certified commercial settlement on the Mazao Hub Digital Agricultural SCM platform.
+                      This electronic tax invoice constitutes a certified commercial settlement on the AgriShamba Digital Agricultural SCM platform.
                     </p>
                   </div>
                 </div>
@@ -505,7 +505,7 @@ export default function ReceiptModal({ order, onClose }) {
 
           {/* DOCUMENT FOOTER */}
           <div className="pt-3 border-t border-slate-200 flex justify-between items-center text-[10px] text-slate-400">
-            <span>Generated electronically via Mazao Hub B2B SCM Platform (Kenya)</span>
+            <span>Generated electronically via AgriShamba B2B SCM Platform (Kenya)</span>
             <span className="font-mono">Page 1 of 1</span>
           </div>
 

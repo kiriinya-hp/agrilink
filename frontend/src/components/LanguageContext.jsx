@@ -5,7 +5,7 @@ const LanguageContext = createContext();
 export const TRANSLATIONS = {
   en: {
     // Navigation & Header
-    appName: 'Mazao Hub',
+    appName: 'AgriShamba',
     enterpriseScm: 'Enterprise SCM',
     installMobileApp: 'Install Mobile App',
     topUp: 'Top Up',
@@ -62,7 +62,7 @@ export const TRANSLATIONS = {
     calculateButton: 'Calculate',
 
     // Transporter Portal
-    freightDispatcherTitle: 'Mazao Hub Freight & Dispatch Dispatcher',
+    freightDispatcherTitle: 'AgriShamba Freight & Dispatch Dispatcher',
     freightDispatcherSub: 'Claim pending cargo shipments, advance transit milestones, and provide the Delivery OTP to the recipient buyer.',
     freightEarnings: 'Freight Earnings',
     availableFreightJobs: 'Available Freight Jobs awaiting dispatch',
@@ -91,7 +91,7 @@ export const TRANSLATIONS = {
     mpesaPhonePrompt: 'M-Pesa Mobile Number for STK Push Prompt',
     produceCost: 'Produce Cost',
     freightLogisticsEst: 'Freight / Logistics Estimate',
-    escrowFee: 'Mazao Hub Escrow Fee (5%)',
+    escrowFee: 'AgriShamba Escrow Fee (5%)',
     totalEscrowLock: 'Total Escrow Lock',
     cancel: 'Cancel',
     confirmAndLockEscrow: 'Confirm & Lock M-Pesa Escrow',
@@ -103,7 +103,7 @@ export const TRANSLATIONS = {
 
   sw: {
     // Navigation & Header
-    appName: 'Mazao Hub',
+    appName: 'AgriShamba',
     enterpriseScm: 'Soko la Kilimo',
     installMobileApp: 'Weka App Simuni',
     topUp: 'Weka Pesa',
@@ -202,11 +202,11 @@ export const TRANSLATIONS = {
 
 export function LanguageProvider({ children }) {
   const [language, setLanguage] = useState(() => {
-    return localStorage.getItem('mazaohub_lang') || localStorage.getItem('agrilink_lang') || localStorage.getItem('Mazao Hub_lang') || 'en';
+    return localStorage.getItem('AgriShamba_lang') || localStorage.getItem('agrilink_lang') || localStorage.getItem('AgriShamba_lang') || 'en';
   });
 
   useEffect(() => {
-    localStorage.setItem('mazaohub_lang', language);
+    localStorage.setItem('AgriShamba_lang', language);
   }, [language]);
 
   const t = (key, fallback = '') => {

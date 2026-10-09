@@ -1,5 +1,5 @@
-// Mazao Hub Offline-First Service Worker
-const CACHE_NAME = 'mazaohub-v2-cache';
+// AgriShamba Offline-First Service Worker
+const CACHE_NAME = 'agrishamba-v1-cache';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

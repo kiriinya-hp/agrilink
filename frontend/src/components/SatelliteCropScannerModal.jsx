@@ -262,7 +262,7 @@ export default function SatelliteCropScannerModal({ isOpen, onClose, initialCrop
                   <BadgeCheck className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-xs font-black uppercase text-emerald-950">Mazao Hub Space Verified Producer</p>
+                  <p className="text-xs font-black uppercase text-emerald-950">AgriShamba Space Verified Producer</p>
                   <p className="text-[11px] text-emerald-800">
                     Buyers can safely lock escrow pre-orders knowing the harvest exists and is in optimal health.
                   </p>

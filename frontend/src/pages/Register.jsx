@@ -210,7 +210,7 @@ export default function Register({ onNavigateLogin }) {
         </div>
 
         <h2 className="mt-3 text-center text-2xl sm:text-3xl font-extrabold text-white">
-          Join the Mazao<span className="text-emerald-500">Hub</span> Ecosystem
+          Join the Agri<span className="text-emerald-500">Shamba</span> Ecosystem
         </h2>
         <p className="mt-1 text-center text-xs text-slate-400">
           {step === 'form' 
@@ -450,7 +450,7 @@ export default function Register({ onNavigateLogin }) {
               </button>
 
               <div className="mt-5 pt-4 border-t border-slate-700/60 text-center">
-                <span className="text-xs text-slate-400">Already registered on Mazao Hub? </span>
+                <span className="text-xs text-slate-400">Already registered on AgriShamba? </span>
                 <button
                   onClick={onNavigateLogin}
                   className="text-xs font-bold text-emerald-400 hover:text-emerald-300"

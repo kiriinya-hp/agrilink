@@ -6,9 +6,9 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
       const savedUser = 
-        localStorage.getItem('mazaohub_user') || 
+        localStorage.getItem('AgriShamba_user') || 
         localStorage.getItem('agrilink_user') || 
-        localStorage.getItem('Mazao Hub_user');
+        localStorage.getItem('AgriShamba_user');
       return savedUser ? JSON.parse(savedUser) : null;
     } catch {
       return null;
@@ -17,9 +17,9 @@ export function AuthProvider({ children }) {
 
   const [token, setToken] = useState(() => {
     return (
-      localStorage.getItem('mazaohub_token') || 
+      localStorage.getItem('AgriShamba_token') || 
       localStorage.getItem('agrilink_token') || 
-      localStorage.getItem('Mazao Hub_token') || 
+      localStorage.getItem('AgriShamba_token') || 
       null
     );
   });
@@ -36,7 +36,7 @@ export function AuthProvider({ children }) {
           const data = await res.json();
           if (data.success) {
             setUser(data.user);
-            localStorage.setItem('mazaohub_user', JSON.stringify(data.user));
+            localStorage.setItem('AgriShamba_user', JSON.stringify(data.user));
           } else {
             logout();
           }
@@ -60,8 +60,8 @@ export function AuthProvider({ children }) {
 
     setToken(data.token);
     setUser(data.user);
-    localStorage.setItem('mazaohub_token', data.token);
-    localStorage.setItem('mazaohub_user', JSON.stringify(data.user));
+    localStorage.setItem('AgriShamba_token', data.token);
+    localStorage.setItem('AgriShamba_user', JSON.stringify(data.user));
     return data.user;
   };
 
@@ -76,8 +76,8 @@ export function AuthProvider({ children }) {
 
     setToken(data.token);
     setUser(data.user);
-    localStorage.setItem('mazaohub_token', data.token);
-    localStorage.setItem('mazaohub_user', JSON.stringify(data.user));
+    localStorage.setItem('AgriShamba_token', data.token);
+    localStorage.setItem('AgriShamba_user', JSON.stringify(data.user));
     return data.user;
   };
 
@@ -103,8 +103,8 @@ export function AuthProvider({ children }) {
 
     setToken(data.token);
     setUser(data.user);
-    localStorage.setItem('mazaohub_token', data.token);
-    localStorage.setItem('mazaohub_user', JSON.stringify(data.user));
+    localStorage.setItem('AgriShamba_token', data.token);
+    localStorage.setItem('AgriShamba_user', JSON.stringify(data.user));
     return data.user;
   };
 
@@ -119,8 +119,8 @@ export function AuthProvider({ children }) {
 
     setToken(data.token);
     setUser(data.user);
-    localStorage.setItem('mazaohub_token', data.token);
-    localStorage.setItem('mazaohub_user', JSON.stringify(data.user));
+    localStorage.setItem('AgriShamba_token', data.token);
+    localStorage.setItem('AgriShamba_user', JSON.stringify(data.user));
     return data.user;
   };
 
@@ -140,20 +140,20 @@ export function AuthProvider({ children }) {
 
     setToken(data.token);
     setUser(data.user);
-    localStorage.setItem('mazaohub_token', data.token);
-    localStorage.setItem('mazaohub_user', JSON.stringify(data.user));
+    localStorage.setItem('AgriShamba_token', data.token);
+    localStorage.setItem('AgriShamba_user', JSON.stringify(data.user));
     return data.user;
   };
 
   const logout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem('mazaohub_token');
-    localStorage.removeItem('mazaohub_user');
+    localStorage.removeItem('AgriShamba_token');
+    localStorage.removeItem('AgriShamba_user');
     localStorage.removeItem('agrilink_token');
     localStorage.removeItem('agrilink_user');
-    localStorage.removeItem('Mazao Hub_token');
-    localStorage.removeItem('Mazao Hub_user');
+    localStorage.removeItem('AgriShamba_token');
+    localStorage.removeItem('AgriShamba_user');
   };
 
   const refreshUser = async () => {
@@ -165,7 +165,7 @@ export function AuthProvider({ children }) {
       const data = await res.json();
       if (data.success) {
         setUser(data.user);
-        localStorage.setItem('mazaohub_user', JSON.stringify(data.user));
+        localStorage.setItem('AgriShamba_user', JSON.stringify(data.user));
       }
     } catch (err) {
       console.error('Refresh user error:', err);
@@ -186,7 +186,7 @@ export function AuthProvider({ children }) {
     if (!data.success) throw new Error(data.error);
 
     setUser(data.user);
-    localStorage.setItem('mazaohub_user', JSON.stringify(data.user));
+    localStorage.setItem('AgriShamba_user', JSON.stringify(data.user));
     return data.user;
   };
 

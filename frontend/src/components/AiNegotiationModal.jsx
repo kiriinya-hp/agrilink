@@ -266,7 +266,7 @@ export default function AiNegotiationModal({ isOpen, onClose, onAcceptDeal }) {
                 <span>KES {dealProposal.financials.estimatedFreightKes.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-slate-600">
-                <span>Mazao Hub Escrow Fee (5%):</span>
+                <span>AgriShamba Escrow Fee (5%):</span>
                 <span>KES {dealProposal.financials.escrowFeeKes.toLocaleString()}</span>
               </div>
               <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-slate-900 text-sm">

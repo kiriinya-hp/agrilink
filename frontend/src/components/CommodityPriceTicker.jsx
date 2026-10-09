@@ -200,7 +200,7 @@ export default function CommodityPriceTicker() {
 
             {/* Modal Footer */}
             <div className="pt-4 border-t border-slate-100 flex justify-between items-center text-xs">
-              <span className="text-slate-400 font-medium">Source: Mazao Hub SCM Data Engine & Regional Markets</span>
+              <span className="text-slate-400 font-medium">Source: AgriShamba SCM Data Engine & Regional Markets</span>
               <button
                 onClick={() => setShowFullModal(false)}
                 className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition-colors"

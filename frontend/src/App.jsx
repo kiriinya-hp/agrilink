@@ -193,7 +193,7 @@ function MainApp({ onReplayIntro }) {
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
       setDeferredPrompt(null);
-      showNotification('Thank you for installing Mazao Hub on your mobile device!');
+      showNotification('Thank you for installing AgriShamba on your mobile device!');
     }
   };
 
@@ -511,7 +511,7 @@ function MainApp({ onReplayIntro }) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Mazao Hub-database-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `AgriShamba-database-backup-${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -652,8 +652,8 @@ function MainApp({ onReplayIntro }) {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl overflow-hidden bg-white border border-emerald-600/30 flex items-center justify-center shadow-md shadow-emerald-500/10">
                 <img 
-                  src="/Mazao Hub-logo.png" 
-                  alt="Mazao Hub Logo" 
+                  src="/agrishamba-logo.png" 
+                  alt="AgriShamba Logo" 
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
@@ -668,7 +668,7 @@ function MainApp({ onReplayIntro }) {
               </div>
               <div>
                 <span className="font-extrabold text-xl tracking-tight text-slate-900">
-                  Mazao<span className="text-emerald-600">Hub</span>
+                  Agri<span className="text-emerald-600">Shamba</span>
                 </span>
                 <span className="hidden sm:inline-block ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                   Enterprise SCM
@@ -678,7 +678,7 @@ function MainApp({ onReplayIntro }) {
                     type="button"
                     onClick={onReplayIntro}
                     className="hidden sm:inline-flex items-center gap-1.5 ml-2.5 px-2.5 py-0.5 rounded-full bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 border border-slate-200 hover:border-emerald-200 text-[11px] font-bold transition-all shadow-2xs cursor-pointer"
-                    title="Watch Mazao Hub intro video"
+                    title="Watch AgriShamba intro video"
                   >
                     <Film className="w-3 h-3 text-emerald-600" />
                     <span>Watch Intro</span>
@@ -694,7 +694,7 @@ function MainApp({ onReplayIntro }) {
                 <button
                   onClick={handleInstallApp}
                   className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all"
-                  title="Install Mazao Hub App on your device"
+                  title="Install AgriShamba App on your device"
                 >
                   <Smartphone className="w-3.5 h-3.5" />
                   <span>{t('installMobileApp')}</span>
@@ -1084,7 +1084,7 @@ function MainApp({ onReplayIntro }) {
               </div>
               <h2 className="text-xl font-black text-slate-900 mb-2">Access Restricted</h2>
               <p className="text-sm text-slate-500 mb-6">
-                The Administration Panel is only accessible to <strong>Mazao Hub System Administrators</strong>. You do not have permission to view this section.
+                The Administration Panel is only accessible to <strong>AgriShamba System Administrators</strong>. You do not have permission to view this section.
               </p>
               <button
                 onClick={() => {
@@ -2880,14 +2880,14 @@ export default function App() {
     if (isAdmin) return false;
     // Check if user already saw the intro in this browser session
     return !(
-      sessionStorage.getItem('mazaohub_intro_seen') || 
+      sessionStorage.getItem('AgriShamba_intro_seen') || 
       sessionStorage.getItem('agrilink_intro_seen') ||
-      sessionStorage.getItem('Mazao Hub_intro_seen')
+      sessionStorage.getItem('AgriShamba_intro_seen')
     );
   });
 
   const handleIntroComplete = () => {
-    sessionStorage.setItem('mazaohub_intro_seen', 'true');
+    sessionStorage.setItem('AgriShamba_intro_seen', 'true');
     setShowIntro(false);
   };
 
