@@ -787,16 +787,44 @@ router.put('/admin/users/:id', requireAdmin, async (req, res) => {
     const { name, email, phone, role, businessName, location, kycStatus, isEmailVerified, walletBalance } = req.body;
     const userId = req.params.id;
 
+    const existingUser = await prisma.user.findUnique({ where: { id: userId } });
+    if (!existingUser) {
+      return res.status(404).json({ success: false, error: 'User record not found in MongoDB database.' });
+    }
+
     const dataToUpdate = {};
-    if (name) dataToUpdate.name = name.trim();
-    if (email) dataToUpdate.email = email.toLowerCase().trim();
-    if (phone) dataToUpdate.phone = phone.trim();
-    if (role) dataToUpdate.role = role.toUpperCase();
-    if (businessName !== undefined) dataToUpdate.businessName = businessName;
-    if (location) dataToUpdate.location = location.trim();
-    if (kycStatus) dataToUpdate.kycStatus = kycStatus;
+    if (name !== undefined && name !== '') dataToUpdate.name = String(name).trim();
+    if (email !== undefined && email !== '') {
+      const cleanEmail = String(email).toLowerCase().trim();
+      if (cleanEmail !== existingUser.email) {
+        const conflict = await prisma.user.findUnique({ where: { email: cleanEmail } });
+        if (conflict) {
+          return res.status(400).json({ success: false, error: `Email "${cleanEmail}" is already registered to another user.` });
+        }
+      }
+      dataToUpdate.email = cleanEmail;
+    }
+    if (phone !== undefined && phone !== '') {
+      const cleanPhone = String(phone).trim();
+      if (cleanPhone !== existingUser.phone) {
+        const conflict = await prisma.user.findUnique({ where: { phone: cleanPhone } });
+        if (conflict) {
+          return res.status(400).json({ success: false, error: `Phone "${cleanPhone}" is already registered to another user.` });
+        }
+      }
+      dataToUpdate.phone = cleanPhone;
+    }
+    if (role !== undefined && role !== '') dataToUpdate.role = String(role).toUpperCase();
+    if (businessName !== undefined) dataToUpdate.businessName = businessName ? String(businessName).trim() : null;
+    if (location !== undefined && location !== '') dataToUpdate.location = String(location).trim();
+    if (kycStatus !== undefined && kycStatus !== '') dataToUpdate.kycStatus = String(kycStatus).toUpperCase();
     if (isEmailVerified !== undefined) dataToUpdate.isEmailVerified = Boolean(isEmailVerified);
-    if (walletBalance !== undefined) dataToUpdate.walletBalance = parseFloat(walletBalance);
+    if (walletBalance !== undefined) {
+      const parsedBalance = parseFloat(walletBalance);
+      if (!isNaN(parsedBalance)) {
+        dataToUpdate.walletBalance = parsedBalance;
+      }
+    }
 
     const updated = await prisma.user.update({
       where: { id: userId },
@@ -807,19 +835,126 @@ router.put('/admin/users/:id', requireAdmin, async (req, res) => {
     await autoSaveSnapshot();
 
     const { password: _, ...userWithoutPassword } = updated;
-    res.json({ success: true, message: 'Stakeholder updated successfully in database!', user: userWithoutPassword });
+    res.json({ 
+      success: true, 
+      message: `Stakeholder "${updated.name}" updated successfully in database!`, 
+      user: userWithoutPassword 
+    });
+  } catch (error) {
+    console.error('Admin edit user error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Admin: Delete user from database (ADMIN ONLY - Full Cascade Cleanup)
+router.delete('/admin/users/:id', requireAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // 1. Verify existence
+    const userToDelete = await prisma.user.findUnique({ where: { id: userId } });
+    if (!userToDelete) {
+      return res.status(404).json({ success: false, error: 'User record not found in database.' });
+    }
+
+    // 2. Prevent admin self-deletion
+    if (userToDelete.role === 'ADMIN' && req.admin && req.admin.id === userId) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Security restriction: You cannot delete your own administrative session account.' 
+      });
+    }
+
+    // 3. Cascade delete notifications
+    await prisma.notification.deleteMany({ where: { userId } }).catch(e => console.warn('Notif delete warning:', e.message));
+
+    // 4. Cascade delete demand bids submitted by this user
+    await prisma.demandBid.deleteMany({ where: { farmerId: userId } }).catch(e => console.warn('Bids delete warning:', e.message));
+
+    // 5. Cascade delete buyer demands and bids on those demands
+    const userDemands = await prisma.buyerDemandRequest.findMany({ where: { buyerId: userId }, select: { id: true } });
+    for (const d of userDemands) {
+      await prisma.demandBid.deleteMany({ where: { demandId: d.id } }).catch(() => {});
+    }
+    await prisma.buyerDemandRequest.deleteMany({ where: { buyerId: userId } }).catch(e => console.warn('Demands delete warning:', e.message));
+
+    // 6. Cascade delete produce listings and related orderItems
+    const userListings = await prisma.produceListing.findMany({ where: { farmerId: userId }, select: { id: true } });
+    for (const l of userListings) {
+      await prisma.orderItem.deleteMany({ where: { listingId: l.id } }).catch(() => {});
+    }
+    await prisma.produceListing.deleteMany({ where: { farmerId: userId } }).catch(e => console.warn('Listings delete warning:', e.message));
+
+    // 7. Cascade delete orders placed by this buyer (and their shipments/escrows/items)
+    const userOrders = await prisma.order.findMany({ where: { buyerId: userId }, select: { id: true } });
+    for (const o of userOrders) {
+      await prisma.escrowTransaction.deleteMany({ where: { orderId: o.id } }).catch(() => {});
+      await prisma.shipment.deleteMany({ where: { orderId: o.id } }).catch(() => {});
+      await prisma.orderItem.deleteMany({ where: { orderId: o.id } }).catch(() => {});
+    }
+    await prisma.order.deleteMany({ where: { buyerId: userId } }).catch(e => console.warn('Orders delete warning:', e.message));
+
+    // 8. Unassign transporter from any assigned shipments
+    await prisma.shipment.updateMany({
+      where: { transporterId: userId },
+      data: { transporterId: null, transitStatus: 'PENDING_ASSIGNMENT' }
+    }).catch(e => console.warn('Shipment unassign warning:', e.message));
+
+    // 9. Finally delete the user
+    await prisma.user.delete({ where: { id: userId } });
+
+    // 10. Auto-persist to snapshot
+    await autoSaveSnapshot();
+
+    res.json({ 
+      success: true, 
+      message: `User "${userToDelete.name}" (${userToDelete.email}) and all dependent records permanently deleted.` 
+    });
+  } catch (error) {
+    console.error('Admin delete user error:', error);
+    res.status(500).json({ success: false, error: `Deletion failed: ${error.message}` });
+  }
+});
+
+// Admin / Farmer: Delete produce listing
+router.delete('/listings/:id', async (req, res) => {
+  try {
+    const listingId = req.params.id;
+    const existing = await prisma.produceListing.findUnique({ where: { id: listingId } });
+    if (!existing) {
+      return res.status(404).json({ success: false, error: 'Produce listing not found.' });
+    }
+    // Delete any orderItems pointing to this listing
+    await prisma.orderItem.deleteMany({ where: { listingId } }).catch(() => {});
+    await prisma.produceListing.delete({ where: { id: listingId } });
+    await autoSaveSnapshot();
+    res.json({ success: true, message: `Produce listing "${existing.cropName}" deleted successfully.` });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
-// Admin: Delete user from database (ADMIN ONLY)
-router.delete('/admin/users/:id', requireAdmin, async (req, res) => {
+// Admin / Farmer: Update produce listing
+router.put('/listings/:id', async (req, res) => {
   try {
-    const userId = req.params.id;
-    await prisma.user.delete({ where: { id: userId } });
+    const listingId = req.params.id;
+    const { cropName, category, availableQty, unitPrice, grade, location, status, imageUrl } = req.body;
+    const dataToUpdate = {};
+    if (cropName !== undefined) dataToUpdate.cropName = String(cropName).trim();
+    if (category !== undefined) dataToUpdate.category = category;
+    if (availableQty !== undefined) dataToUpdate.availableQty = parseFloat(availableQty);
+    if (unitPrice !== undefined) dataToUpdate.unitPrice = parseFloat(unitPrice);
+    if (grade !== undefined) dataToUpdate.grade = grade;
+    if (location !== undefined) dataToUpdate.location = String(location).trim();
+    if (status !== undefined) dataToUpdate.status = status;
+    if (imageUrl !== undefined) dataToUpdate.imageUrl = imageUrl;
+
+    const updated = await prisma.produceListing.update({
+      where: { id: listingId },
+      data: dataToUpdate
+    });
     await autoSaveSnapshot();
-    res.json({ success: true, message: 'User record deleted from database successfully.' });
+    res.json({ success: true, message: 'Produce listing updated successfully.', listing: updated });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

@@ -450,24 +450,34 @@ function MainApp() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(editingUser)
+        body: JSON.stringify({
+          name: editingUser.name,
+          email: editingUser.email,
+          phone: editingUser.phone,
+          role: editingUser.role,
+          businessName: editingUser.businessName,
+          location: editingUser.location,
+          kycStatus: editingUser.kycStatus,
+          isEmailVerified: editingUser.isEmailVerified,
+          walletBalance: editingUser.walletBalance
+        })
       });
       const data = await res.json();
       if (data.success) {
-        showNotification('Database record updated successfully!');
+        showNotification(data.message || 'Database record updated successfully!');
         setEditingUser(null);
         loadRoleData();
       } else {
-        throw new Error(data.error);
+        throw new Error(data.error || 'Failed to update user record in database');
       }
     } catch (err) {
       showNotification(err.message, 'error');
     }
   };
 
-  // Admin: Delete stakeholder from database
+  // Admin: Delete stakeholder from database (with cascading cleanup)
   const handleDeleteUser = async (userId, userName) => {
-    if (!window.confirm(`Are you sure you want to permanently delete "${userName}" from the database?`)) return;
+    if (!window.confirm(`Are you sure you want to permanently delete "${userName}" from the database? This will cleanly remove all associated records.`)) return;
     try {
       const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
         method: 'DELETE',
@@ -475,10 +485,10 @@ function MainApp() {
       });
       const data = await res.json();
       if (data.success) {
-        showNotification(`Deleted "${userName}" from database successfully`);
+        showNotification(data.message || `Deleted "${userName}" from database successfully`);
         loadRoleData();
       } else {
-        throw new Error(data.error);
+        throw new Error(data.error || 'Failed to delete user record from database');
       }
     } catch (err) {
       showNotification(err.message, 'error');
@@ -2189,7 +2199,7 @@ function MainApp() {
             <div className="flex justify-between items-start border-b border-slate-100 pb-3">
               <div>
                 <span className="text-[10px] font-bold text-indigo-600 uppercase flex items-center gap-1">
-                  <Database className="w-3.5 h-3.5" /> SQLite Direct Record Editor
+                  <Database className="w-3.5 h-3.5" /> MongoDB Atlas Direct Record Editor
                 </span>
                 <h3 className="text-base font-bold text-slate-900 mt-0.5">Edit Stakeholder Record</h3>
                 <p className="text-xs text-slate-500 font-mono">User ID: {editingUser.id}</p>
