@@ -59,7 +59,7 @@ export default function Login({ onNavigateRegister, onNavigateAdmin, onNavigateF
         <div className="flex justify-center">
           <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white/10 border border-emerald-500/40 p-1 flex items-center justify-center shadow-xl shadow-emerald-500/20">
             <img 
-              src="/Mazao Hub-logo.png" 
+              src="/mazaohub-logo.png" 
               alt="Mazao Hub Logo" 
               className="w-full h-full object-contain"
               onError={(e) => {
@@ -73,10 +73,10 @@ export default function Login({ onNavigateRegister, onNavigateAdmin, onNavigateF
           </div>
         </div>
         <h2 className="mt-4 text-center text-3xl font-extrabold tracking-tight text-white">
-          Agri<span className="text-emerald-500">Link</span> — Sign In
+          Mazao<span className="text-emerald-500">Hub</span> — Sign In
         </h2>
         <p className="mt-2 text-center text-xs text-slate-400 font-medium">
-          Integrated B2B Agribusiness Supply Chain & Escrow System
+          Toka Shambani Hadi Sokoni — B2B Agri SCM & Escrow System
         </p>
       </div>
 
