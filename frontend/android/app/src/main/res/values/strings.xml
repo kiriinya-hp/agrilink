@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AgriShamba</string>
+    <string name="title_activity_main">AgriShamba</string>
+    <string name="package_name">com.agrishamba.app</string>
+    <string name="custom_url_scheme">com.agrishamba.app</string>
+</resources>
