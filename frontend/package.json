@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "build:mobile": "vite build && npx cap sync",
+    "build:apk": "vite build && npx cap sync && cd android && gradlew.bat assembleDebug",
     "open:android": "npx cap open android"
   },
   "dependencies": {
