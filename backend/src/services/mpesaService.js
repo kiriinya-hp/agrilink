@@ -17,7 +17,7 @@ export const SANDBOX_DEFAULTS = {
   passkey: 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919',
   consumerKey: 'f8DaHHItZVLlhpHzIetzce64aXgwZPqDVLkcMnnscgVB13Es',
   consumerSecret: 'mmNRKCh91Cg1FyBGkI0FYbluTiEO3EoLN5ovuKRbLqswyf2TSfAoi9WAsIt9SUGX',
-  callbackUrl: 'https://AgriShamba-pyrv.onrender.com/api/payments/mpesa/callback'
+  callbackUrl: 'https://agrilink-pyrv.onrender.com/api/payments/mpesa/callback'
 };
 
 // In-memory status registry for active STK push sessions

@@ -7,12 +7,12 @@ import {
   signInWithPopup
 } from 'firebase/auth';
 
-// Your live AgriShamba Google Firebase Web configuration
+// AgriShamba Firebase Web configuration (Firebase project ID is immutable and cannot be renamed)
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyC33FrraNTehK6zTiMivOySpXKm_dWa8WM",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "AgriShamba-a875f.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "AgriShamba-a875f",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "AgriShamba-a875f.firebasestorage.app",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "agrilink-a875f.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "agrilink-a875f",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "agrilink-a875f.firebasestorage.app",
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "665449813551",
   appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:665449813551:web:21ee86def799d4da8b18da",
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-DNXYHMF1WS"

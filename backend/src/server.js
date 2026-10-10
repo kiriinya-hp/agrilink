@@ -82,7 +82,7 @@ app.listen(PORT, async () => {
   // Render free tier sleeps after 15 min of inactivity. This pings /health
   // every 14 minutes so the app NEVER goes to sleep.
   if (process.env.NODE_ENV === 'production') {
-    const APP_URL = process.env.RENDER_EXTERNAL_URL || `https://AgriShamba-pyrv.onrender.com`;
+    const APP_URL = process.env.RENDER_EXTERNAL_URL || `https://agrilink-pyrv.onrender.com`;
     const PING_INTERVAL_MS = 14 * 60 * 1000; // 14 minutes
 
     setInterval(async () => {
