@@ -756,7 +756,80 @@ router.put('/auth/profile', async (req, res) => {
   }
 });
 
-// Admin: Fetch all users (ADMIN ONLY — protected by requireAdmin)
+// ─── Self-Service: User Account & Data Deletion ────────────────────────────
+// Google Play Store Policy (Dec 2023): Apps that allow account creation MUST
+// allow users to delete their account and all personal data from within the app.
+// This endpoint lets any authenticated user permanently delete their own account.
+router.delete('/auth/account', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Authorization token required.' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userId = decoded.id;
+
+    // Verify user exists
+    const userToDelete = await prisma.user.findUnique({ where: { id: userId } });
+    if (!userToDelete) {
+      return res.status(404).json({ success: false, error: 'Account not found.' });
+    }
+
+    // Prevent deletion of ADMIN accounts via self-service
+    if (userToDelete.role === 'ADMIN') {
+      return res.status(403).json({
+        success: false,
+        error: 'Administrator accounts cannot be self-deleted. Contact the platform owner.'
+      });
+    }
+
+    // Cascade delete all personal data (same logic as admin delete)
+    await prisma.notification.deleteMany({ where: { userId } }).catch(() => {});
+    await prisma.demandBid.deleteMany({ where: { farmerId: userId } }).catch(() => {});
+
+    const userDemands = await prisma.buyerDemandRequest.findMany({ where: { buyerId: userId }, select: { id: true } });
+    for (const d of userDemands) {
+      await prisma.demandBid.deleteMany({ where: { demandId: d.id } }).catch(() => {});
+    }
+    await prisma.buyerDemandRequest.deleteMany({ where: { buyerId: userId } }).catch(() => {});
+
+    const userListings = await prisma.produceListing.findMany({ where: { farmerId: userId }, select: { id: true } });
+    for (const l of userListings) {
+      await prisma.orderItem.deleteMany({ where: { listingId: l.id } }).catch(() => {});
+    }
+    await prisma.produceListing.deleteMany({ where: { farmerId: userId } }).catch(() => {});
+
+    const userOrders = await prisma.order.findMany({ where: { buyerId: userId }, select: { id: true } });
+    for (const o of userOrders) {
+      await prisma.escrowTransaction.deleteMany({ where: { orderId: o.id } }).catch(() => {});
+      await prisma.shipment.deleteMany({ where: { orderId: o.id } }).catch(() => {});
+      await prisma.orderItem.deleteMany({ where: { orderId: o.id } }).catch(() => {});
+    }
+    await prisma.order.deleteMany({ where: { buyerId: userId } }).catch(() => {});
+
+    await prisma.shipment.updateMany({
+      where: { transporterId: userId },
+      data: { transporterId: null, transitStatus: 'PENDING_ASSIGNMENT' }
+    }).catch(() => {});
+
+    // Final: delete the user record
+    await prisma.user.delete({ where: { id: userId } });
+    await autoSaveSnapshot();
+
+    console.log(`[Account Deletion] User ${userToDelete.email} (${userId}) self-deleted their account and all data.`);
+    res.json({
+      success: true,
+      message: 'Your account and all personal data have been permanently deleted from AgriShamba.'
+    });
+  } catch (error) {
+    console.error('Self-service account deletion error:', error);
+    res.status(500).json({ success: false, error: `Account deletion failed: ${error.message}` });
+  }
+});
+
+
 router.get('/admin/users', requireAdmin, async (req, res) => {
   try {
     const users = await prisma.user.findMany({

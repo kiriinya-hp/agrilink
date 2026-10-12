@@ -9,11 +9,13 @@ import {
   Wallet, 
   Calendar, 
   Check, 
-  AlertCircle, 
+  AlertCircle,
+  AlertTriangle,
   RefreshCw, 
   X, 
   FileText,
-  Sparkles
+  Sparkles,
+  Trash2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from './CurrencyUnitContext';
@@ -35,6 +37,29 @@ export default function UserProfileModal({ isOpen, onClose, onProfileUpdated }) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    setDeleteLoading(true);
+    setError('');
+    try {
+      const token = localStorage.getItem('agrishamba_token');
+      const res = await fetch('/api/auth/account', {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Deletion failed');
+      // Clear all local storage and log out
+      ['agrishamba_token','agrishamba_user','agrilink_token','agrilink_user'].forEach(k => localStorage.removeItem(k));
+      window.location.reload();
+    } catch (err) {
+      setError(err.message);
+      setDeleteLoading(false);
+      setDeleteConfirm(false);
+    }
+  };
 
   useEffect(() => {
     if (user && isOpen) {
@@ -281,6 +306,71 @@ export default function UserProfileModal({ isOpen, onClose, onProfileUpdated }) 
                 </>
               )}
             </button>
+          </div>
+
+          {/* ─── Danger Zone: Account Deletion (Google Play Store Compliance) ─── */}
+          <div className="mt-4 border border-rose-200 rounded-xl overflow-hidden">
+            <div className="bg-rose-50 px-4 py-3 flex items-center gap-2 border-b border-rose-200">
+              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span className="text-xs font-black text-rose-700 uppercase tracking-wide">Danger Zone — Permanent Account Deletion</span>
+            </div>
+            <div className="p-4 space-y-3">
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                Permanently deletes your account and <strong>all associated personal data</strong> from AgriShamba — including your profile, produce listings, order history, demand bids, and notifications. This action is <strong className="text-rose-600">irreversible</strong>.
+              </p>
+
+              {!deleteConfirm ? (
+                <button
+                  type="button"
+                  onClick={() => setDeleteConfirm(true)}
+                  className="w-full py-2.5 px-4 rounded-xl border-2 border-rose-300 text-rose-700 font-bold text-xs hover:bg-rose-50 flex items-center justify-center gap-2 transition-all"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Delete My Account &amp; All Personal Data
+                </button>
+              ) : (
+                <div className="bg-rose-50 border border-rose-300 rounded-xl p-3.5 space-y-3">
+                  <p className="text-xs font-black text-rose-800 text-center">
+                    ⚠️ Are you absolutely sure? This cannot be undone.
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setDeleteConfirm(false)}
+                      disabled={deleteLoading}
+                      className="flex-1 py-2 px-3 rounded-xl border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors disabled:opacity-50"
+                    >
+                      Cancel — Keep Account
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDeleteAccount}
+                      disabled={deleteLoading}
+                      className="flex-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-60"
+                    >
+                      {deleteLoading ? (
+                        <><RefreshCw className="w-3 h-3 animate-spin" /> Deleting...</>
+                      ) : (
+                        <><Trash2 className="w-3 h-3" /> Yes, Delete Everything</>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <p className="text-[10px] text-slate-400 text-center">
+                View our{' '}
+                <a
+                  href="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-emerald-600 hover:underline font-semibold"
+                >
+                  Privacy Policy
+                </a>
+                {' '}to learn how your data is protected.
+              </p>
+            </div>
           </div>
         </form>
       </div>
