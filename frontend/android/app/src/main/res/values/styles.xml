@@ -15,8 +15,12 @@
         <item name="android:background">@null</item>
     </style>
 
-
+    <!-- AgriShamba branded launch/splash theme — replaces default Capacitor splash -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
+        <item name="android:windowBackground">@drawable/splash</item>
+        <item name="android:windowSplashScreenBackground">#064e3b</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>
+
 </resources>
