@@ -146,11 +146,50 @@ function generateToken(user) {
 }
 
 // ==========================================
+// 0. PUBLIC PRODUCE TRACEABILITY (No auth)
+// GET /trace/:orderId — returns full trace JSON
+// ==========================================
+router.get('/trace/:orderId', async (req, res) => {
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.orderId },
+      include: {
+        buyer: { select: { name: true, businessName: true } },
+        items: {
+          include: {
+            listing: {
+              include: {
+                farmer: { select: { name: true, phone: true, location: true, businessName: true } }
+              }
+            }
+          }
+        },
+        escrowTransaction: true,
+        shipment: {
+          include: {
+            transporter: { select: { name: true, phone: true, businessName: true } }
+          }
+        }
+      }
+    });
+
+    if (!order) {
+      return res.status(404).json({ success: false, error: 'Order not found' });
+    }
+
+    res.json({ success: true, order });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ==========================================
 // 1. REAL AUTHENTICATION & REGISTRATION
 // ==========================================
 
 // Register new Farmer, Buyer, or Transporter
 router.post('/auth/register', async (req, res) => {
+
   try {
     const { name, email, phone, password, role, location, businessName, idNumber } = req.body;
 

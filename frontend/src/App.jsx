@@ -81,6 +81,7 @@ import AdminBroadcastModal from './components/AdminBroadcastModal';
 import BuyerDemandBoard from './components/BuyerDemandBoard';
 import MobileToolsSheetModal from './components/MobileToolsSheetModal';
 import IntroVideoSplash from './components/IntroVideoSplash';
+import ProducePassportModal from './components/ProducePassportModal';
 
 const API_BASE = '/api';
 
@@ -160,6 +161,7 @@ function MainApp({ onReplayIntro }) {
   const [trackingMapOrder, setTrackingMapOrder] = useState(null);
   const [dbSyncing, setDbSyncing] = useState(false);
   const [showMobileToolsSheet, setShowMobileToolsSheet] = useState(false);
+  const [producePassportOrder, setProducePassportOrder] = useState(null);
 
 
   // Farmer New Listing Form State
@@ -1461,6 +1463,13 @@ function MainApp({ onReplayIntro }) {
                             >
                               <FileText className="w-3.5 h-3.5 text-emerald-600" /> {t('viewSettlementReceipt')}
                             </button>
+                            <button
+                              type="button"
+                              onClick={() => setProducePassportOrder(order)}
+                              className="w-full flex items-center justify-center gap-1.5 py-2 px-3 bg-amber-50 border border-amber-300 rounded-lg text-amber-800 font-bold hover:bg-amber-100 transition-colors"
+                            >
+                              <span>🏷️ Produce Passport / QR</span>
+                            </button>
                           </div>
                         ) : (
                           <div className="space-y-2">
@@ -1508,6 +1517,13 @@ function MainApp({ onReplayIntro }) {
                             >
                               <Truck className="w-3.5 h-3.5 text-emerald-600" />
                               <span>Live GPS Tracking Map</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setProducePassportOrder(order)}
+                              className="w-full mt-1.5 py-1.5 px-3 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg text-amber-800 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors"
+                            >
+                              <span>🏷️ Produce Passport / QR Code</span>
                             </button>
                           </div>
                         )}
@@ -2680,6 +2696,13 @@ function MainApp({ onReplayIntro }) {
         <ReceiptModal
           order={selectedReceiptOrder}
           onClose={() => setSelectedReceiptOrder(null)}
+        />
+      )}
+
+      {producePassportOrder && (
+        <ProducePassportModal
+          order={producePassportOrder}
+          onClose={() => setProducePassportOrder(null)}
         />
       )}
 

@@ -161,9 +161,181 @@ if (fs.existsSync(frontendDist)) {
 </html>`);
   });
 
+  // ─── Public Produce Traceability / Farm Passport Page ────────────────────
+  // Accessible via QR code scan — no authentication required.
+  // URL pattern: /trace/:orderId
+  app.get('/trace/:orderId', async (req, res) => {
+    try {
+      const { PrismaClient } = await import('@prisma/client');
+      const _prisma = new PrismaClient();
+      const order = await _prisma.order.findUnique({
+        where: { id: req.params.orderId },
+        include: {
+          buyer: { select: { name: true, businessName: true } },
+          items: {
+            include: {
+              listing: {
+                include: {
+                  farmer: { select: { name: true, phone: true, location: true, businessName: true } }
+                }
+              }
+            }
+          },
+          escrowTransaction: true,
+          shipment: {
+            include: {
+              transporter: { select: { name: true, phone: true, businessName: true } }
+            }
+          }
+        }
+      });
+      await _prisma.$disconnect();
+
+      if (!order) {
+        return res.status(404).send(`<!DOCTYPE html><html><body style="font-family:sans-serif;text-align:center;padding:60px">
+          <h2>Produce Passport Not Found</h2><p>Order ID not recognised. Please check the QR code.</p>
+          <a href="https://agrilink-pyrv.onrender.com" style="color:#064e3b">← Back to AgriShamba</a></body></html>`);
+      }
+
+      const item = order.items?.[0];
+      const listing = item?.listing;
+      const farmer = listing?.farmer;
+      const transporter = order.shipment?.transporter;
+      const harvestDate = listing?.harvestDate
+        ? new Date(listing.harvestDate).toLocaleDateString('en-KE', { day: 'numeric', month: 'long', year: 'numeric' })
+        : 'N/A';
+      const orderDate = new Date(order.createdAt).toLocaleDateString('en-KE', { day: 'numeric', month: 'long', year: 'numeric' });
+      const statusColor = order.status === 'COMPLETED' ? '#065f46' : '#92400e';
+      const statusBg = order.status === 'COMPLETED' ? '#d1fae5' : '#fef3c7';
+      const escrowRef = (order.escrowTransaction?.id || order.id).slice(0, 20).toUpperCase();
+
+      res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Produce Passport — ${order.orderNumber} | AgriShamba</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0fdf4; color: #1e293b; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 24px 16px 60px; }
+    .card { background: #fff; max-width: 540px; width: 100%; border-radius: 20px; box-shadow: 0 8px 40px rgba(6,78,59,0.15); overflow: hidden; border: 2px solid #a7f3d0; }
+    .hero { background: linear-gradient(135deg, #064e3b, #065f46); padding: 28px 24px; color: white; }
+    .hero-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .hero h1 { font-size: 22px; font-weight: 900; }
+    .hero p { font-size: 12px; opacity: 0.8; }
+    .passport-badge { background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 5px 12px; font-size: 11px; font-weight: 800; letter-spacing: 0.05em; white-space: nowrap; }
+    .order-num { display: inline-block; background: rgba(255,255,255,0.15); border-radius: 20px; padding: 4px 14px; font-family: monospace; font-size: 14px; font-weight: 700; margin-top: 10px; }
+    .body { padding: 24px; }
+    .status-row { display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+    .status-chip { background: ${statusBg}; color: ${statusColor}; font-size: 12px; font-weight: 800; padding: 5px 16px; border-radius: 20px; border: 1.5px solid ${statusColor}40; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .cell { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; }
+    .cell.green { background: #ecfdf5; border-color: #6ee7b7; }
+    .cell.amber { background: #fffbeb; border-color: #fcd34d; }
+    .cell.blue { background: #eff6ff; border-color: #bfdbfe; }
+    .cell .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap-: 4px; }
+    .cell .val { font-size: 15px; font-weight: 800; color: #0f172a; }
+    .cell .sub { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .full-cell { grid-column: 1 / -1; }
+    .escrow-bar { background: #ecfdf5; border: 1.5px solid #6ee7b7; border-radius: 14px; padding: 14px 16px; margin-top: 14px; display: flex; align-items: center; gap: 12px; }
+    .escrow-bar svg-icon { font-size: 22px; }
+    .escrow-bar .ref { font-family: monospace; font-size: 13px; font-weight: 900; color: #065f46; word-break: break-all; }
+    .escrow-bar .sublbl { font-size: 10px; color: #059669; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+    .verify-btn { display: block; width: 100%; margin-top: 20px; padding: 14px; background: #064e3b; color: white; font-size: 14px; font-weight: 800; border-radius: 14px; text-decoration: none; text-align: center; }
+    .footer-note { text-align: center; margin-top: 18px; font-size: 11px; color: #94a3b8; }
+    .divider { border: none; border-top: 1px solid #e2e8f0; margin: 18px 0; }
+    @media print { body { background: #fff; padding: 0; } .card { box-shadow: none; border: 2px solid #064e3b; } .verify-btn { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="hero">
+      <div class="hero-top">
+        <div>
+          <h1>🌾 AgriShamba</h1>
+          <p>Toka Shambani Hadi Sokoni</p>
+        </div>
+        <div class="passport-badge">PRODUCE PASSPORT</div>
+      </div>
+      <div class="order-num">${order.orderNumber}</div>
+    </div>
+
+    <div class="body">
+      <div class="status-row">
+        <div class="status-chip">● ${order.status}</div>
+      </div>
+
+      <div class="grid">
+        <div class="cell green full-cell">
+          <div class="lbl">🌱 Crop / Produce</div>
+          <div class="val">${item?.cropName || 'N/A'}</div>
+          <div class="sub">${listing?.grade || ''} · ${listing?.category || ''} · ${item?.quantity || 0} kg</div>
+        </div>
+
+        <div class="cell">
+          <div class="lbl">👨‍🌾 Farmer</div>
+          <div class="val">${farmer?.name || 'Unknown'}</div>
+          <div class="sub">${farmer?.businessName || farmer?.phone || ''}</div>
+        </div>
+
+        <div class="cell">
+          <div class="lbl">📍 Farm Location</div>
+          <div class="val">${farmer?.location || listing?.location || 'Kenya'}</div>
+        </div>
+
+        <div class="cell amber">
+          <div class="lbl">📅 Harvest Date</div>
+          <div class="val">${harvestDate}</div>
+        </div>
+
+        <div class="cell">
+          <div class="lbl">📦 Order Date</div>
+          <div class="val">${orderDate}</div>
+        </div>
+
+        <div class="cell blue full-cell">
+          <div class="lbl">🚛 Cold-Chain Transporter</div>
+          <div class="val">${transporter?.name || 'Pending Assignment'}</div>
+          <div class="sub">${transporter?.businessName || ''}</div>
+        </div>
+
+        <div class="cell full-cell">
+          <div class="lbl">🏭 Delivery Destination</div>
+          <div class="val">${order.deliveryAddress}</div>
+        </div>
+      </div>
+
+      <div class="escrow-bar">
+        <div>
+          <div class="sublbl">🔒 AgriShamba Escrow Reference</div>
+          <div class="ref">${escrowRef}</div>
+        </div>
+      </div>
+
+      <hr class="divider"/>
+
+      <a class="verify-btn" href="https://agrilink-pyrv.onrender.com" target="_blank">
+        🔍 Verify on AgriShamba Platform
+      </a>
+
+      <p class="footer-note">
+        This document was generated by AgriShamba — Kenya's trusted farm-to-market platform.<br/>
+        For disputes or verification: <strong>agrilink-pyrv.onrender.com</strong>
+      </p>
+    </div>
+  </div>
+</body>
+</html>`);
+    } catch (err) {
+      console.error('[Trace] Error generating passport:', err.message);
+      res.status(500).send('Error loading produce passport. Please try again.');
+    }
+  });
+  // ─────────────────────────────────────────────────────────────────────────
+
   app.use(express.static(frontendDist));
   app.get('*', (req, res, next) => {
-    if (req.url.startsWith('/api') || req.url.startsWith('/health') || req.url.startsWith('/privacy')) {
+    if (req.url.startsWith('/api') || req.url.startsWith('/health') || req.url.startsWith('/privacy') || req.url.startsWith('/trace')) {
       return next();
     }
     res.sendFile(path.join(frontendDist, 'index.html'));
