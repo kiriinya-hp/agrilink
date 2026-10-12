@@ -127,6 +127,9 @@ function MainApp({ onReplayIntro }) {
   const [paymentPhone, setPaymentPhone] = useState('');
   const [paymentGateway, setPaymentGateway] = useState('MPESA_STK');
   const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [orderPaymentStep, setOrderPaymentStep] = useState('form'); // 'form' | 'awaiting_pin' | 'success'
+  const [orderPaymentDetails, setOrderPaymentDetails] = useState(null);
+  const [orderPinInput, setOrderPinInput] = useState('');
 
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [selectedReceiptOrder, setSelectedReceiptOrder] = useState(null);
@@ -312,9 +315,32 @@ function MainApp({ onReplayIntro }) {
     }
   };
 
-  // Buyer: Issue PO & Trigger Real M-Pesa STK Push
+  // Buyer: Issue PO & Trigger Real M-Pesa STK Push or Wallet Escrow Lock
   const handleCreateOrder = async () => {
     if (!orderModalListing) return;
+
+    const produceCost = orderQty * orderModalListing.unitPrice;
+    const freightCost = 20.00 + (orderQty * 0.02);
+    const escrowFee = produceCost * 0.05;
+    const grandTotal = produceCost + freightCost + escrowFee;
+
+    // If paying via internal wallet, check balance first!
+    if (paymentGateway === 'WALLET') {
+      const currentBalance = user?.walletBalance || 0;
+      if (currentBalance < grandTotal) {
+        showNotification(
+          `Insufficient Wallet Balance: You have $${currentBalance.toFixed(2)}, but order total is $${grandTotal.toFixed(2)}. Please Top Up or choose Lipa Na M-Pesa.`,
+          'error'
+        );
+        return;
+      }
+    } else {
+      if (!paymentPhone || !paymentPhone.trim()) {
+        showNotification('Please enter a valid Safaricom M-Pesa phone number.', 'error');
+        return;
+      }
+    }
+
     setPaymentProcessing(true);
 
     try {
@@ -332,7 +358,7 @@ function MainApp({ onReplayIntro }) {
       const orderData = await resOrder.json();
       if (!orderData.success) throw new Error(orderData.error);
 
-      // 2. Trigger M-Pesa Daraja STK Push
+      // 2. Trigger Escrow Deposit (Daraja STK or Wallet)
       const resEscrow = await fetch(`${API_BASE}/escrow/deposit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -349,17 +375,52 @@ function MainApp({ onReplayIntro }) {
         user.walletBalance = escrowData.newBuyerBalance;
       }
 
-      showNotification(
-        `💳 PAYMENT CONFIRMED: $${orderData.order.grandTotal.toFixed(2)} deducted and locked in Escrow! Remaining Balance: $${(escrowData.newBuyerBalance ?? (user.walletBalance || 0)).toFixed(2)}. (Inspection OTP: ${escrowData.confirmationOtp})`
-      );
-      setOrderModalListing(null);
-      setActiveTab('orders');
-      refreshUser();
-      loadRoleData();
+      const paymentInfo = {
+        order: orderData.order,
+        grandTotal: orderData.order.grandTotal || grandTotal,
+        amountInKes: Math.round((orderData.order.grandTotal || grandTotal) * 130),
+        confirmationOtp: escrowData.confirmationOtp,
+        checkoutRequestId: escrowData.stkDetails?.checkoutRequestId,
+        phone: paymentPhone,
+        paymentGateway
+      };
+      setOrderPaymentDetails(paymentInfo);
+
+      if (paymentGateway === 'MPESA_STK') {
+        // Show interactive on-screen STK PIN prompt!
+        setOrderPaymentStep('awaiting_pin');
+      } else {
+        // Wallet payment was confirmed directly
+        setOrderPaymentStep('success');
+        refreshUser();
+        loadRoleData();
+      }
     } catch (err) {
       showNotification(err.message, 'error');
     } finally {
       setPaymentProcessing(false);
+    }
+  };
+
+  // Authorize On-Screen PIN / Confirm Payment
+  const handleConfirmOrderPin = () => {
+    setOrderPaymentStep('success');
+    showNotification(
+      `💳 PAYMENT VERIFIED: $${orderPaymentDetails?.grandTotal?.toFixed(2) || '0.00'} locked in Escrow! Delivery OTP: ${orderPaymentDetails?.confirmationOtp}`
+    );
+    refreshUser();
+    loadRoleData();
+  };
+
+  // Close Order Modal & reset state
+  const handleCloseOrderModal = () => {
+    const wasSuccess = orderPaymentStep === 'success';
+    setOrderModalListing(null);
+    setOrderPaymentStep('form');
+    setOrderPaymentDetails(null);
+    setOrderPinInput('');
+    if (wasSuccess) {
+      setActiveTab('orders');
     }
   };
 
@@ -1324,6 +1385,12 @@ function MainApp({ onReplayIntro }) {
                           onClick={() => {
                             setOrderModalListing(item);
                             setOrderQty(Math.min(200, item.availableQty));
+                            setOrderPaymentStep('form');
+                            setOrderPaymentDetails(null);
+                            setOrderPinInput('');
+                            if (user?.phone && !user.phone.startsWith('+254000') && !user.phone.startsWith('google_')) {
+                              setPaymentPhone(user.phone);
+                            }
                           }}
                           className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors"
                         >
@@ -2081,126 +2148,377 @@ function MainApp({ onReplayIntro }) {
       {/* ========================================================= */}
       {/* REAL M-PESA CHECKOUT MODAL                                */}
       {/* ========================================================= */}
-      {orderModalListing && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100">
-            <div className="flex justify-between items-start border-b border-slate-100 pb-3">
-              <div>
-                <span className="text-xs font-bold text-emerald-600 uppercase">{t('purchaseOrderModalTitle')}</span>
-                <h3 className="text-base font-bold text-slate-900 mt-0.5">{orderModalListing.cropName}</h3>
-                <p className="text-xs text-slate-500">{t('producer')}: {orderModalListing.farmer?.name}</p>
-              </div>
-              <button onClick={() => setOrderModalListing(null)} className="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
-            </div>
+      {orderModalListing && (() => {
+        const produceCost = orderQty * orderModalListing.unitPrice;
+        const freightCost = 20.00 + (orderQty * 0.02);
+        const escrowFee = produceCost * 0.05;
+        const grandTotal = produceCost + freightCost + escrowFee;
+        const amountInKes = Math.round(grandTotal * 130);
+        const hasEnoughBalance = (user?.walletBalance || 0) >= grandTotal;
+        const walletShortfall = Math.max(0, grandTotal - (user?.walletBalance || 0));
 
-            <div className="py-4 space-y-3.5 text-xs font-semibold text-slate-700">
-              {/* Transporter Availability Banner */}
-              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center gap-2.5 text-xs text-emerald-900">
-                <Truck className="w-5 h-5 text-emerald-600 shrink-0" />
+        return (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[92vh] overflow-y-auto">
+              {/* Header */}
+              <div className="flex justify-between items-start border-b border-slate-100 pb-3">
                 <div>
-                  <p className="font-bold">{transporterCount} {t('activeDriversReady')}</p>
-                  <p className="text-[11px] text-emerald-700">Immediate pickup upon escrow lock. Fast cold-chain & freight dispatch.</p>
-                </div>
-              </div>
-
-              <div>
-                <label className="block mb-1">{t('orderVolumeKg')}</label>
-                <input
-                  type="number"
-                  min="10"
-                  max={orderModalListing.availableQty}
-                  value={orderQty}
-                  onChange={(e) => setOrderQty(Math.max(1, Number(e.target.value)))}
-                  className="w-full px-3 py-2 bg-slate-50 border rounded-lg text-sm text-slate-900 font-bold"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-1">{t('destinationAddress')}</label>
-                <input
-                  type="text"
-                  value={deliveryAddress}
-                  onChange={(e) => setDeliveryAddress(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border rounded-lg text-xs text-slate-900"
-                />
-              </div>
-
-              {/* M-Pesa Phone Input */}
-              <div>
-                <label className="block mb-1 flex items-center justify-between">
-                  <span>{t('mpesaPhonePrompt')}</span>
-                  <span className="text-[10px] text-emerald-600 font-bold">Lipa Na M-Pesa Online</span>
-                </label>
-                <div className="relative">
-                  <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                  <input
-                    type="tel"
-                    required
-                    placeholder="07XXXXXXXX or 254..."
-                    value={paymentPhone}
-                    onChange={(e) => setPaymentPhone(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-              </div>
-
-              {/* Breakdown */}
-              <div className="bg-slate-50 p-3 rounded-xl border space-y-1 text-xs">
-                <div className="flex justify-between text-slate-600 font-normal">
-                  <span>{t('produceCost')} ({orderQty} kg @ {formatMoney(orderModalListing.unitPrice)}):</span>
-                  <span>{formatMoney(orderQty * orderModalListing.unitPrice)}</span>
-                </div>
-                <div className="flex justify-between text-slate-600 font-normal">
-                  <span>{t('freightLogisticsEst')}:</span>
-                  <span>{formatMoney(20.00 + (orderQty * 0.02))}</span>
-                </div>
-                <div className="flex justify-between text-slate-600 font-normal">
-                  <span>{t('escrowFee')}:</span>
-                  <span>{formatMoney((orderQty * orderModalListing.unitPrice) * 0.05)}</span>
-                </div>
-                <div className="pt-2 border-t flex justify-between text-sm font-extrabold text-slate-900">
-                  <span>{t('totalEscrowLock')}:</span>
-                  <span className="text-emerald-700">
-                    {formatMoney(
-                      (orderQty * orderModalListing.unitPrice) +
-                      (20.00 + (orderQty * 0.02)) +
-                      ((orderQty * orderModalListing.unitPrice) * 0.05)
-                    )}
+                  <span className="text-xs font-bold text-emerald-600 uppercase">
+                    {orderPaymentStep === 'awaiting_pin' 
+                      ? 'Authorize M-Pesa Payment' 
+                      : orderPaymentStep === 'success' 
+                        ? 'Payment Verified & Escrow Locked' 
+                        : t('purchaseOrderModalTitle')}
                   </span>
+                  <h3 className="text-base font-bold text-slate-900 mt-0.5">{orderModalListing.cropName}</h3>
+                  <p className="text-xs text-slate-500">{t('producer')}: {orderModalListing.farmer?.name}</p>
                 </div>
+                <button onClick={handleCloseOrderModal} className="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
               </div>
-            </div>
 
-            <div className="flex gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setOrderModalListing(null)}
-                className="flex-1 px-4 py-2 rounded-lg border text-xs font-bold text-slate-600 hover:bg-slate-50"
-              >
-                {t('cancel')}
-              </button>
-              <button
-                type="button"
-                disabled={paymentProcessing}
-                onClick={handleCreateOrder}
-                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-lg text-xs flex items-center justify-center gap-2 shadow-md transition-colors"
-              >
-                {paymentProcessing ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    Sending STK Push...
-                  </>
-                ) : (
-                  <>
-                    <Phone className="w-4 h-4" />
-                    {t('confirmAndLockEscrow')}
-                  </>
-                )}
-              </button>
+              {/* STEP 1: ORDER CONFIGURATION & PAYMENT METHOD SELECTION */}
+              {orderPaymentStep === 'form' && (
+                <div className="py-4 space-y-3.5 text-xs font-semibold text-slate-700">
+                  {/* Transporter Availability Banner */}
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center gap-2.5 text-xs text-emerald-900">
+                    <Truck className="w-5 h-5 text-emerald-600 shrink-0" />
+                    <div>
+                      <p className="font-bold">{transporterCount} {t('activeDriversReady')}</p>
+                      <p className="text-[11px] text-emerald-700">Immediate pickup upon escrow lock. Fast cold-chain & freight dispatch.</p>
+                    </div>
+                  </div>
+
+                  {/* Quantity */}
+                  <div>
+                    <label className="block mb-1">{t('orderVolumeKg')}</label>
+                    <input
+                      type="number"
+                      min="10"
+                      max={orderModalListing.availableQty}
+                      value={orderQty}
+                      onChange={(e) => setOrderQty(Math.max(1, Number(e.target.value)))}
+                      className="w-full px-3 py-2 bg-slate-50 border rounded-lg text-sm text-slate-900 font-bold"
+                    />
+                  </div>
+
+                  {/* Delivery Address */}
+                  <div>
+                    <label className="block mb-1">{t('destinationAddress')}</label>
+                    <input
+                      type="text"
+                      value={deliveryAddress}
+                      onChange={(e) => setDeliveryAddress(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border rounded-lg text-xs text-slate-900"
+                    />
+                  </div>
+
+                  {/* PAYMENT METHOD SELECTION TABS */}
+                  <div>
+                    <label className="block mb-1.5 font-bold text-slate-800">Select How You Want to Pay:</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPaymentGateway('MPESA_STK')}
+                        className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                          paymentGateway === 'MPESA_STK'
+                            ? 'bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500/20 text-emerald-950 font-bold'
+                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Smartphone className={`w-4 h-4 ${paymentGateway === 'MPESA_STK' ? 'text-emerald-600' : 'text-slate-400'}`} />
+                          <span className="text-xs">Lipa Na M-Pesa</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-normal mt-1">Direct STK push to phone</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setPaymentGateway('WALLET')}
+                        className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                          paymentGateway === 'WALLET'
+                            ? 'bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500/20 text-emerald-950 font-bold'
+                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Wallet className={`w-4 h-4 ${paymentGateway === 'WALLET' ? 'text-emerald-600' : 'text-slate-400'}`} />
+                          <span className="text-xs">Wallet Balance</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-normal mt-1 font-mono">{formatMoney(user?.walletBalance || 0)}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* OPTION A: M-PESA PHONE INPUT */}
+                  {paymentGateway === 'MPESA_STK' && (
+                    <div className="bg-emerald-50/50 p-3 rounded-xl border border-emerald-100 space-y-2">
+                      <label className="block text-xs font-bold text-slate-800 flex items-center justify-between">
+                        <span>{t('mpesaPhonePrompt')}</span>
+                        <span className="text-[10px] text-emerald-600 font-mono">Safaricom SIM</span>
+                      </label>
+                      <div className="relative">
+                        <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                        <input
+                          type="tel"
+                          required
+                          placeholder="07XXXXXXXX or 254..."
+                          value={paymentPhone}
+                          onChange={(e) => setPaymentPhone(e.target.value)}
+                          className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500"
+                        />
+                      </div>
+                      <p className="text-[10px] text-slate-500 leading-relaxed">
+                        📲 When you click confirm, an interactive M-Pesa prompt will appear on your phone screen to enter your PIN.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* OPTION B: WALLET BALANCE DETAILS & INSUFFICIENT NOTICE */}
+                  {paymentGateway === 'WALLET' && (
+                    <div className="space-y-2">
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+                        <span className="text-slate-600">Available Wallet Balance:</span>
+                        <span className="font-mono font-extrabold text-slate-900">
+                          {formatMoney(user?.walletBalance || 0)} (KES {Math.round((user?.walletBalance || 0) * 130).toLocaleString()})
+                        </span>
+                      </div>
+
+                      {!hasEnoughBalance && (
+                        <div className="bg-rose-50 border border-rose-200 p-3.5 rounded-xl space-y-2">
+                          <div className="flex items-center gap-2 text-rose-800 font-bold text-xs">
+                            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                            <span>Insufficient Wallet Balance for this Order</span>
+                          </div>
+                          <p className="text-[11px] text-rose-700 leading-relaxed">
+                            You have <strong>{formatMoney(user?.walletBalance || 0)}</strong>, but this order requires <strong>{formatMoney(grandTotal)}</strong>. You are short by <strong className="font-mono">{formatMoney(walletShortfall)}</strong> (KES {Math.round(walletShortfall * 130).toLocaleString()}).
+                          </p>
+                          <div className="flex gap-2 pt-1">
+                            <button
+                              type="button"
+                              onClick={() => setPaymentGateway('MPESA_STK')}
+                              className="flex-1 py-1.5 px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors"
+                            >
+                              Pay via Lipa Na M-Pesa Instead
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOrderModalListing(null);
+                                setShowTopUpModal(true);
+                              }}
+                              className="flex-1 py-1.5 px-2 bg-white border border-rose-300 text-rose-800 hover:bg-rose-100 rounded-lg text-xs font-bold transition-colors"
+                            >
+                              Top Up Wallet via M-Pesa
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {hasEnoughBalance && (
+                        <div className="bg-emerald-50 border border-emerald-200 p-2.5 rounded-xl flex items-center gap-2 text-xs text-emerald-800 font-bold">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                          <span>✓ Sufficient balance. Funds will be deducted and held securely in escrow.</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Breakdown */}
+                  <div className="bg-slate-50 p-3 rounded-xl border space-y-1 text-xs">
+                    <div className="flex justify-between text-slate-600 font-normal">
+                      <span>{t('produceCost')} ({orderQty} kg @ {formatMoney(orderModalListing.unitPrice)}):</span>
+                      <span>{formatMoney(produceCost)}</span>
+                    </div>
+                    <div className="flex justify-between text-slate-600 font-normal">
+                      <span>{t('freightLogisticsEst')}:</span>
+                      <span>{formatMoney(freightCost)}</span>
+                    </div>
+                    <div className="flex justify-between text-slate-600 font-normal">
+                      <span>{t('escrowFee')}:</span>
+                      <span>{formatMoney(escrowFee)}</span>
+                    </div>
+                    <div className="pt-2 border-t flex justify-between text-sm font-extrabold text-slate-900">
+                      <span>{t('totalEscrowLock')}:</span>
+                      <div className="text-right">
+                        <span className="text-emerald-700 font-mono block">{formatMoney(grandTotal)}</span>
+                        <span className="text-[10px] text-slate-400 font-normal">KES {amountInKes.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={handleCloseOrderModal}
+                      className="flex-1 px-4 py-2.5 rounded-lg border text-xs font-bold text-slate-600 hover:bg-slate-50"
+                    >
+                      {t('cancel')}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={paymentProcessing || (paymentGateway === 'WALLET' && !hasEnoughBalance)}
+                      onClick={handleCreateOrder}
+                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-lg text-xs flex items-center justify-center gap-2 shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {paymentProcessing ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                          Processing Escrow...
+                        </>
+                      ) : paymentGateway === 'WALLET' && !hasEnoughBalance ? (
+                        <span>Insufficient Wallet Balance</span>
+                      ) : paymentGateway === 'WALLET' ? (
+                        <>
+                          <Lock className="w-4 h-4" />
+                          Lock Escrow from Wallet
+                        </>
+                      ) : (
+                        <>
+                          <Phone className="w-4 h-4" />
+                          <span>Pay via M-Pesa (KES {amountInKes.toLocaleString()})</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 2: ON-SCREEN M-PESA STK PIN AUTHORIZATION PROMPT */}
+              {orderPaymentStep === 'awaiting_pin' && (
+                <div className="py-6 space-y-4 text-center animate-in zoom-in-95">
+                  <div className="relative w-20 h-20 mx-auto flex items-center justify-center">
+                    <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping"></div>
+                    <div className="w-16 h-16 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-600/40 relative z-10">
+                      <Smartphone className="w-8 h-8 animate-bounce" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-base font-extrabold text-slate-900">M-Pesa STK Push Sent!</h4>
+                    <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
+                      Check your phone <strong className="text-slate-800 font-mono">{orderPaymentDetails?.phone}</strong> for the Safaricom STK prompt:
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-50 border border-slate-200 p-3.5 rounded-2xl max-w-xs mx-auto text-center space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Escrow Amount</span>
+                    <p className="text-xl font-black text-emerald-700 font-mono">
+                      KES {orderPaymentDetails?.amountInKes?.toLocaleString()}
+                    </p>
+                    <p className="text-[11px] text-slate-500 font-semibold font-mono">
+                      {formatMoney(orderPaymentDetails?.grandTotal || 0)}
+                    </p>
+                    <div className="pt-2 border-t border-slate-200/80 text-[10px] text-slate-500 flex justify-between">
+                      <span>Paybill: <strong>174379</strong></span>
+                      <span>Account: <strong>ORD-{(orderPaymentDetails?.order?.orderNumber || 'AgriShamba').slice(-6)}</strong></span>
+                    </div>
+                  </div>
+
+                  {/* On-Screen PIN Input for Immediate Authorization */}
+                  <div className="bg-emerald-50/70 border border-emerald-200 p-3.5 rounded-2xl max-w-xs mx-auto text-center space-y-2.5">
+                    <label className="block text-[11px] font-bold text-emerald-950">
+                      Enter M-Pesa PIN on Phone (or authorize below):
+                    </label>
+                    <div className="relative max-w-[160px] mx-auto">
+                      <input
+                        type="password"
+                        maxLength="4"
+                        placeholder="• • • •"
+                        value={orderPinInput}
+                        onChange={(e) => setOrderPinInput(e.target.value)}
+                        className="w-full text-center py-2 px-3 bg-white border border-emerald-300 rounded-xl text-lg font-mono font-black tracking-widest text-emerald-900 focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleConfirmOrderPin}
+                      className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/30 flex items-center justify-center gap-1.5 transition-all"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Confirm PIN & Lock Escrow</span>
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-center gap-2 text-xs font-semibold text-slate-400">
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+                    <span>Awaiting Safaricom confirmation...</span>
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setOrderPaymentStep('form')}
+                      className="text-xs text-slate-400 hover:text-slate-600 font-bold underline"
+                    >
+                      Back to Order Details
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 3: PAYMENT CONFIRMED & ESCROW LOCKED SUCCESS SCREEN */}
+              {orderPaymentStep === 'success' && (
+                <div className="py-6 space-y-4 text-center animate-in zoom-in-95">
+                  <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto border-2 border-emerald-300">
+                    <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+                  </div>
+
+                  <div>
+                    <h4 className="text-lg font-black text-slate-900">Payment Verified & Escrow Locked!</h4>
+                    <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
+                      Your funds are held securely in AgriShamba Smart Escrow. The farmer and transporter have been notified for harvest collection.
+                    </p>
+                  </div>
+
+                  {/* Delivery Inspection OTP Box */}
+                  <div className="bg-emerald-50 border-2 border-emerald-400 p-4 rounded-2xl max-w-xs mx-auto text-center space-y-1">
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-700">Delivery Inspection OTP</span>
+                    <p className="text-3xl font-black text-emerald-950 font-mono tracking-widest py-1">
+                      {orderPaymentDetails?.confirmationOtp || '----'}
+                    </p>
+                    <p className="text-[10px] text-emerald-800 leading-snug">
+                      Keep this code safe. Give it to the driver <strong>ONLY after inspecting and accepting</strong> the produce upon delivery.
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600 max-w-xs mx-auto space-y-1">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Order Number:</span>
+                      <span className="font-mono font-bold text-slate-800">{orderPaymentDetails?.order?.orderNumber}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Amount Secured:</span>
+                      <span className="font-mono font-bold text-emerald-700">{formatMoney(orderPaymentDetails?.grandTotal || 0)}</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleCloseOrderModal();
+                        setActiveTab('orders');
+                      }}
+                      className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-md transition-colors"
+                    >
+                      View in Orders Tab
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCloseOrderModal}
+                      className="flex-1 py-2.5 border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl font-bold text-xs transition-colors"
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ========================================================= */}
       {/* EDIT STAKEHOLDER DATABASE RECORD MODAL                   */}

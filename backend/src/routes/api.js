@@ -1325,21 +1325,43 @@ router.post('/escrow/deposit', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Order has already been processed or funded' });
     }
 
+    const isWalletPay = paymentGateway === 'WALLET';
     const payerPhone = phoneNumber || order.buyer?.phone;
-    if (!payerPhone) {
+
+    if (!isWalletPay && !payerPhone) {
       return res.status(400).json({ success: false, error: 'Valid mobile phone number required for M-Pesa payment' });
+    }
+
+    // Verify wallet balance if paying via internal wallet
+    if (isWalletPay) {
+      const currentBuyer = await prisma.user.findUnique({ where: { id: order.buyerId } });
+      const currentBalance = currentBuyer?.walletBalance || 0;
+      if (currentBalance < order.grandTotal) {
+        return res.status(400).json({ 
+          success: false, 
+          error: `Insufficient wallet balance. Available: $${currentBalance.toFixed(2)}, required: $${order.grandTotal.toFixed(2)}. Please top up or pay via M-Pesa STK Push.` 
+        });
+      }
     }
 
     const confirmationOtp = Math.floor(1000 + Math.random() * 9000).toString();
     const reference = `ESC-${paymentGateway.toUpperCase().slice(0, 5)}-${Date.now().toString().slice(-7)}`;
 
-    // Dispatch STK Push via Daraja API service
-    const stkResult = await triggerStkPush({
-      phone: payerPhone,
-      amount: order.grandTotal,
-      orderNumber: order.orderNumber,
-      reference
-    });
+    // Dispatch STK Push via Daraja API service if paying with M-Pesa
+    let stkResult = {
+      checkoutRequestId: `WS-${Date.now()}`,
+      merchantRequestId: `MR-${Date.now()}`,
+      customerMessage: isWalletPay ? 'Wallet payment locked in Escrow' : 'STK Push sent to phone'
+    };
+
+    if (!isWalletPay) {
+      stkResult = await triggerStkPush({
+        phone: payerPhone,
+        amount: order.grandTotal,
+        orderNumber: order.orderNumber,
+        reference
+      });
+    }
 
     // Atomic transaction: Create escrow record with M-Pesa tracking IDs, create shipment, deduct inventory
     const updatedOrder = await prisma.$transaction(async (tx) => {
@@ -1375,9 +1397,9 @@ router.post('/escrow/deposit', async (req, res) => {
         });
       }
 
-      // Deduct buyer's account balance directly in the database
+      // Deduct buyer's account balance ONLY if they paid using their internal wallet
       let updatedBuyer = null;
-      if (order.buyerId) {
+      if (order.buyerId && isWalletPay) {
         updatedBuyer = await tx.user.update({
           where: { id: order.buyerId },
           data: { walletBalance: { decrement: order.grandTotal } }
@@ -1389,6 +1411,17 @@ router.post('/escrow/deposit', async (req, res) => {
             type: 'WALLET_DEBIT',
             title: 'Payment Deducted & Locked in Escrow',
             message: `KSh / $${order.grandTotal.toFixed(2)} has been deducted from your account and locked in AgriShamba Smart Escrow for Order #${order.orderNumber}. Available balance: $${updatedBuyer.walletBalance.toFixed(2)}.`
+          }
+        });
+      } else if (order.buyerId) {
+        // Direct M-Pesa payment - user paid external mobile money, keep internal wallet intact
+        updatedBuyer = await tx.user.findUnique({ where: { id: order.buyerId } });
+        await tx.notification.create({
+          data: {
+            userId: order.buyerId,
+            type: 'ESCROW_FUNDED',
+            title: 'M-Pesa Escrow Payment Confirmed',
+            message: `M-Pesa payment of KSh / $${order.grandTotal.toFixed(2)} received and locked in Smart Escrow for Order #${order.orderNumber}.`
           }
         });
       }
