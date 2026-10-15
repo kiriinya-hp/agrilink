@@ -3609,7 +3609,7 @@ router.get('/admin/system-health', requireAdmin, async (req, res) => {
       prisma.shipment.count(),
       prisma.notification.count(),
       prisma.escrowTransaction.findMany({
-        select: { status: true, amountHeld: true, createdAt: true }
+        select: { status: true, amountHeld: true, fundedAt: true }
       }),
       prisma.user.findMany({
         select: { id: true, role: true, walletBalance: true, location: true, createdAt: true }

@@ -37,6 +37,9 @@ export default function AdminSystemHealth({ token, apiBase }) {
   const [runningDiagnostics, setRunningDiagnostics] = useState(false);
   const [diagnosticResults, setDiagnosticResults] = useState(null);
 
+  const [lastPingTime, setLastPingTime] = useState(new Date().toLocaleTimeString());
+  const [secondsUntilNextPing, setSecondsUntilNextPing] = useState(10);
+
   const fetchHealth = async (isManual = false) => {
     if (isManual) setRefreshing(true);
     setError(null);
@@ -47,6 +50,8 @@ export default function AdminSystemHealth({ token, apiBase }) {
       const data = await res.json();
       if (data.success) {
         setHealth(data);
+        setLastPingTime(new Date().toLocaleTimeString());
+        setSecondsUntilNextPing(10);
       } else {
         setError(data.error || 'Failed to fetch system telemetry');
       }
@@ -72,19 +77,35 @@ export default function AdminSystemHealth({ token, apiBase }) {
       if (data.success) {
         setDiagnosticResults(data);
       } else {
-        alert('Diagnostics failed: ' + (data.error || 'Unknown error'));
+        console.warn('Diagnostics notice:', data.error);
       }
     } catch (err) {
-      alert('Network error executing diagnostics: ' + err.message);
+      console.warn('Network error executing diagnostics:', err.message);
     } finally {
       setRunningDiagnostics(false);
     }
   };
 
   useEffect(() => {
+    // 1. Initial live ping on mount
     fetchHealth();
-    const interval = setInterval(() => fetchHealth(), 30000); // auto-refresh every 30s
-    return () => clearInterval(interval);
+    // 2. Automatic background synthetic probe on initial mount
+    runDiagnostics();
+
+    // 3. Fast live heartbeat ping every 10 seconds
+    const interval = setInterval(() => {
+      fetchHealth();
+    }, 10000);
+
+    // 4. Live seconds countdown ticker
+    const countdown = setInterval(() => {
+      setSecondsUntilNextPing((prev) => (prev <= 1 ? 10 : prev - 1));
+    }, 1000);
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(countdown);
+    };
   }, [token, apiBase]);
 
   const formatUptime = (secs) => {
@@ -97,14 +118,18 @@ export default function AdminSystemHealth({ token, apiBase }) {
     return `${s}s`;
   };
 
+
   return (
     <div className="space-y-6">
       {/* Header Banner */}
       <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 rounded-2xl shadow-xl border border-indigo-900/60 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
             <span className="text-xs font-mono text-emerald-400 font-bold uppercase tracking-wider">Live Infrastructure Telemetry</span>
+            <span className="text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-mono">
+              Auto-Ping in {secondsUntilNextPing}s · Last sync: {lastPingTime}
+            </span>
           </div>
           <h2 className="text-2xl font-black mt-1">System Health, Traffic & Solvency Monitor</h2>
           <p className="text-xs text-slate-300 mt-1">
