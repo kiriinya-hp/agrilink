@@ -2440,6 +2440,104 @@ router.post('/notifications/read-all', async (req, res) => {
 });
 
 // ==========================================
+// 6.5. B2B VOICE NOTES & FARMER-BUYER MESSAGING
+// Supports Swahili, Sheng & English voice notes
+// ==========================================
+let VOICE_MESSAGES_REGISTRY = [
+  {
+    id: 'msg-1',
+    orderId: 'sample-order-1',
+    senderId: 'farmer-demo',
+    senderName: 'John Kamau (Nyandarua Shamba)',
+    senderRole: 'FARMER',
+    recipientId: 'buyer-demo',
+    audioUrl: '',
+    textTranslation: 'Habari, viazi vya Shangi viko tayari kwa gunia mia tano. Transporter anaweza kupakia asubuhi saa kumi na mbili kamili.',
+    language: 'sw',
+    durationSeconds: 14,
+    createdAt: new Date(Date.now() - 3600000).toISOString()
+  },
+  {
+    id: 'msg-2',
+    orderId: 'sample-order-1',
+    senderId: 'buyer-demo',
+    senderName: 'Supermarket Wholesale Central',
+    senderRole: 'BUYER',
+    recipientId: 'farmer-demo',
+    audioUrl: '',
+    textTranslation: 'Asante Kamau, tumefunga malipo kwa Safaricom Escrow. Lori litafika saa kumi na mbili na nusu kuleta Nairobi Wakulima.',
+    language: 'sw',
+    durationSeconds: 11,
+    createdAt: new Date(Date.now() - 1800000).toISOString()
+  }
+];
+
+router.get('/messages', async (req, res) => {
+  try {
+    const { orderId, userId } = req.query;
+    let filtered = VOICE_MESSAGES_REGISTRY;
+    if (orderId) {
+      filtered = filtered.filter(m => m.orderId === orderId);
+    }
+    if (userId) {
+      filtered = filtered.filter(m => m.senderId === userId || m.recipientId === userId);
+    }
+    res.json({ success: true, messages: filtered });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.post('/messages', async (req, res) => {
+  try {
+    const { 
+      orderId = 'general', 
+      senderId, 
+      senderName = 'AgriShamba User', 
+      senderRole = 'FARMER', 
+      recipientId,
+      audioBase64,
+      audioUrl,
+      textTranslation = '',
+      language = 'sw',
+      durationSeconds = 8
+    } = req.body;
+
+    const newMsg = {
+      id: `msg-${Date.now()}`,
+      orderId,
+      senderId: senderId || 'user',
+      senderName,
+      senderRole,
+      recipientId: recipientId || 'counterparty',
+      audioUrl: audioUrl || (audioBase64 ? audioBase64 : ''),
+      textTranslation: textTranslation.trim() || 'Voice message received from trade partner.',
+      language,
+      durationSeconds: parseInt(durationSeconds) || 10,
+      createdAt: new Date().toISOString()
+    };
+
+    VOICE_MESSAGES_REGISTRY.push(newMsg);
+
+    // If order has counterparty, notify them via Prisma notification
+    if (recipientId) {
+      await prisma.notification.create({
+        data: {
+          userId: recipientId,
+          type: 'VOICE_MESSAGE',
+          title: `🎙️ New Voice Note from ${senderName}`,
+          message: textTranslation ? `"${textTranslation.slice(0, 80)}..."` : 'Voice note received regarding your agricultural shipment.'
+        }
+      }).catch(() => {});
+    }
+
+    res.status(201).json({ success: true, message: newMsg });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ==========================================
 // 5. EXECUTIVE BI ANALYTICS (ADMIN ONLY)
 // ==========================================
 router.get('/analytics', requireAdmin, async (req, res) => {

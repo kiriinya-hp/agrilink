@@ -18,8 +18,12 @@ import {
   DollarSign,
   ArrowRight,
   RefreshCw,
-  Building
+  Building,
+  Play,
+  Pause,
+  RotateCcw
 } from 'lucide-react';
+
 
 // Verified geographic coordinates for major Kenyan agricultural corridors & wholesale centers
 const KENYA_LOCATIONS = {
@@ -123,11 +127,34 @@ export default function DriverLiveMap({
 
   // Real transit milestone progress
   const transitStatus = currentActiveOrder?.shipment?.transitStatus || 'PENDING_ASSIGNMENT';
-  const progressRatio = 
+  const milestoneRatio = 
     transitStatus === 'DELIVERED' ? 1.0 :
     transitStatus === 'ARRIVED' ? 0.92 :
     transitStatus === 'IN_TRANSIT' ? 0.58 :
     transitStatus === 'PICKED_UP' ? 0.28 : 0.05;
+
+  // Interactive Route Playback Simulation
+  const [isPlayingRoute, setIsPlayingRoute] = useState(false);
+  const [playbackProgress, setPlaybackProgress] = useState(milestoneRatio);
+
+  const progressRatio = isPlayingRoute ? playbackProgress : milestoneRatio;
+
+  useEffect(() => {
+    let animTimer;
+    if (isPlayingRoute) {
+      animTimer = setInterval(() => {
+        setPlaybackProgress((prev) => {
+          if (prev >= 1.0) {
+            setIsPlayingRoute(false);
+            return 1.0;
+          }
+          return Math.min(1.0, prev + 0.03);
+        });
+      }, 400);
+    }
+    return () => clearInterval(animTimer);
+  }, [isPlayingRoute]);
+
 
   // 1. Device Hardware GPS Location Watcher
   const toggleDeviceGps = () => {
@@ -381,8 +408,42 @@ export default function DriverLiveMap({
           </div>
         </div>
 
-        {/* Real GPS Device & View Controls */}
+        {/* Real GPS Device, Route Playback & View Controls */}
         <div className="flex items-center gap-2 overflow-x-auto">
+          {/* Route Playback Simulation Button */}
+          <button
+            type="button"
+            onClick={() => {
+              if (isPlayingRoute) {
+                setIsPlayingRoute(false);
+              } else {
+                if (playbackProgress >= 1.0) setPlaybackProgress(0.05);
+                setIsPlayingRoute(true);
+              }
+            }}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs ${
+              isPlayingRoute
+                ? 'bg-amber-600 hover:bg-amber-500 text-white animate-pulse'
+                : 'bg-emerald-700 hover:bg-emerald-600 text-white'
+            }`}
+            title="Simulate turn-by-turn vehicle movement along highway corridor"
+          >
+            {isPlayingRoute ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+            <span>{isPlayingRoute ? 'Pause Route' : 'Play Route GPS'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setIsPlayingRoute(false);
+              setPlaybackProgress(milestoneRatio);
+            }}
+            className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all border border-slate-700"
+            title="Reset to verified milestone"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+
           <button
             type="button"
             onClick={toggleDeviceGps}
@@ -415,6 +476,7 @@ export default function DriverLiveMap({
           </button>
         </div>
       </div>
+
 
       {gpsError && (
         <div className="px-4 py-2 bg-amber-500/10 border-b border-amber-500/20 text-amber-800 text-xs flex items-center gap-1.5 font-medium">

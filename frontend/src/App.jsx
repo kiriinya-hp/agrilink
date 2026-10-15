@@ -45,8 +45,10 @@ import {
   TrendingUp,
   Film,
   Wifi,
-  WifiOff
+  WifiOff,
+  Mic
 } from 'lucide-react';
+
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -85,6 +87,7 @@ import MobileToolsSheetModal from './components/MobileToolsSheetModal';
 import IntroVideoSplash from './components/IntroVideoSplash';
 import ProducePassportModal from './components/ProducePassportModal';
 import OfflineSyncModal from './components/OfflineSyncModal';
+import VoiceMessagingModal from './components/VoiceMessagingModal';
 import { 
   cacheListingsOffline, 
   getCachedListingsOffline, 
@@ -178,6 +181,7 @@ function MainApp({ onReplayIntro }) {
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [showOfflineModal, setShowOfflineModal] = useState(false);
   const [pendingSyncQueue, setPendingSyncQueue] = useState(getPendingSyncQueue());
+  const [voiceChatOrder, setVoiceChatOrder] = useState(null);
 
 
   // Farmer New Listing Form State
@@ -1152,11 +1156,12 @@ function MainApp({ onReplayIntro }) {
               type="button"
               onClick={() => setShowMobileToolsSheet(true)}
               title="All AI Engines & SCM Tools"
-              className="flex sm:hidden items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 shrink-0 shadow-2xs"
+              className="flex sm:hidden items-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 shrink-0"
             >
-              <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+              <Sparkles className="w-3 h-3 text-purple-600" />
               <span>Tools</span>
             </button>
+
 
             {/* Desktop Quick-Access Feature Tool Buttons */}
             <div className="hidden sm:flex items-center gap-1.5">
@@ -1707,8 +1712,18 @@ function MainApp({ onReplayIntro }) {
                             >
                               <span>🏷️ Produce Passport / QR Code</span>
                             </button>
+                            <button
+                              type="button"
+                              onClick={() => setVoiceChatOrder(order)}
+                              className="w-full mt-1.5 py-1.5 px-3 bg-teal-50 hover:bg-teal-100 border border-teal-300 rounded-lg text-teal-800 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors"
+                              title="Send instant Swahili/English voice notes to trade partner"
+                            >
+                              <Mic className="w-3.5 h-3.5 text-teal-600" />
+                              <span>🎙️ Voice Chat Room (Swahili / Sheng)</span>
+                            </button>
                           </div>
                         )}
+
                       </div>
                     </div>
                   );
@@ -2897,6 +2912,16 @@ function MainApp({ onReplayIntro }) {
         onSyncAll={handleSyncPendingQueue}
         onRemoveItem={handleRemovePendingSyncItem}
       />
+
+      {/* Farmer & Buyer Audio Voice Messaging Modal */}
+      <VoiceMessagingModal
+        isOpen={Boolean(voiceChatOrder)}
+        onClose={() => setVoiceChatOrder(null)}
+        order={voiceChatOrder}
+        currentUser={user}
+        apiBase={API_BASE}
+      />
+
 
       <NotificationDrawer
         isOpen={showNotificationDrawer}
