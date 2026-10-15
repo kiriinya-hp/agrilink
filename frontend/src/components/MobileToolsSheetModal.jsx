@@ -17,7 +17,8 @@ import {
   ChevronRight,
   Film,
   Calculator,
-  Wifi
+  Wifi,
+  Camera
 } from 'lucide-react';
 import { LanguageSwitcher } from './LanguageContext';
 import { CurrencyUnitBar } from './CurrencyUnitContext';
@@ -26,6 +27,7 @@ export default function MobileToolsSheetModal({
   isOpen,
   onClose,
   user,
+  onOpenKilimoVision,
   onOpenCropDoctor,
   onOpenAiNegotiation,
   onOpenSatelliteScanner,
@@ -43,6 +45,19 @@ export default function MobileToolsSheetModal({
   if (!isOpen) return null;
 
   const tools = [
+    ...(onOpenKilimoVision ? [{
+      id: 'kilimo-vision',
+      title: 'Kilimo Vision AI',
+      desc: 'Multimodal Disease & Grade Scanner',
+      icon: Camera,
+      iconColor: 'text-teal-400',
+      bgColor: 'bg-teal-950/40',
+      borderColor: 'border-teal-500/40',
+      badge: '📷 New',
+      badgeColor: 'bg-teal-600 text-white',
+      onClick: onOpenKilimoVision
+    }] : []),
+
     ...(onOpenOfflineSync ? [{
       id: 'offline-sync',
       title: 'Rural Offline Hub',

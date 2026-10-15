@@ -46,7 +46,8 @@ import {
   Film,
   Wifi,
   WifiOff,
-  Mic
+  Mic,
+  Printer
 } from 'lucide-react';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -88,6 +89,8 @@ import IntroVideoSplash from './components/IntroVideoSplash';
 import ProducePassportModal from './components/ProducePassportModal';
 import OfflineSyncModal from './components/OfflineSyncModal';
 import VoiceMessagingModal from './components/VoiceMessagingModal';
+import KilimoVisionScanner from './components/KilimoVisionScanner';
+import InvoiceModal from './components/InvoiceModal';
 import { initPushNotifications, scheduleNativeNotification } from './services/pushNotificationService';
 import { 
   cacheListingsOffline, 
@@ -183,7 +186,32 @@ function MainApp({ onReplayIntro }) {
   const [showOfflineModal, setShowOfflineModal] = useState(false);
   const [pendingSyncQueue, setPendingSyncQueue] = useState(getPendingSyncQueue());
   const [voiceChatOrder, setVoiceChatOrder] = useState(null);
+  const [showKilimoVision, setShowKilimoVision] = useState(false);
+  const [invoiceModalOrder, setInvoiceModalOrder] = useState(null);
 
+  const handleSendWhatsAppAlert = (order) => {
+    if (!order) return;
+    const recipientPhone = order.buyer?.phone || order.farmer?.phone || user?.phone || '0712345678';
+    let cleanPhone = recipientPhone.replace(/[^0-9]/g, '');
+    if (cleanPhone.startsWith('0')) cleanPhone = '254' + cleanPhone.slice(1);
+    else if (!cleanPhone.startsWith('254')) cleanPhone = '254' + cleanPhone;
+
+    const crop = order.items?.[0]?.cropName || order.cropName || 'Fresh Produce';
+    const qty = order.items?.[0]?.quantity || order.quantity || 500;
+    const total = order.grandTotal || (order.unitPrice * qty) || 45000;
+    const otp = order.shipment?.confirmationOtp || order.deliveryOtp || '• • • •';
+    const orderNo = order.id?.slice(-6)?.toUpperCase() || '883921';
+
+    const msg = `*AgriShamba SCM Official Alert*\n` +
+      `📦 *Order #${orderNo}* (${crop} • ${qty} kg)\n` +
+      `💰 Amount: *KES ${Number(total).toLocaleString()}* (M-Pesa Escrow Protected)\n` +
+      `🔐 4-Digit Delivery OTP: *${otp}*\n` +
+      `📍 Current Status: *${order.status}*\n` +
+      `🔗 Digital Trace: https://agrilink-pyrv.onrender.com/trace/${order.id || ''}\n\n` +
+      `_Toka Shambani Hadi Sokoni • AgriShamba Kenya_`;
+
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+  };
 
   // Farmer New Listing Form State
   const [newListing, setNewListing] = useState({
@@ -1249,6 +1277,17 @@ function MainApp({ onReplayIntro }) {
                 <span className="hidden sm:inline">AI Crop Doctor</span>
               </button>
 
+              {/* Kilimo Vision AI Crop Disease & Export Grade Scanner */}
+              <button
+                type="button"
+                onClick={() => setShowKilimoVision(true)}
+                title="Kilimo Vision: Multimodal AI Crop Disease & Export Grade Scanner"
+                className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-bold text-teal-900 bg-teal-50 hover:bg-teal-100 border border-teal-300 transition-all shrink-0 shadow-xs"
+              >
+                <Camera className="w-3.5 h-3.5 text-teal-600 animate-pulse" />
+                <span className="hidden sm:inline">Kilimo Vision</span>
+              </button>
+
               {/* Rural USSD Gateway Simulator (*384*50#) Button */}
               <button
                 type="button"
@@ -1663,14 +1702,29 @@ function MainApp({ onReplayIntro }) {
                             </div>
                             <button
                               onClick={() => setSelectedReceiptOrder(order)}
-                              className="w-full flex items-center justify-center gap-1.5 py-2 px-3 bg-white border border-emerald-300 rounded-lg text-emerald-800 font-bold hover:bg-emerald-50 transition-colors shadow-sm"
+                              className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 bg-white border border-emerald-300 rounded-lg text-emerald-800 font-bold hover:bg-emerald-50 transition-colors shadow-sm"
                             >
                               <FileText className="w-3.5 h-3.5 text-emerald-600" /> {t('viewSettlementReceipt')}
                             </button>
                             <button
                               type="button"
+                              onClick={() => setInvoiceModalOrder(order)}
+                              className="w-full mt-1 flex items-center justify-center gap-1.5 py-1.5 px-3 bg-slate-900 text-white rounded-lg font-bold hover:bg-slate-800 transition-colors shadow-sm"
+                            >
+                              <Printer className="w-3.5 h-3.5 text-emerald-400" />
+                              <span>Print Tax Invoice & Waybill</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSendWhatsAppAlert(order)}
+                              className="w-full mt-1 flex items-center justify-center gap-1.5 py-1.5 px-3 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700 transition-colors shadow-sm"
+                            >
+                              <span>📲 Send WhatsApp Receipt</span>
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => setProducePassportOrder(order)}
-                              className="w-full flex items-center justify-center gap-1.5 py-2 px-3 bg-amber-50 border border-amber-300 rounded-lg text-amber-800 font-bold hover:bg-amber-100 transition-colors"
+                              className="w-full mt-1 flex items-center justify-center gap-1.5 py-1.5 px-3 bg-amber-50 border border-amber-300 rounded-lg text-amber-800 font-bold hover:bg-amber-100 transition-colors"
                             >
                               <span>🏷️ Produce Passport / QR</span>
                             </button>
@@ -1708,11 +1762,18 @@ function MainApp({ onReplayIntro }) {
                             </div>
                             <button
                               type="button"
-                              onClick={() => setSelectedReceiptOrder(order)}
-                              className="w-full mt-1.5 py-1.5 px-3 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg text-slate-700 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                              onClick={() => setInvoiceModalOrder(order)}
+                              className="w-full mt-1.5 py-1.5 px-3 bg-slate-900 text-white rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
                             >
-                              <FileText className="w-3.5 h-3.5 text-indigo-600" />
-                              <span>View Tax Invoice & Waybill</span>
+                              <Printer className="w-3.5 h-3.5 text-emerald-400" />
+                              <span>Print Tax Invoice & Waybill</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSendWhatsAppAlert(order)}
+                              className="w-full mt-1.5 py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                            >
+                              <span>📲 WhatsApp OTP & Details</span>
                             </button>
                             <button
                               type="button"
@@ -3443,10 +3504,41 @@ function MainApp({ onReplayIntro }) {
           setShowMobileToolsSheet(false);
           if (onReplayIntro) onReplayIntro();
         }}
+        onOpenKilimoVision={() => {
+          setShowMobileToolsSheet(false);
+          setShowKilimoVision(true);
+        }}
         onOpenOfflineSync={() => {
           setShowMobileToolsSheet(false);
           setShowOfflineModal(true);
         }}
+      />
+
+      {/* ========================================================= */}
+      {/* 📷 KILIMO VISION AI MULTIMODAL CROP DISEASE & GRADE SCANNER */}
+      {/* ========================================================= */}
+      <KilimoVisionScanner
+        isOpen={showKilimoVision}
+        onClose={() => setShowKilimoVision(false)}
+        onApplyToListing={(data) => {
+          setNewListing(prev => ({
+            ...prev,
+            cropName: data.cropName,
+            grade: data.qualityGrade,
+            unitPrice: Number(data.suggestedPriceKes / 130).toFixed(2)
+          }));
+          setActiveTab('farmer');
+          showNotification(`✅ Pre-filled produce listing with ${data.cropName} (${data.qualityGrade})!`);
+        }}
+      />
+
+      {/* ========================================================= */}
+      {/* 📄 TAX INVOICE, TRANSPORTER WAYBILL & CERTIFICATE OF ORIGIN */}
+      {/* ========================================================= */}
+      <InvoiceModal
+        isOpen={Boolean(invoiceModalOrder)}
+        onClose={() => setInvoiceModalOrder(null)}
+        order={invoiceModalOrder}
       />
 
     </div>

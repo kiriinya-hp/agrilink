@@ -185,7 +185,7 @@ export default function AdminSystemHealth({ token, apiBase }) {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
             {diagnosticResults.results.map((r, idx) => (
               <div key={idx} className="p-3 bg-slate-800/80 rounded-xl border border-slate-700 space-y-1">
                 <div className="flex items-center justify-between">
