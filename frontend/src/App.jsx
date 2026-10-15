@@ -58,6 +58,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ImagePickerModal from './components/ImagePickerModal';
 import ReceiptModal from './components/ReceiptModal';
 import NotificationDrawer from './components/NotificationDrawer';
+import MobileNotificationPill from './components/MobileNotificationPill';
 import EmailVerificationBanner from './components/EmailVerificationBanner';
 import KilimoAIAssistant from './components/KilimoAIAssistant';
 import WalletTopUpModal from './components/WalletTopUpModal';
@@ -140,6 +141,12 @@ function MainApp({ onReplayIntro }) {
   const [showNotificationDrawer, setShowNotificationDrawer] = useState(false);
   const [notificationsList, setNotificationsList] = useState([]);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+  const [activeHeadsUpNotification, setActiveHeadsUpNotification] = useState(null);
+
+  const handleDeleteNotification = (notifId) => {
+    setNotificationsList(prev => prev.filter(n => n.id !== notifId));
+    setUnreadNotifCount(prev => Math.max(0, prev - 1));
+  };
 
   // Modals
   const [orderModalListing, setOrderModalListing] = useState(null);
@@ -299,6 +306,13 @@ function MainApp({ onReplayIntro }) {
 
   const showNotification = (msg, type = 'success') => {
     setNotification({ msg, type });
+    setActiveHeadsUpNotification({
+      id: 'hud_' + Date.now(),
+      title: type === 'error' ? 'Security / System Alert' : 'AgriShamba Update',
+      message: msg,
+      type: type === 'error' ? 'ALERT' : 'ESCROW',
+      createdAt: new Date().toISOString()
+    });
     setTimeout(() => setNotification(null), 6000);
   };
 
@@ -3001,11 +3015,23 @@ function MainApp({ onReplayIntro }) {
       />
 
 
+      {/* Mobile Heads-Up Sliding Notification Banner */}
+      <MobileNotificationPill
+        notification={activeHeadsUpNotification}
+        onOpenDrawer={() => setShowNotificationDrawer(true)}
+        onDismiss={() => setActiveHeadsUpNotification(null)}
+      />
+
       <NotificationDrawer
         isOpen={showNotificationDrawer}
         onClose={() => setShowNotificationDrawer(false)}
         notifications={notificationsList}
         onMarkAllRead={handleMarkAllNotificationsRead}
+        onDeleteNotification={handleDeleteNotification}
+        onOpenOrderInvoice={(order) => {
+          setShowNotificationDrawer(false);
+          setInvoiceModalOrder(order);
+        }}
       />
 
       {/* ========================================================= */}
