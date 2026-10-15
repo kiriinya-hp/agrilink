@@ -88,6 +88,7 @@ import IntroVideoSplash from './components/IntroVideoSplash';
 import ProducePassportModal from './components/ProducePassportModal';
 import OfflineSyncModal from './components/OfflineSyncModal';
 import VoiceMessagingModal from './components/VoiceMessagingModal';
+import { initPushNotifications, scheduleNativeNotification } from './services/pushNotificationService';
 import { 
   cacheListingsOffline, 
   getCachedListingsOffline, 
@@ -246,7 +247,7 @@ function MainApp({ onReplayIntro }) {
     }
   };
 
-  // Reset tab when user role changes
+  // Reset tab and initialize push notifications when user role changes
   useEffect(() => {
     if (user) {
       if (user.role === 'BUYER') setActiveTab('marketplace');
@@ -256,8 +257,11 @@ function MainApp({ onReplayIntro }) {
       setPaymentPhone(user.phone || '');
       setDeliveryAddress(user.location || 'Nairobi Central Depot');
       loadRoleData();
+      // Initialize native push / local notification service
+      initPushNotifications();
     }
   }, [user]);
+
 
   useEffect(() => {
     if (user) {
@@ -477,9 +481,15 @@ function MainApp({ onReplayIntro }) {
     showNotification(
       `💳 PAYMENT VERIFIED: $${orderPaymentDetails?.grandTotal?.toFixed(2) || '0.00'} locked in Escrow! Delivery OTP: ${orderPaymentDetails?.confirmationOtp}`
     );
+    // Push notification to Android system notification shade
+    scheduleNativeNotification({
+      title: 'AgriShamba Escrow Locked! 🔒',
+      body: `KES ${orderPaymentDetails?.amountInKes?.toLocaleString() || '0'} funded. Delivery OTP: ${orderPaymentDetails?.confirmationOtp}. Farmer & driver notified.`
+    });
     refreshUser();
     loadRoleData();
   };
+
 
   // Close Order Modal & reset state
   const handleCloseOrderModal = () => {
@@ -799,11 +809,18 @@ function MainApp({ onReplayIntro }) {
           setSelectedReceiptOrder({ ...matchingOrder, status: 'COMPLETED' });
         }
 
+        // Trigger native Android system tray notification
+        scheduleNativeNotification({
+          title: 'Delivery Confirmed & Escrow Disbursed! 💰',
+          body: `Produce verified. KES ${Math.round(data.settlement.farmerPayout * 130).toLocaleString()} released to farmer and KES ${Math.round(data.settlement.transporterPayout * 130).toLocaleString()} to driver.`
+        });
+
         refreshUser();
         loadRoleData();
       } else {
         throw new Error(data.error);
       }
+
     } catch (err) {
       showNotification(err.message, 'error');
     }
