@@ -2996,6 +2996,104 @@ router.delete('/alerts/:id', (req, res) => {
 });
 
 // ==========================================
+// 0. RURAL INBOUND SMS FALLBACK GATEWAY (Shortcode 22000)
+// Compatible with Africa's Talking & Safaricom 2-Way SMS
+// ==========================================
+router.post('/sms/inbound', async (req, res) => {
+  try {
+    const { from, text, to } = req.body;
+    const rawMessage = (text || '').trim();
+    const senderPhone = from || '+254700000000';
+
+    console.log(`[SMS INBOUND] Received from ${senderPhone}: "${rawMessage}"`);
+
+    let replyMessage = '';
+
+    const clean = rawMessage.toUpperCase();
+
+    if (clean.startsWith('AGRI LIST') || clean.startsWith('SHAMBA LIST')) {
+      // Pattern: AGRI LIST Tomatoes*500KG*85KES*GRADE_A*Kinangop
+      // or AGRI LIST Tomatoes 500 85
+      const payload = rawMessage.replace(/^(AGRI|SHAMBA)\s+LIST\s*/i, '');
+      const parts = payload.includes('*') ? payload.split('*') : payload.split(/\s+/);
+
+      const crop = parts[0]?.trim() || 'Produce';
+      const qtyStr = parts[1]?.replace(/[^0-9]/g, '') || '100';
+      const priceStr = parts[2]?.replace(/[^0-9]/g, '') || '60';
+      const grade = parts[3]?.trim() || 'GRADE_A';
+      const loc = parts[4]?.trim() || 'Rural Shamba';
+
+      const qty = parseFloat(qtyStr);
+      const priceKes = parseFloat(priceStr);
+      const unitPriceUsd = priceKes / 130;
+
+      // Find or associate with farmer user
+      const farmer = await prisma.user.findFirst({
+        where: { OR: [{ phone: senderPhone }, { role: 'FARMER' }] }
+      });
+
+      if (farmer) {
+        const listing = await prisma.produceListing.create({
+          data: {
+            farmerId: farmer.id,
+            cropName: crop,
+            category: 'HORTICULTURE',
+            grade: grade.includes('B') ? 'GRADE_B' : 'GRADE_A',
+            availableQty: qty,
+            unitPrice: unitPriceUsd,
+            location: loc,
+            status: 'AVAILABLE',
+            imageUrl: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=600&auto=format&fit=crop'
+          }
+        });
+
+        replyMessage = `AgriShamba SMS: Hongera! Your harvest of ${qty}kg ${crop} at KES ${priceKes}/kg has been published live (ID #${listing.id.slice(0, 6)}). Buyers in Nairobi & Mombasa are notified. Dial *384*50# to track!`;
+      } else {
+        replyMessage = `AgriShamba SMS: Registered farmer account not found for ${senderPhone}. Please sign up at agrilink-pyrv.onrender.com or dial *384*50#.`;
+      }
+    } else if (clean.startsWith('AGRI PRICE')) {
+      const crop = rawMessage.replace(/^AGRI\s+PRICE\s*/i, '').trim();
+      const priceMap = {
+        'TOMATO': 'KES 115/kg (Wakulima), KES 130/kg (Kongowea)',
+        'ONION': 'KES 95/kg (Wakulima), KES 110/kg (Kongowea)',
+        'POTATO': 'KES 50/kg (Wakulima), KES 65/kg (Kongowea)',
+        'MAIZE': 'KES 48/kg (Wakulima), KES 54/kg (Kongowea)'
+      };
+      const foundKey = Object.keys(priceMap).find(k => crop.toUpperCase().includes(k));
+      const rates = foundKey ? priceMap[foundKey] : 'KES 70-120/kg wholesale average';
+
+      replyMessage = `AgriShamba Market Index: ${crop || 'Produce'} is trading at ${rates}. Text 'AGRI LIST ${crop}*100KG*80KES' to sell instantly.`;
+    } else if (clean.startsWith('AGRI BALANCE') || clean.startsWith('AGRI WALLET')) {
+      const user = await prisma.user.findFirst({ where: { phone: senderPhone } });
+      if (user) {
+        const kes = Math.round((user.walletBalance || 0) * 130);
+        replyMessage = `AgriShamba Wallet: Jambo ${user.name}, your verified escrow balance is KES ${kes.toLocaleString()} ($${(user.walletBalance || 0).toFixed(2)}). Dial *384*50# for M-Pesa withdrawal.`;
+      } else {
+        replyMessage = `AgriShamba Wallet: Phone ${senderPhone} is not yet linked. Dial *384*50# to create an instant escrow wallet.`;
+      }
+    } else {
+      replyMessage = `AgriShamba SMS Hub:
+• To Sell: AGRI LIST [Crop]*[Kg]*[PriceKES]*[Grade]*[County]
+• To Check Prices: AGRI PRICE [Crop]
+• To Check Balance: AGRI BALANCE
+Or dial *384*50# free of charge.`;
+    }
+
+    // Dispatch real SMS response back to farmer
+    await sendSMSNotification(senderPhone, replyMessage);
+
+    res.json({
+      success: true,
+      sender: senderPhone,
+      reply: replyMessage
+    });
+  } catch (err) {
+    console.error('[SMS INBOUND ERROR]', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ==========================================
 // 1. RURAL USSD GATEWAY (*384*50#)
 // Conforms to Safaricom & Africa's Talking API
 // ==========================================

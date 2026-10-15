@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { 
   X, 
   Leaf, 
@@ -16,7 +16,8 @@ import {
   ShieldCheck,
   ChevronRight,
   Film,
-  Calculator
+  Calculator,
+  Wifi
 } from 'lucide-react';
 import { LanguageSwitcher } from './LanguageContext';
 import { CurrencyUnitBar } from './CurrencyUnitContext';
@@ -36,11 +37,25 @@ export default function MobileToolsSheetModal({
   onOpenTopUp,
   onOpenWithdraw,
   onOpenProfile,
-  onReplayIntro
+  onReplayIntro,
+  onOpenOfflineSync
 }) {
   if (!isOpen) return null;
 
   const tools = [
+    ...(onOpenOfflineSync ? [{
+      id: 'offline-sync',
+      title: 'Rural Offline Hub',
+      desc: 'Local cache & SMS fallback',
+      icon: Wifi,
+      iconColor: 'text-amber-600',
+      bgColor: 'bg-amber-50',
+      borderColor: 'border-amber-200',
+      badge: '📶 Offline',
+      badgeColor: 'bg-amber-600 text-white',
+      onClick: onOpenOfflineSync
+    }] : []),
+
     {
       id: 'crop-doctor',
       title: 'AI Crop Doctor',
