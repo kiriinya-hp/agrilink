@@ -539,20 +539,22 @@ How would you like to proceed?`,
       {/* ======================================================== */}
       {/* 1. MINIMALIST FLOATING LAUNCHER (BOTTOM RIGHT)          */}
       {/* ======================================================== */}
-      <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40">
+      <div className="fixed bottom-16 right-3 sm:bottom-6 sm:right-6 z-40">
         <button
           onClick={() => {
             setIsOpen(!isOpen);
             if (isOpen && window.speechSynthesis) window.speechSynthesis.cancel();
           }}
-          className="group flex items-center gap-3 px-4 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-xl hover:shadow-2xl border border-slate-700/80 transition-all duration-300 hover:scale-105"
+          className="group flex items-center justify-center p-2 sm:px-4 sm:py-3 bg-slate-900/95 hover:bg-slate-800 text-white rounded-full shadow-lg hover:shadow-2xl border border-slate-700/80 transition-all duration-300 hover:scale-105 active:scale-95"
           aria-label="Toggle Kilimo AI"
+          title="Kilimo AI Voice & Trade Assistant"
         >
-          <div className="relative w-7 h-7 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shrink-0">
-            <Sparkles className="w-4 h-4" />
-            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-slate-900 animate-pulse"></span>
+          <div className="relative w-7 h-7 sm:w-7 sm:h-7 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shrink-0 shadow-sm">
+            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-400 border-2 border-slate-900 animate-pulse"></span>
           </div>
-          <div className="text-left pr-1">
+          {/* Label hidden on mobile to avoid blocking content; visible on sm: screens */}
+          <div className="hidden sm:block text-left pr-1 pl-2">
             <div className="text-xs font-bold tracking-tight text-white flex items-center gap-1.5">
               <span>Kilimo AI</span>
               <span className="text-[10px] text-emerald-400 font-mono font-medium">Assistant</span>
