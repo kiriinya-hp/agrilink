@@ -121,13 +121,28 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
           {/* Header */}
           <div className="flex flex-wrap items-start justify-between gap-6 border-b-2 border-slate-900 pb-6">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-black tracking-tight text-emerald-800">Agri<span className="text-slate-900">Shamba</span></span>
-                <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
-                  Kenya Agribusiness SCM
-                </span>
+              <div className="flex items-center gap-3">
+                {/* AgriShamba v2 Logo */}
+                <div className="w-16 h-16 rounded-xl overflow-hidden border border-emerald-500/40 shadow-md bg-slate-900 shrink-0 flex items-center justify-center">
+                  <img
+                    src="/agrishamba-logo.png"
+                    alt="AgriShamba"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'flex';
+                    }}
+                  />
+                  <div className="w-full h-full bg-emerald-600 hidden items-center justify-center text-white text-xs font-black">AS</div>
+                </div>
+                <div>
+                  <span className="text-2xl font-black tracking-tight text-emerald-800">Agri<span className="text-slate-900">Shamba</span></span>
+                  <span className="ml-2 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
+                    Kenya Agribusiness SCM
+                  </span>
+                  <p className="text-xs text-slate-500 mt-1">Direct Farm-Gate to Wholesale Market Network</p>
+                </div>
               </div>
-              <p className="text-xs text-slate-500 mt-1">Direct Farm-Gate to Wholesale Market Network</p>
               <div className="text-xs text-slate-600 mt-2 space-y-0.5">
                 <p>AgriShamba Supply Chain Ltd • KRA PIN: P051982736Z</p>
                 <p>Wakulima House, Haile Selassie Ave, Nairobi, Kenya</p>

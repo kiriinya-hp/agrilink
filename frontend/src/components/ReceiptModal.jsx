@@ -128,8 +128,19 @@ export default function ReceiptModal({ order, onClose }) {
         {/* Top Header Bar & Document Type Switcher */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-slate-200 no-print">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-md">
-              {activeDoc === 'invoice' ? <FileText className="w-5 h-5" /> : <Truck className="w-5 h-5" />}
+            <div className="w-10 h-10 rounded-xl overflow-hidden border border-emerald-500/40 bg-slate-900 flex items-center justify-center shadow-md shrink-0">
+              <img
+                src="/agrishamba-logo.png"
+                alt="AgriShamba"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'flex';
+                }}
+              />
+              <div className="w-full h-full bg-emerald-600 hidden items-center justify-center text-white rounded-xl">
+                {activeDoc === 'invoice' ? <FileText className="w-5 h-5" /> : <Truck className="w-5 h-5" />}
+              </div>
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -194,13 +205,28 @@ export default function ReceiptModal({ order, onClose }) {
           {/* DOCUMENT HEADER: AgriShamba Official Letterhead */}
           <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold text-2xl tracking-tight text-slate-900">
-                  Agri<span className="text-emerald-600">Shamba</span>
-                </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                  Kenya B2B Agribusiness SCM
-                </span>
+              <div className="flex items-center gap-3">
+                {/* AgriShamba v2 Logo */}
+                <div className="w-14 h-14 rounded-xl overflow-hidden border border-emerald-500/40 shadow-md bg-slate-900 shrink-0 flex items-center justify-center">
+                  <img
+                    src="/agrishamba-logo.png"
+                    alt="AgriShamba"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'flex';
+                    }}
+                  />
+                  <div className="w-full h-full bg-emerald-600 hidden items-center justify-center text-white text-xs font-black">AS</div>
+                </div>
+                <div>
+                  <span className="font-extrabold text-2xl tracking-tight text-slate-900">
+                    Agri<span className="text-emerald-600">Shamba</span>
+                  </span>
+                  <span className="ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    Kenya B2B Agribusiness SCM
+                  </span>
+                </div>
               </div>
               <p className="text-[11px] text-slate-500 mt-1 max-w-sm">
                 AgriShamba Commodity Clearing House & Escrow Hub<br />
