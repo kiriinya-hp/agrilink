@@ -84,6 +84,8 @@ import AiMarketPricePredictorModal from './components/AiMarketPricePredictorModa
 import AdminSystemHealth from './components/AdminSystemHealth';
 import AdminEscrowDisputes from './components/AdminEscrowDisputes';
 import AdminBroadcastModal from './components/AdminBroadcastModal';
+import AdminOrdersManagement from './components/AdminOrdersManagement';
+import AdminProduceManagement from './components/AdminProduceManagement';
 import BuyerDemandBoard from './components/BuyerDemandBoard';
 import MobileToolsSheetModal from './components/MobileToolsSheetModal';
 import IntroVideoSplash from './components/IntroVideoSplash';
@@ -1201,6 +1203,25 @@ function MainApp({ onReplayIntro }) {
                   <span className="sm:hidden">BI</span>
                 </button>
                 <button
+                  onClick={() => setActiveTab('admin-orders')}
+                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+                    activeTab === 'admin-orders' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  <ShoppingBag className="w-3.5 h-3.5 shrink-0 text-sky-300" />
+                  <span>Orders Audit</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('admin-produce')}
+                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+                    activeTab === 'admin-produce' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  <Sprout className="w-3.5 h-3.5 shrink-0 text-emerald-300" />
+                  <span>Manage Produce</span>
+                  <span className="text-[10px] bg-indigo-700/60 px-1.5 py-0.2 rounded-full font-mono">({listings.length})</span>
+                </button>
+                <button
                   onClick={() => setActiveTab('admin-escrow')}
                   className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                     activeTab === 'admin-escrow' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
@@ -1441,7 +1462,7 @@ function MainApp({ onReplayIntro }) {
         {/* ======================================================== */}
         {/* ADMIN ROLE GUARD: Block non-admins from admin-only views  */}
         {/* ======================================================== */}
-        {(activeTab === 'analytics' || activeTab === 'admin-users') && user.role !== 'ADMIN' && (
+        {(activeTab === 'analytics' || activeTab === 'admin-users' || activeTab === 'admin-orders' || activeTab === 'admin-produce' || activeTab === 'admin-escrow' || activeTab === 'admin-health' || activeTab === 'admin-broadcast') && user.role !== 'ADMIN' && (
           <div className="min-h-[60vh] flex items-center justify-center">
             <div className="text-center max-w-sm mx-auto">
               <div className="w-16 h-16 bg-rose-100 border-2 border-rose-300 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -2528,6 +2549,20 @@ function MainApp({ onReplayIntro }) {
         {user.role === 'ADMIN' && activeTab === 'admin-broadcast' && (
           <AdminBroadcastModal token={token} apiBase={API_BASE} allUsers={allUsers} />
         )}
+
+        {/* ADMIN VIEW: ORDERS AUDIT & MANAGEMENT */}
+        {user.role === 'ADMIN' && activeTab === 'admin-orders' && (
+          <AdminOrdersManagement token={token} apiBase={API_BASE} formatMoney={formatMoney} />
+        )}
+
+        {/* ADMIN VIEW: HARVEST PRODUCE & DELETE MANAGEMENT */}
+        {user.role === 'ADMIN' && activeTab === 'admin-produce' && (
+          <AdminProduceManagement 
+            token={token} 
+            apiBase={API_BASE} 
+            onProduceUpdated={loadRoleData} 
+          />
+        )}
       </main>
 
       {/* ========================================================= */}
@@ -3174,13 +3209,31 @@ function MainApp({ onReplayIntro }) {
               <span>KPIs</span>
             </button>
             <button
+              onClick={() => setActiveTab('admin-orders')}
+              className={`flex flex-col items-center gap-0.5 text-[10px] font-bold py-1 px-2.5 ${
+                activeTab === 'admin-orders' ? 'text-indigo-600' : 'text-slate-500'
+              }`}
+            >
+              <ShoppingBag className="w-5 h-5" />
+              <span>Orders</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('admin-produce')}
+              className={`flex flex-col items-center gap-0.5 text-[10px] font-bold py-1 px-2.5 ${
+                activeTab === 'admin-produce' ? 'text-indigo-600' : 'text-slate-500'
+              }`}
+            >
+              <Sprout className="w-5 h-5" />
+              <span>Harvest</span>
+            </button>
+            <button
               onClick={() => setActiveTab('admin-users')}
               className={`flex flex-col items-center gap-0.5 text-[10px] font-bold py-1 px-2.5 ${
                 activeTab === 'admin-users' ? 'text-indigo-600' : 'text-slate-500'
               }`}
             >
               <User className="w-5 h-5" />
-              <span>Directory</span>
+              <span>Users</span>
             </button>
           </>
         )}

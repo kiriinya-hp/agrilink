@@ -1048,6 +1048,24 @@ router.delete('/listings/:id', async (req, res) => {
   }
 });
 
+// Admin: Delete produce listing with admin guard
+router.delete('/admin/listings/:id', requireAdmin, async (req, res) => {
+  try {
+    const listingId = req.params.id;
+    const existing = await prisma.produceListing.findUnique({ where: { id: listingId } });
+    if (!existing) {
+      return res.status(404).json({ success: false, error: 'Produce listing not found.' });
+    }
+    await prisma.orderItem.deleteMany({ where: { listingId } }).catch(() => {});
+    await prisma.produceListing.delete({ where: { id: listingId } });
+    await autoSaveSnapshot();
+    console.log(`[Admin Audit] Admin deleted produce listing "${existing.cropName}" (${existing.id})`);
+    res.json({ success: true, message: `Produce listing "${existing.cropName}" deleted successfully from harvest sector.` });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Admin / Farmer: Update produce listing
 router.put('/listings/:id', async (req, res) => {
   try {
