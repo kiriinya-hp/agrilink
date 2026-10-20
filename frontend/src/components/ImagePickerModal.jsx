@@ -53,7 +53,22 @@ const PRESET_CROPS = [
     url: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=600&auto=format&fit=crop'
   },
   {
+    name: 'Fresh Pasteurized Goat Milk',
+    category: 'DAIRY',
+    url: 'https://images.unsplash.com/photo-1527153857715-3908f2ae5e81?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Cultured Mala & Yoghurt',
+    category: 'DAIRY',
+    url: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&auto=format&fit=crop'
+  },
+  {
     name: 'Friesian Dairy Cow (In-Calf)',
+    category: 'LIVESTOCK',
+    url: 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Ayrshire Breeding Heifer',
     category: 'LIVESTOCK',
     url: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=600&auto=format&fit=crop'
   },
@@ -68,14 +83,29 @@ const PRESET_CROPS = [
     url: 'https://images.unsplash.com/photo-1484557052118-f32bd25b45b5?w=600&auto=format&fit=crop'
   },
   {
+    name: 'Large White Breeding Pigs',
+    category: 'LIVESTOCK',
+    url: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=600&auto=format&fit=crop'
+  },
+  {
     name: 'Improved Kienyeji Chickens',
+    category: 'POULTRY',
+    url: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Commercial Broiler Chickens',
     category: 'POULTRY',
     url: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=600&auto=format&fit=crop'
   },
   {
     name: 'Fresh Farm Egg Trays (30 Pcs)',
     category: 'POULTRY',
-    url: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=600&auto=format&fit=crop'
+    url: 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Day-Old Kienyeji Chicks',
+    category: 'POULTRY',
+    url: 'https://images.unsplash.com/photo-1563281577-a7be47e20db9?w=600&auto=format&fit=crop'
   },
   {
     name: 'Boma Rhodes Hay Bales',
@@ -83,9 +113,39 @@ const PRESET_CROPS = [
     url: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&auto=format&fit=crop'
   },
   {
+    name: 'Lucerne (Alfalfa) Hay Bales',
+    category: 'FODDER_FEEDS',
+    url: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Inoculated Maize Silage Bags',
+    category: 'FODDER_FEEDS',
+    url: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'High-Yield Dairy Meal Bags',
+    category: 'FODDER_FEEDS',
+    url: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&auto=format&fit=crop'
+  },
+  {
     name: 'Pure Raw Acacia Honey',
     category: 'APICULTURE',
     url: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Organic Multi-Floral Forest Honey',
+    category: 'APICULTURE',
+    url: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Natural Pure Beeswax Cakes',
+    category: 'APICULTURE',
+    url: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Seasoned Langstroth Beehives',
+    category: 'APICULTURE',
+    url: 'https://images.unsplash.com/photo-1473081556163-2a17de81fc97?w=600&auto=format&fit=crop'
   }
 ];
 

@@ -977,7 +977,7 @@ function MainApp({ onReplayIntro }) {
                   Agri<span className="text-emerald-600">Shamba</span>
                 </span>
                 <span className="hidden sm:inline-block ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  Enterprise SCM
+                  Enterprise SCM v2.1
                 </span>
                 {onReplayIntro && (
                   <button

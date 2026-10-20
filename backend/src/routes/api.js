@@ -1182,16 +1182,15 @@ router.post('/admin/database/sync', requireAdmin, async (req, res) => {
   }
 });
 
-// Helper: Seed demo livestock and animal batches if none exist
+// Helper: Seed demo livestock and animal batches across all categories
 async function ensureSeedAnimalListings() {
   try {
-    const dairyCount = await prisma.produceListing.count({ where: { category: 'DAIRY' } });
-    if (dairyCount > 0) return;
     const farmer = await prisma.user.findFirst({ where: { role: 'FARMER' } }) ||
                    await prisma.user.findFirst();
     if (!farmer) return;
 
     const animalListings = [
+      // 🥛 DAIRY
       {
         farmerId: farmer.id,
         cropName: 'Fresh Raw Cow Milk',
@@ -1205,6 +1204,41 @@ async function ensureSeedAnimalListings() {
       },
       {
         farmerId: farmer.id,
+        cropName: 'Fresh Pasteurized Goat Milk',
+        category: 'DAIRY',
+        unit: 'litres',
+        availableQty: 350,
+        unitPrice: 0.92, // ~KES 120/L
+        grade: 'GRADE_A',
+        location: 'Nyeri Dairy Co-op, Nyeri County',
+        imageUrl: 'https://images.unsplash.com/photo-1527153857715-3908f2ae5e81?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Cultured Mala & Natural Probiotic Yoghurt',
+        category: 'DAIRY',
+        unit: 'litres',
+        availableQty: 500,
+        unitPrice: 0.85, // ~KES 110/L
+        grade: 'GRADE_A',
+        location: 'Eldoret Dairies, Uasin Gishu',
+        imageUrl: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Pure Camel Milk (Fresh Unpasteurized)',
+        category: 'DAIRY',
+        unit: 'litres',
+        availableQty: 400,
+        unitPrice: 1.23, // ~KES 160/L
+        grade: 'GRADE_A',
+        location: 'Isiolo Pastoralist Hub, Isiolo County',
+        imageUrl: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=600&auto=format&fit=crop'
+      },
+
+      // 🐄 LIVESTOCK
+      {
+        farmerId: farmer.id,
         cropName: 'Pedigree Friesian Dairy Cow (In-Calf)',
         category: 'LIVESTOCK',
         unit: 'heads',
@@ -1214,6 +1248,63 @@ async function ensureSeedAnimalListings() {
         location: 'Naivasha, Nakuru County',
         imageUrl: 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=600&auto=format&fit=crop'
       },
+      {
+        farmerId: farmer.id,
+        cropName: 'Ayrshire High-Yield Heifer (In-Calf 6 Months)',
+        category: 'LIVESTOCK',
+        unit: 'heads',
+        availableQty: 6,
+        unitPrice: 730.7, // ~KES 95,000/head
+        grade: 'GRADE_A',
+        location: 'Eldoret, Uasin Gishu County',
+        imageUrl: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Boer Breeding Buck (Stud Quality)',
+        category: 'LIVESTOCK',
+        unit: 'heads',
+        availableQty: 12,
+        unitPrice: 215.3, // ~KES 28,000/head
+        grade: 'GRADE_A',
+        location: 'Machakos Breeding Station, Machakos',
+        imageUrl: 'https://images.unsplash.com/photo-1524024973431-2ad916746881?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Galla Meat Goats (Mature Batch)',
+        category: 'LIVESTOCK',
+        unit: 'heads',
+        availableQty: 25,
+        unitPrice: 96.1, // ~KES 12,500/head
+        grade: 'GRADE_A',
+        location: 'Kitui Pastoralists Co-op, Kitui',
+        imageUrl: 'https://images.unsplash.com/photo-1524024973431-2ad916746881?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Dorper Breeding Sheep (Fat-Tailed)',
+        category: 'LIVESTOCK',
+        unit: 'heads',
+        availableQty: 30,
+        unitPrice: 107.6, // ~KES 14,000/head
+        grade: 'GRADE_A',
+        location: 'Kajiado Plains Ranch, Kajiado County',
+        imageUrl: 'https://images.unsplash.com/photo-1484557052118-f32bd25b45b5?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Large White Breeding Pig (Sow / Gilt)',
+        category: 'LIVESTOCK',
+        unit: 'heads',
+        availableQty: 8,
+        unitPrice: 246.1, // ~KES 32,000/head
+        grade: 'GRADE_A',
+        location: 'Thika Farmstead, Kiambu County',
+        imageUrl: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=600&auto=format&fit=crop'
+      },
+
+      // 🐔 POULTRY
       {
         farmerId: farmer.id,
         cropName: 'Improved Kienyeji Chickens (Mature)',
@@ -1238,6 +1329,52 @@ async function ensureSeedAnimalListings() {
       },
       {
         farmerId: farmer.id,
+        cropName: 'Commercial Broiler Chickens (Live Farm-Gate, 1.8kg)',
+        category: 'POULTRY',
+        unit: 'birds',
+        availableQty: 800,
+        unitPrice: 4.00, // ~KES 520/bird
+        grade: 'GRADE_A',
+        location: 'Kitengela, Kajiado County',
+        imageUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'High-Peak Commercial Layers (ISA Brown)',
+        category: 'POULTRY',
+        unit: 'birds',
+        availableQty: 450,
+        unitPrice: 6.53, // ~KES 850/bird
+        grade: 'GRADE_A',
+        location: 'Ruaka, Kiambu County',
+        imageUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Day-Old Improved Kienyeji Chicks (Vaccinated)',
+        category: 'POULTRY',
+        unit: 'birds',
+        availableQty: 1500,
+        unitPrice: 0.85, // ~KES 110/bird
+        grade: 'GRADE_A',
+        location: 'Wangige Hatcheries, Kiambu',
+        imageUrl: 'https://images.unsplash.com/photo-1563281577-a7be47e20db9?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Fertile Turkey & Quail Eggs (Tray of 30)',
+        category: 'POULTRY',
+        unit: 'trays',
+        availableQty: 90,
+        unitPrice: 4.61, // ~KES 600/tray
+        grade: 'GRADE_A',
+        location: 'Naivasha Bird Farm, Nakuru',
+        imageUrl: 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=600&auto=format&fit=crop'
+      },
+
+      // 🌿 FODDER & FEEDS
+      {
+        farmerId: farmer.id,
         cropName: 'Boma Rhodes Hay Bales (18kg)',
         category: 'FODDER_FEEDS',
         unit: 'bales',
@@ -1249,6 +1386,63 @@ async function ensureSeedAnimalListings() {
       },
       {
         farmerId: farmer.id,
+        cropName: 'Lucerne / Alfalfa Hay Bales (High Protein 20%)',
+        category: 'FODDER_FEEDS',
+        unit: 'bales',
+        availableQty: 350,
+        unitPrice: 4.46, // ~KES 580/bale
+        grade: 'GRADE_A',
+        location: 'Naivasha Fodder Scheme, Nakuru',
+        imageUrl: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Inoculated Maize Silage (50kg Sealed Bags)',
+        category: 'FODDER_FEEDS',
+        unit: 'bags',
+        availableQty: 400,
+        unitPrice: 5.76, // ~KES 750/bag
+        grade: 'GRADE_A',
+        location: 'Kitale Grain & Silage Hub, Trans Nzoia',
+        imageUrl: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'High-Yield Dairy Meal (16% CP, 70kg Bag)',
+        category: 'FODDER_FEEDS',
+        unit: 'bags',
+        availableQty: 200,
+        unitPrice: 21.92, // ~KES 2,850/bag
+        grade: 'GRADE_A',
+        location: 'Nakuru Feed Millers, Nakuru Town',
+        imageUrl: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Wheat Pollard & Bran Blend (50kg Bag)',
+        category: 'FODDER_FEEDS',
+        unit: 'bags',
+        availableQty: 250,
+        unitPrice: 12.69, // ~KES 1,650/bag
+        grade: 'GRADE_A',
+        location: 'Thika Agro Millers, Kiambu',
+        imageUrl: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Brachiaria Grass Splits & Desmodium Vines',
+        category: 'FODDER_FEEDS',
+        unit: 'bags',
+        availableQty: 150,
+        unitPrice: 3.46, // ~KES 450/bag
+        grade: 'GRADE_A',
+        location: 'Embu Pasture Research Farm, Embu',
+        imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&auto=format&fit=crop'
+      },
+
+      // 🍯 APICULTURE
+      {
+        farmerId: farmer.id,
         cropName: 'Pure Raw Acacia Honey',
         category: 'APICULTURE',
         unit: 'litres',
@@ -1257,13 +1451,62 @@ async function ensureSeedAnimalListings() {
         grade: 'GRADE_A',
         location: 'Baringo Central',
         imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Organic Forest Multi-Floral Honey (Raw Unfiltered)',
+        category: 'APICULTURE',
+        unit: 'litres',
+        availableQty: 250,
+        unitPrice: 7.30, // ~KES 950/L
+        grade: 'GRADE_A',
+        location: 'Kakamega Forest Apiaries, Kakamega',
+        imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Natural Refined Beeswax Blocks',
+        category: 'APICULTURE',
+        unit: 'kg',
+        availableQty: 180,
+        unitPrice: 6.15, // ~KES 800/kg
+        grade: 'GRADE_A',
+        location: 'Kitui Honey & Wax Co-operative, Kitui',
+        imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Raw Bee Propolis Tincture & Extract',
+        category: 'APICULTURE',
+        unit: 'litres',
+        availableQty: 80,
+        unitPrice: 18.46, // ~KES 2,400/L
+        grade: 'GRADE_A',
+        location: 'Marigat Bee Sanctuary, Baringo',
+        imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Seasoned Langstroth Beehives (Wax-Primed Frames)',
+        category: 'APICULTURE',
+        unit: 'heads',
+        availableQty: 40,
+        unitPrice: 36.92, // ~KES 4,800/head
+        grade: 'GRADE_A',
+        location: 'Machakos Apiary Crafts, Machakos',
+        imageUrl: 'https://images.unsplash.com/photo-1473081556163-2a17de81fc97?w=600&auto=format&fit=crop'
       }
     ];
 
     for (const item of animalListings) {
-      await prisma.produceListing.create({ data: item });
+      const exists = await prisma.produceListing.findFirst({
+        where: { cropName: item.cropName, category: item.category }
+      });
+      if (!exists) {
+        await prisma.produceListing.create({ data: item });
+      }
     }
-    console.log('[Produce Catalog] Seeded initial livestock & dairy batches');
+    console.log('[Produce Catalog] Ensured all livestock, dairy, poultry, fodder & apiculture batches');
   } catch (err) {
     console.warn('[Produce Catalog] Seed warning:', err.message);
   }
@@ -4674,51 +4917,135 @@ router.post('/admin/broadcast', requireAdmin, async (req, res) => {
 // Helper: Seed demo tenders if none exist
 async function ensureSeedDemands() {
   try {
-    const dairyCount = await prisma.buyerDemandRequest.count({ where: { category: 'DAIRY' } });
     const buyer = await prisma.user.findFirst({ where: { role: 'BUYER' } }) ||
                   await prisma.user.findFirst();
     if (!buyer) return;
 
-    if (dairyCount === 0) {
-      const animalDemands = [
-        {
-          buyerId: buyer.id,
-          cropName: 'Fresh Raw Cow Milk',
-          category: 'DAIRY',
-          unit: 'litres',
-          requiredQty: 2500,
-          targetPrice: 0.45, // ~KES 58/L
-          deliveryLocation: 'Highlands Dairy Processor Co-op, Limuru Hub',
-          targetDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-          qualityGrade: 'GRADE_A',
-          notes: 'Chilled raw milk with butterfat above 3.5% and lactometer reading >= 28. Delivered in food-grade aluminum cans.'
-        },
-        {
-          buyerId: buyer.id,
-          cropName: 'Fresh Kienyeji Eggs',
-          category: 'POULTRY',
-          unit: 'trays',
-          requiredQty: 400,
-          targetPrice: 3.23, // ~KES 420/tray
-          deliveryLocation: 'Nairobi Supermarket Logistics Centre, Embakasi',
-          targetDate: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
-          qualityGrade: 'GRADE_A',
-          notes: 'Standard 30-egg trays, clean, candled for freshness, uniform brown shell color.'
-        },
-        {
-          buyerId: buyer.id,
-          cropName: 'Boma Rhodes Hay Bales',
-          category: 'FODDER_FEEDS',
-          unit: 'bales',
-          requiredQty: 600,
-          targetPrice: 2.46, // ~KES 320/bale
-          deliveryLocation: 'Kiambu Zero-Grazing Dairy Cluster Depot',
-          targetDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-          qualityGrade: 'GRADE_A',
-          notes: 'Tight 18kg bales, high leaf-to-stem ratio, zero mold, baled during optimal bloom.'
-        }
-      ];
-      for (const d of animalDemands) {
+    const animalDemands = [
+      // 🥛 DAIRY
+      {
+        buyerId: buyer.id,
+        cropName: 'Fresh Raw Cow Milk',
+        category: 'DAIRY',
+        unit: 'litres',
+        requiredQty: 2500,
+        targetPrice: 0.45, // ~KES 58/L
+        deliveryLocation: 'Highlands Dairy Processor Co-op, Limuru Hub',
+        targetDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        qualityGrade: 'GRADE_A',
+        notes: 'Chilled raw milk with butterfat above 3.5% and lactometer reading >= 28. Delivered in food-grade aluminum cans.'
+      },
+      {
+        buyerId: buyer.id,
+        cropName: 'Fresh Pasteurized Goat Milk',
+        category: 'DAIRY',
+        unit: 'litres',
+        requiredQty: 1200,
+        targetPrice: 0.92, // ~KES 120/L
+        deliveryLocation: 'Nairobi Health & Nutrition Hospital Depot, Upper Hill',
+        targetDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
+        qualityGrade: 'GRADE_A',
+        notes: 'Tested pasteurized goat milk in sterile tamper-proof 5L jars for pediatric & geriatric clinical supply.'
+      },
+
+      // 🐄 LIVESTOCK
+      {
+        buyerId: buyer.id,
+        cropName: 'Pedigree In-Calf Dairy Heifers',
+        category: 'LIVESTOCK',
+        unit: 'heads',
+        requiredQty: 10,
+        targetPrice: 730.7, // ~KES 95,000/head
+        deliveryLocation: 'Rift Valley Commercial Zero-Grazing Scheme, Eldoret',
+        targetDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+        qualityGrade: 'GRADE_A',
+        notes: 'In-calf 5-7 months, verified pedigree registration with Kenya Stud Book. Clean veterinary clearance.'
+      },
+      {
+        buyerId: buyer.id,
+        cropName: 'Galla Breeding Goats & Dorper Sheep',
+        category: 'LIVESTOCK',
+        unit: 'heads',
+        requiredQty: 40,
+        targetPrice: 107.6, // ~KES 14,000/head
+        deliveryLocation: 'Kitengela Meat Offtake Ranch, Kajiado County',
+        targetDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        qualityGrade: 'GRADE_A',
+        notes: 'Healthy mature breeding stock with veterinary movement permits and negative Brucellosis certificates.'
+      },
+
+      // 🐔 POULTRY
+      {
+        buyerId: buyer.id,
+        cropName: 'Fresh Kienyeji Eggs',
+        category: 'POULTRY',
+        unit: 'trays',
+        requiredQty: 400,
+        targetPrice: 3.23, // ~KES 420/tray
+        deliveryLocation: 'Nairobi Supermarket Logistics Centre, Embakasi',
+        targetDate: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
+        qualityGrade: 'GRADE_A',
+        notes: 'Standard 30-egg trays, clean, candled for freshness, uniform brown shell color.'
+      },
+      {
+        buyerId: buyer.id,
+        cropName: 'Commercial Broiler Chickens (Live Farm-Gate)',
+        category: 'POULTRY',
+        unit: 'birds',
+        requiredQty: 1500,
+        targetPrice: 3.85, // ~KES 500/bird
+        deliveryLocation: 'Athi River Poultry Processing Abattoir, Machakos',
+        targetDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+        qualityGrade: 'GRADE_A',
+        notes: 'Healthy 5-6 week live broilers averaging 1.8kg - 2.0kg live body weight. Direct off-take.'
+      },
+
+      // 🌿 FODDER & FEEDS
+      {
+        buyerId: buyer.id,
+        cropName: 'Boma Rhodes Hay Bales',
+        category: 'FODDER_FEEDS',
+        unit: 'bales',
+        requiredQty: 600,
+        targetPrice: 2.46, // ~KES 320/bale
+        deliveryLocation: 'Kiambu Zero-Grazing Dairy Cluster Depot',
+        targetDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+        qualityGrade: 'GRADE_A',
+        notes: 'Tight 18kg bales, high leaf-to-stem ratio, zero mold, baled during optimal bloom.'
+      },
+      {
+        buyerId: buyer.id,
+        cropName: 'Inoculated Maize Silage (50kg Bags)',
+        category: 'FODDER_FEEDS',
+        unit: 'bags',
+        requiredQty: 300,
+        targetPrice: 5.76, // ~KES 750/bag
+        deliveryLocation: 'Nakuru Dairy Cooperative Collection Hub',
+        targetDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
+        qualityGrade: 'GRADE_A',
+        notes: 'Hermetically sealed 50kg bags, sweet ferment aroma, pH 3.8-4.2, grain content >30%.'
+      },
+
+      // 🍯 APICULTURE
+      {
+        buyerId: buyer.id,
+        cropName: 'Pure Raw Acacia Honey (Bulk Food-Grade)',
+        category: 'APICULTURE',
+        unit: 'litres',
+        requiredQty: 800,
+        targetPrice: 6.92, // ~KES 900/L
+        deliveryLocation: 'Herbal Pharmaceuticals & Organics Plant, Industrial Area, Nairobi',
+        targetDate: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
+        qualityGrade: 'GRADE_A',
+        notes: '100% pure raw unheated honey, moisture below 18%, supplied in 20-litre food-grade buckets.'
+      }
+    ];
+
+    for (const d of animalDemands) {
+      const exists = await prisma.buyerDemandRequest.findFirst({
+        where: { cropName: d.cropName, category: d.category }
+      });
+      if (!exists) {
         await prisma.buyerDemandRequest.create({ data: d });
       }
     }
