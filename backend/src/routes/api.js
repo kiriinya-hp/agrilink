@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
@@ -828,13 +828,27 @@ router.put('/auth/profile', async (req, res) => {
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    const { name, phone, location, businessName, idNumber } = req.body;
+    const { 
+      name, 
+      phone, 
+      location, 
+      businessName, 
+      idNumber,
+      driverLicenseNo,
+      vehicleRegNo,
+      ntsaInspectionExpiry,
+      kycDocumentUrl
+    } = req.body;
     const dataToUpdate = {};
 
     if (name && name.trim()) dataToUpdate.name = name.trim();
     if (location && location.trim()) dataToUpdate.location = location.trim();
     if (businessName !== undefined) dataToUpdate.businessName = businessName ? businessName.trim() : null;
     if (idNumber !== undefined) dataToUpdate.idNumber = idNumber ? idNumber.trim() : null;
+    if (driverLicenseNo !== undefined) dataToUpdate.driverLicenseNo = driverLicenseNo ? driverLicenseNo.trim() : null;
+    if (vehicleRegNo !== undefined) dataToUpdate.vehicleRegNo = vehicleRegNo ? vehicleRegNo.trim() : null;
+    if (ntsaInspectionExpiry !== undefined) dataToUpdate.ntsaInspectionExpiry = ntsaInspectionExpiry ? ntsaInspectionExpiry.trim() : null;
+    if (kycDocumentUrl !== undefined) dataToUpdate.kycDocumentUrl = kycDocumentUrl ? kycDocumentUrl.trim() : null;
 
     if (phone && phone.trim()) {
       const cleanPhone = phone.trim();
@@ -2242,21 +2256,20 @@ router.post('/wallet/withdraw', async (req, res) => {
 router.get('/market/commodity-prices', async (req, res) => {
   try {
     const commodityIndex = [
-      { id: 'c1', crop: 'Tomatoes (Ranger F1)', market: 'Nairobi (Wakulima)', wholesalePriceKes: 115, unit: 'kg', trend: 'UP', changePct: 4.8, demandLevel: 'HIGH' },
-      { id: 'c2', crop: 'Red Bulb Onions', market: 'Mombasa (Kongowea)', wholesalePriceKes: 88, unit: 'kg', trend: 'DOWN', changePct: -1.2, demandLevel: 'MEDIUM' },
-      { id: 'c3', crop: 'Shangi Potatoes', market: 'Nakuru Wholesale', wholesalePriceKes: 3200, unit: '50kg bag', trend: 'UP', changePct: 3.2, demandLevel: 'VERY_HIGH' },
-      { id: 'c4', crop: 'White Maize (Dry)', market: 'Eldoret Grain Hub', wholesalePriceKes: 4100, unit: '90kg bag', trend: 'STABLE', changePct: 0.5, demandLevel: 'HIGH' },
-      { id: 'c5', crop: 'Hass Avocados (Export Grade)', market: 'Murang’a Sacco Depot', wholesalePriceKes: 140, unit: 'kg', trend: 'UP', changePct: 6.5, demandLevel: 'VERY_HIGH' },
-      { id: 'c6', crop: 'Sukuma Wiki (Collard Greens)', market: 'Kisumu Jubilee', wholesalePriceKes: 40, unit: 'kg', trend: 'STABLE', changePct: -0.5, demandLevel: 'MEDIUM' },
-      { id: 'c7', crop: 'Watermelon (Sukari F1)', market: 'Machakos Wholesale', wholesalePriceKes: 38, unit: 'kg', trend: 'UP', changePct: 2.1, demandLevel: 'HIGH' },
-      { id: 'c8', crop: 'Capsicum (Colored Sweet Pepper)', market: 'Nairobi City Market', wholesalePriceKes: 160, unit: 'kg', trend: 'UP', changePct: 5.0, demandLevel: 'HIGH' },
-      { id: 'c9', crop: 'Fresh Raw Cow Milk', market: 'Eldoret / Nyandarua Chilling Plant', wholesalePriceKes: 58, unit: 'Litre', trend: 'UP', changePct: 3.5, demandLevel: 'VERY_HIGH' },
-      { id: 'c10', crop: 'Kienyeji Eggs (30-Egg Tray)', market: 'Wangige Poultry Hub (Kiambu)', wholesalePriceKes: 420, unit: 'Tray', trend: 'UP', changePct: 2.4, demandLevel: 'VERY_HIGH' },
-      { id: 'c11', crop: 'Improved Kienyeji Chicken (Mature)', market: 'Kariokor Market (Nairobi)', wholesalePriceKes: 950, unit: 'Bird', trend: 'STABLE', changePct: 0.0, demandLevel: 'HIGH' },
-      { id: 'c12', crop: 'In-Calf Friesian Dairy Heifer', market: 'Naivasha Livestock Yard', wholesalePriceKes: 115000, unit: 'Head', trend: 'UP', changePct: 4.5, demandLevel: 'HIGH' },
-      { id: 'c13', crop: 'Boma Rhodes Hay Bales (18kg)', market: 'Nakuru / Rumuruti Fodder Yard', wholesalePriceKes: 320, unit: 'Bale', trend: 'UP', changePct: 6.2, demandLevel: 'VERY_HIGH' }
+      { id: 'c1', crop: 'Tomatoes (Ranger F1)', market: 'Nairobi (Wakulima)', wholesalePriceKes: 115, unit: 'kg', trend: 'UP', changePct: 4.8, demandLevel: 'HIGH', sevenDayHistory: [100, 102, 105, 108, 110, 112, 115] },
+      { id: 'c2', crop: 'Red Bulb Onions', market: 'Mombasa (Kongowea)', wholesalePriceKes: 88, unit: 'kg', trend: 'DOWN', changePct: -1.2, demandLevel: 'MEDIUM', sevenDayHistory: [92, 91, 90, 89, 89, 88, 88] },
+      { id: 'c3', crop: 'Shangi Potatoes', market: 'Nakuru Wholesale', wholesalePriceKes: 3200, unit: '50kg bag', trend: 'UP', changePct: 3.2, demandLevel: 'VERY_HIGH', sevenDayHistory: [3000, 3050, 3080, 3100, 3150, 3180, 3200] },
+      { id: 'c4', crop: 'White Maize (Dry)', market: 'Eldoret Grain Hub', wholesalePriceKes: 4100, unit: '90kg bag', trend: 'STABLE', changePct: 0.5, demandLevel: 'HIGH', sevenDayHistory: [4050, 4050, 4080, 4080, 4100, 4100, 4100] },
+      { id: 'c5', crop: 'Hass Avocados (Export Grade)', market: "Murang'a Sacco Depot", wholesalePriceKes: 140, unit: 'kg', trend: 'UP', changePct: 6.5, demandLevel: 'VERY_HIGH', sevenDayHistory: [120, 122, 128, 130, 135, 138, 140] },
+      { id: 'c6', crop: 'Sukuma Wiki (Collard Greens)', market: 'Kisumu Jubilee', wholesalePriceKes: 40, unit: 'kg', trend: 'STABLE', changePct: -0.5, demandLevel: 'MEDIUM', sevenDayHistory: [42, 42, 41, 40, 40, 40, 40] },
+      { id: 'c7', crop: 'Watermelon (Sukari F1)', market: 'Machakos Wholesale', wholesalePriceKes: 38, unit: 'kg', trend: 'UP', changePct: 2.1, demandLevel: 'HIGH', sevenDayHistory: [34, 35, 35, 36, 37, 37, 38] },
+      { id: 'c8', crop: 'Capsicum (Colored Sweet Pepper)', market: 'Nairobi City Market', wholesalePriceKes: 160, unit: 'kg', trend: 'UP', changePct: 5.0, demandLevel: 'HIGH', sevenDayHistory: [145, 148, 150, 152, 155, 158, 160] },
+      { id: 'c9', crop: 'Fresh Raw Cow Milk', market: 'Eldoret / Nyandarua Chilling Plant', wholesalePriceKes: 58, unit: 'Litre', trend: 'UP', changePct: 3.5, demandLevel: 'VERY_HIGH', sevenDayHistory: [52, 54, 55, 55, 56, 57, 58] },
+      { id: 'c10', crop: 'Kienyeji Eggs (30-Egg Tray)', market: 'Wangige Poultry Hub (Kiambu)', wholesalePriceKes: 420, unit: 'Tray', trend: 'UP', changePct: 2.4, demandLevel: 'VERY_HIGH', sevenDayHistory: [400, 400, 410, 410, 415, 415, 420] },
+      { id: 'c11', crop: 'Improved Kienyeji Chicken (Mature)', market: 'Kariokor Market (Nairobi)', wholesalePriceKes: 950, unit: 'Bird', trend: 'STABLE', changePct: 0.0, demandLevel: 'HIGH', sevenDayHistory: [950, 950, 950, 950, 950, 950, 950] },
+      { id: 'c12', crop: 'In-Calf Friesian Dairy Heifer', market: 'Naivasha Livestock Yard', wholesalePriceKes: 115000, unit: 'Head', trend: 'UP', changePct: 4.5, demandLevel: 'HIGH', sevenDayHistory: [108000, 110000, 110000, 112000, 112000, 114000, 115000] },
+      { id: 'c13', crop: 'Boma Rhodes Hay Bales (18kg)', market: 'Nakuru / Rumuruti Fodder Yard', wholesalePriceKes: 320, unit: 'Bale', trend: 'UP', changePct: 6.2, demandLevel: 'VERY_HIGH', sevenDayHistory: [290, 295, 300, 305, 310, 315, 320] }
     ];
-
     res.json({
       success: true,
       lastUpdated: new Date().toISOString(),
@@ -2886,6 +2899,54 @@ router.post('/shipments/:id/status', async (req, res) => {
   }
 });
 
+// Real-time GPS Location Ping Store (Memory Cached by shipmentId)
+const SHIPMENT_GPS_TELEMETRY = new Map();
+
+// Post real-time driver GPS telemetry
+router.post('/shipments/:id/gps', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { lat, lng, speed, heading, accuracy, batteryLevel, notes } = req.body;
+
+    if (lat === undefined || lng === undefined) {
+      return res.status(400).json({ success: false, error: 'Latitude and longitude are required' });
+    }
+
+    const payload = {
+      shipmentId: id,
+      lat: parseFloat(lat),
+      lng: parseFloat(lng),
+      speed: speed ? parseFloat(speed) : 0,
+      heading: heading ? parseFloat(heading) : 0,
+      accuracy: accuracy ? parseFloat(accuracy) : 10,
+      batteryLevel: batteryLevel || null,
+      notes: notes || 'En route on Kenyan corridor',
+      updatedAt: new Date().toISOString()
+    };
+
+    SHIPMENT_GPS_TELEMETRY.set(id, payload);
+
+    res.json({
+      success: true,
+      message: 'Telemetry updated',
+      telemetry: payload
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Fetch current real-time GPS telemetry for a shipment
+router.get('/shipments/:id/gps', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const telemetry = SHIPMENT_GPS_TELEMETRY.get(id) || null;
+    res.json({ success: true, telemetry });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Atomic OTP Delivery Verification & Escrow Settlement (Security Hardened)
 router.post('/shipments/:id/verify-delivery', async (req, res) => {
   try {
@@ -3322,17 +3383,40 @@ router.get('/analytics', requireAdmin, async (req, res) => {
       _count: { id: true }
     });
 
+    const activeInTransit = orders.filter(o => o.status === 'IN_TRANSIT').length;
+    const disputedOrders = orders.filter(o => o.status === 'DISPUTED').length;
+    const gmvKes = Math.round(grossMerchandiseValue * 130);
+    const activeEscrowHeldKes = Math.round(activeEscrowHeld * 130);
+    const platformCommissionEarnedKes = Math.round(platformCommissionEarned * 130);
+
+    // 7-day volume trend summary (mocked distribution for chart visualization)
+    const sevenDayTrends = [
+      { day: 'Mon', gmvKes: Math.round(gmvKes * 0.12), volumeKg: Math.round(totalKilograms * 0.12) },
+      { day: 'Tue', gmvKes: Math.round(gmvKes * 0.15), volumeKg: Math.round(totalKilograms * 0.14) },
+      { day: 'Wed', gmvKes: Math.round(gmvKes * 0.18), volumeKg: Math.round(totalKilograms * 0.19) },
+      { day: 'Thu', gmvKes: Math.round(gmvKes * 0.14), volumeKg: Math.round(totalKilograms * 0.13) },
+      { day: 'Fri', gmvKes: Math.round(gmvKes * 0.22), volumeKg: Math.round(totalKilograms * 0.24) },
+      { day: 'Sat', gmvKes: Math.round(gmvKes * 0.11), volumeKg: Math.round(totalKilograms * 0.11) },
+      { day: 'Sun', gmvKes: Math.round(gmvKes * 0.08), volumeKg: Math.round(totalKilograms * 0.07) }
+    ];
+
     res.json({
       success: true,
       analytics: {
         totalOrders,
         completedOrders,
+        activeInTransit,
+        disputedOrders,
         grossMerchandiseValue: parseFloat(grossMerchandiseValue.toFixed(2)),
+        grossMerchandiseValueKes: gmvKes,
         activeEscrowHeld: parseFloat(activeEscrowHeld.toFixed(2)),
+        activeEscrowHeldKes: activeEscrowHeldKes,
         platformCommissionEarned: parseFloat(platformCommissionEarned.toFixed(2)),
+        platformCommissionEarnedKes: platformCommissionEarnedKes,
         totalTonnage: parseFloat((totalKilograms / 1000).toFixed(2)),
         totalKilograms: parseFloat(totalKilograms.toFixed(2)),
-        userCounts
+        userCounts,
+        sevenDayTrends
       }
     });
   } catch (error) {

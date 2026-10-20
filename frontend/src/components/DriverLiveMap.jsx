@@ -183,6 +183,22 @@ export default function DriverLiveMap({
         if (mapInstanceRef.current) {
           mapInstanceRef.current.setView([latitude, longitude], 12);
         }
+
+        // Auto-broadcast real-time GPS coordinates to backend if active shipment selected
+        if (currentShipment?.id) {
+          fetch(`/api/shipments/${currentShipment.id}/gps`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              lat: latitude,
+              lng: longitude,
+              accuracy,
+              speed: pos.coords.speed || 0,
+              heading: pos.coords.heading || 0,
+              notes: 'Live driver device telemetry'
+            })
+          }).catch(e => console.warn('Telemetry broadcast notice:', e.message));
+        }
       },
       (err) => {
         console.warn('GPS location error:', err.message);

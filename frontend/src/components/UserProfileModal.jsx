@@ -31,7 +31,10 @@ export default function UserProfileModal({ isOpen, onClose, onProfileUpdated }) 
     phone: '',
     location: '',
     businessName: '',
-    idNumber: ''
+    idNumber: '',
+    driverLicenseNo: '',
+    vehicleRegNo: '',
+    ntsaInspectionExpiry: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -68,7 +71,10 @@ export default function UserProfileModal({ isOpen, onClose, onProfileUpdated }) 
         phone: user.phone && !user.phone.startsWith('+254000') && !user.phone.startsWith('google_') ? user.phone : (user.phone || ''),
         location: user.location || '',
         businessName: user.businessName || '',
-        idNumber: user.idNumber || ''
+        idNumber: user.idNumber || '',
+        driverLicenseNo: user.driverLicenseNo || '',
+        vehicleRegNo: user.vehicleRegNo || '',
+        ntsaInspectionExpiry: user.ntsaInspectionExpiry || ''
       });
       setError('');
       setSuccessMsg('');
@@ -261,6 +267,52 @@ export default function UserProfileModal({ isOpen, onClose, onProfileUpdated }) 
             />
             <span className="text-[10px] text-slate-400 mt-1 block">Required for legal escrow and cargo insurance claims</span>
           </div>
+
+          {/* Transporter / Driver KYC & Fleet Credentials */}
+          {user.role === 'TRANSPORTER' && (
+            <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 space-y-3">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-amber-700" />
+                <h4 className="text-xs font-black uppercase tracking-wider text-amber-900">
+                  NTSA Transporter & Fleet Compliance
+                </h4>
+              </div>
+              <p className="text-[11px] text-amber-800">
+                Verified freight carriers qualify for priority cargo matching and expedited escrow transit payouts.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                <div>
+                  <label className="block mb-1 text-[11px] font-bold text-amber-900">Driver License (DL) *</label>
+                  <input
+                    type="text"
+                    value={formData.driverLicenseNo}
+                    onChange={(e) => setFormData({ ...formData, driverLicenseNo: e.target.value })}
+                    placeholder="e.g. DL-9821430"
+                    className="w-full px-3 py-2 bg-white border border-amber-300 rounded-lg text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-[11px] font-bold text-amber-900">Vehicle Registration *</label>
+                  <input
+                    type="text"
+                    value={formData.vehicleRegNo}
+                    onChange={(e) => setFormData({ ...formData, vehicleRegNo: e.target.value })}
+                    placeholder="e.g. KDA 492L (5T Isuzu)"
+                    className="w-full px-3 py-2 bg-white border border-amber-300 rounded-lg text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-[11px] font-bold text-amber-900">NTSA Inspection Expiry</label>
+                  <input
+                    type="date"
+                    value={formData.ntsaInspectionExpiry}
+                    onChange={(e) => setFormData({ ...formData, ntsaInspectionExpiry: e.target.value })}
+                    className="w-full px-3 py-2 bg-white border border-amber-300 rounded-lg text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Read-Only Account Security Metadata */}
           <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-200/80 space-y-2 text-[11px] text-slate-600">

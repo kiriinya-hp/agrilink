@@ -145,6 +145,7 @@ export default function CommodityPriceTicker() {
                       <th className="py-3 px-4">Wholesale Hub</th>
                       <th className="py-3 px-4">Benchmark Price</th>
                       <th className="py-3 px-4">24h Movement</th>
+                      <th className="py-3 px-4">7-Day Trend Sparkline</th>
                       <th className="py-3 px-4">Market Demand</th>
                     </tr>
                   </thead>
@@ -178,6 +179,25 @@ export default function CommodityPriceTicker() {
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold text-[11px]">
                               <Minus className="w-3 h-3" /> Stable
                             </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          {c.sevenDayHistory && (
+                            <div className="flex items-end gap-1 h-5 w-24">
+                              {c.sevenDayHistory.map((val, idx) => {
+                                const min = Math.min(...c.sevenDayHistory);
+                                const max = Math.max(...c.sevenDayHistory);
+                                const heightPct = max === min ? 50 : Math.max(15, Math.round(((val - min) / (max - min)) * 100));
+                                return (
+                                  <div 
+                                    key={idx} 
+                                    className={`w-2.5 rounded-t transition-all ${c.trend === 'UP' ? 'bg-emerald-500' : c.trend === 'DOWN' ? 'bg-rose-400' : 'bg-slate-400'}`}
+                                    style={{ height: `${heightPct}%` }}
+                                    title={`Day ${idx + 1}: KES ${val.toLocaleString()}`}
+                                  />
+                                );
+                              })}
+                            </div>
                           )}
                         </td>
                         <td className="py-3 px-4">

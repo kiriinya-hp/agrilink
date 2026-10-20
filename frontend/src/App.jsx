@@ -2393,19 +2393,62 @@ function MainApp({ onReplayIntro }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                 <span className="text-[10px] font-bold text-slate-400 uppercase">Gross Merchandise Value (GMV)</span>
-                <p className="text-2xl font-black text-slate-900 mt-1">${(analytics.grossMerchandiseValue || 0).toFixed(2)}</p>
+                <p className="text-2xl font-black text-slate-900 mt-1">
+                  KES {(analytics.grossMerchandiseValueKes || Math.round((analytics.grossMerchandiseValue || 0) * 130)).toLocaleString()}
+                </p>
+                <span className="text-[11px] text-slate-400">${(analytics.grossMerchandiseValue || 0).toFixed(2)} USD</span>
               </div>
               <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                 <span className="text-[10px] font-bold text-slate-400 uppercase">Active Escrow Holdings</span>
-                <p className="text-2xl font-black text-amber-600 mt-1">${(analytics.activeEscrowHeld || 0).toFixed(2)}</p>
+                <p className="text-2xl font-black text-amber-600 mt-1">
+                  KES {(analytics.activeEscrowHeldKes || Math.round((analytics.activeEscrowHeld || 0) * 130)).toLocaleString()}
+                </p>
+                <span className="text-[11px] text-slate-400">${(analytics.activeEscrowHeld || 0).toFixed(2)} USD</span>
               </div>
               <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                 <span className="text-[10px] font-bold text-slate-400 uppercase">Platform Commissions (5%)</span>
-                <p className="text-2xl font-black text-emerald-600 mt-1">${(analytics.platformCommissionEarned || 0).toFixed(2)}</p>
+                <p className="text-2xl font-black text-emerald-600 mt-1">
+                  KES {(analytics.platformCommissionEarnedKes || Math.round((analytics.platformCommissionEarned || 0) * 130)).toLocaleString()}
+                </p>
+                <span className="text-[11px] text-slate-400">${(analytics.platformCommissionEarned || 0).toFixed(2)} USD</span>
               </div>
               <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                 <span className="text-[10px] font-bold text-slate-400 uppercase">Total Food Dispatched</span>
                 <p className="text-2xl font-black text-blue-600 mt-1">{analytics.totalTonnage || 0} Tonnes</p>
+                <span className="text-[11px] text-slate-400">{analytics.completedOrders || 0} Delivered Orders</span>
+              </div>
+            </div>
+
+            {/* Operational Velocity & 7-Day Performance */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Active Cargoes In Transit</span>
+                <p className="text-3xl font-black text-indigo-600">{analytics.activeInTransit || 0}</p>
+                <p className="text-xs text-slate-500 mt-1">Vehicles currently hauling across corridor highways</p>
+              </div>
+
+              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Escrow Resolution Rate</span>
+                <p className="text-3xl font-black text-emerald-600">
+                  {analytics.totalOrders ? Math.round(((analytics.completedOrders || 0) / analytics.totalOrders) * 100) : 100}%
+                </p>
+                <p className="text-xs text-slate-500 mt-1">{analytics.disputedOrders || 0} active disputes under arbitration</p>
+              </div>
+
+              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Weekly Trading Cadence</span>
+                <div className="flex items-end gap-1.5 h-10 mt-2">
+                  {(analytics.sevenDayTrends || []).map((t, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                      <div 
+                        className="w-full bg-emerald-500/80 hover:bg-emerald-600 rounded-t transition-all"
+                        style={{ height: `${Math.max(20, Math.round((t.gmvKes / (analytics.grossMerchandiseValueKes || 1)) * 300))}%` }}
+                        title={`${t.day}: KES ${t.gmvKes.toLocaleString()}`}
+                      />
+                      <span className="text-[9px] text-slate-400 font-bold">{t.day}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

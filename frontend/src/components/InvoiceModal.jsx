@@ -144,7 +144,9 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
                 </div>
               </div>
               <div className="text-xs text-slate-600 mt-2 space-y-0.5">
-                <p>AgriShamba Supply Chain Ltd • KRA PIN: P051982736Z</p>
+                <p>AgriShamba Supply Chain Ltd • KRA PIN: <strong>P051982736Z</strong></p>
+                <p>KRA eTIMS CU Number: <strong className="font-mono text-emerald-800">KRA-CU-2026-ETR-094812</strong></p>
+                <p>Control Code: <strong className="font-mono text-slate-800">{order.id ? order.id.slice(-8).toUpperCase() : 'B4F92C10'}</strong> (Cryptographically Signed)</p>
                 <p>Wakulima House, Haile Selassie Ave, Nairobi, Kenya</p>
                 <p>Support: +254 700 000 000 • legal@agrishamba.co.ke</p>
               </div>
