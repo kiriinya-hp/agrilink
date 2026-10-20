@@ -42,7 +42,7 @@ model ProduceListing {
   availableQty Float
   unitPrice    Float
   grade        String      // GRADE_A, GRADE_B, STANDARD, BREEDING, COMMERCIAL
-  harvestDate  DateTime
+  harvestDate  DateTime    @default(now())
   location     String
   status       String      @default("ACTIVE") // ACTIVE, RESERVED, SOLD_OUT
   imageUrl     String?

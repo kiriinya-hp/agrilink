@@ -1689,7 +1689,12 @@ async function ensureSeedAnimalListings() {
         where: { cropName: item.cropName, category: item.category }
       });
       if (!exists) {
-        await prisma.produceListing.create({ data: item });
+        await prisma.produceListing.create({ 
+          data: {
+            ...item,
+            harvestDate: item.harvestDate ? new Date(item.harvestDate) : new Date()
+          } 
+        });
       }
     }
     console.log('[Produce Catalog] Ensured all livestock, dairy, poultry, fodder & apiculture batches');
