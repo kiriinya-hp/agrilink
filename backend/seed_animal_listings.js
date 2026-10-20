@@ -332,68 +332,6 @@ async function seedNow() {
         harvestDate: now,
         location: 'Thika Agro Millers, Kiambu',
         imageUrl: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&auto=format&fit=crop'
-      },
-
-      // 🍯 APICULTURE
-      {
-        farmerId: farmer.id,
-        cropName: 'Pure Raw Acacia Honey',
-        category: 'APICULTURE',
-        unit: 'litres',
-        availableQty: 300,
-        unitPrice: 6.92, // ~KES 900/L
-        grade: 'GRADE_A',
-        harvestDate: now,
-        location: 'Baringo Central',
-        imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'Organic Forest Multi-Floral Honey (Raw Unfiltered)',
-        category: 'APICULTURE',
-        unit: 'litres',
-        availableQty: 250,
-        unitPrice: 7.30, // ~KES 950/L
-        grade: 'GRADE_A',
-        harvestDate: now,
-        location: 'Kakamega Forest Apiaries, Kakamega',
-        imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'Natural Refined Beeswax Blocks',
-        category: 'APICULTURE',
-        unit: 'kg',
-        availableQty: 180,
-        unitPrice: 6.15, // ~KES 800/kg
-        grade: 'GRADE_A',
-        harvestDate: now,
-        location: 'Kitui Honey & Wax Co-operative, Kitui',
-        imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'Natural Pure Comb Honey in Timber Frames',
-        category: 'APICULTURE',
-        unit: 'kg',
-        availableQty: 120,
-        unitPrice: 8.46, // ~KES 1,100/kg
-        grade: 'GRADE_A',
-        harvestDate: now,
-        location: 'Baringo Hills Organic Apiary, Baringo',
-        imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'Seasoned Langstroth Beehives (Wax-Primed Frames)',
-        category: 'APICULTURE',
-        unit: 'heads',
-        availableQty: 40,
-        unitPrice: 36.92, // ~KES 4,800/head
-        grade: 'GRADE_A',
-        harvestDate: now,
-        location: 'Machakos Apiary Crafts, Machakos',
-        imageUrl: 'https://images.unsplash.com/photo-1473081556163-2a17de81fc97?w=600&auto=format&fit=crop'
       }
     ];
 

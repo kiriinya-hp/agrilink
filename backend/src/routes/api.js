@@ -1440,63 +1440,6 @@ async function ensureSeedAnimalListings() {
         imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&auto=format&fit=crop'
       },
 
-      // 🍯 APICULTURE
-      {
-        farmerId: farmer.id,
-        cropName: 'Pure Raw Acacia Honey',
-        category: 'APICULTURE',
-        unit: 'litres',
-        availableQty: 300,
-        unitPrice: 6.92, // ~KES 900/L
-        grade: 'GRADE_A',
-        location: 'Baringo Central',
-        imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'Organic Forest Multi-Floral Honey (Raw Unfiltered)',
-        category: 'APICULTURE',
-        unit: 'litres',
-        availableQty: 250,
-        unitPrice: 7.30, // ~KES 950/L
-        grade: 'GRADE_A',
-        location: 'Kakamega Forest Apiaries, Kakamega',
-        imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'Natural Refined Beeswax Blocks',
-        category: 'APICULTURE',
-        unit: 'kg',
-        availableQty: 180,
-        unitPrice: 6.15, // ~KES 800/kg
-        grade: 'GRADE_A',
-        location: 'Kitui Honey & Wax Co-operative, Kitui',
-        imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'Raw Bee Propolis Tincture & Extract',
-        category: 'APICULTURE',
-        unit: 'litres',
-        availableQty: 80,
-        unitPrice: 18.46, // ~KES 2,400/L
-        grade: 'GRADE_A',
-        location: 'Marigat Bee Sanctuary, Baringo',
-        imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'Seasoned Langstroth Beehives (Wax-Primed Frames)',
-        category: 'APICULTURE',
-        unit: 'heads',
-        availableQty: 40,
-        unitPrice: 36.92, // ~KES 4,800/head
-        grade: 'GRADE_A',
-        location: 'Machakos Apiary Crafts, Machakos',
-        imageUrl: 'https://images.unsplash.com/photo-1473081556163-2a17de81fc97?w=600&auto=format&fit=crop'
-      },
-
       // 🥛 DAIRY (Expanded Marketplace Products)
       {
         farmerId: farmer.id,
@@ -1646,41 +1589,6 @@ async function ensureSeedAnimalListings() {
         grade: 'GRADE_A',
         location: 'Kisumu Oil Mills, Kisumu County',
         imageUrl: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&auto=format&fit=crop'
-      },
-
-      // 🍯 APICULTURE (Expanded Marketplace Products)
-      {
-        farmerId: farmer.id,
-        cropName: 'Natural Pure Comb Honey in Timber Frames',
-        category: 'APICULTURE',
-        unit: 'kg',
-        availableQty: 120,
-        unitPrice: 8.46, // ~KES 1,100/kg
-        grade: 'GRADE_A',
-        location: 'Baringo Hills Organic Apiary, Baringo',
-        imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'Raw Bee Pollen Granules (Protein Superfood)',
-        category: 'APICULTURE',
-        unit: 'kg',
-        availableQty: 60,
-        unitPrice: 16.92, // ~KES 2,200/kg
-        grade: 'GRADE_A',
-        location: 'Mt. Kenya Highland Beekeepers, Embu',
-        imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'Heavy-Duty Beekeeper Protection Suit & Smoker Kit',
-        category: 'APICULTURE',
-        unit: 'heads',
-        availableQty: 25,
-        unitPrice: 29.23, // ~KES 3,800/set
-        grade: 'GRADE_A',
-        location: 'Nairobi Apiary Supplies, Industrial Area',
-        imageUrl: 'https://images.unsplash.com/photo-1473081556163-2a17de81fc97?w=600&auto=format&fit=crop'
       }
     ];
 
@@ -1697,7 +1605,7 @@ async function ensureSeedAnimalListings() {
         });
       }
     }
-    console.log('[Produce Catalog] Ensured all livestock, dairy, poultry, fodder & apiculture batches');
+    console.log('[Produce Catalog] Ensured all livestock, dairy, poultry & fodder batches');
   } catch (err) {
     console.warn('[Produce Catalog] Seed warning:', err.message);
   }
@@ -2162,8 +2070,7 @@ router.get('/market/commodity-prices', async (req, res) => {
       { id: 'c10', crop: 'Kienyeji Eggs (30-Egg Tray)', market: 'Wangige Poultry Hub (Kiambu)', wholesalePriceKes: 420, unit: 'Tray', trend: 'UP', changePct: 2.4, demandLevel: 'VERY_HIGH' },
       { id: 'c11', crop: 'Improved Kienyeji Chicken (Mature)', market: 'Kariokor Market (Nairobi)', wholesalePriceKes: 950, unit: 'Bird', trend: 'STABLE', changePct: 0.0, demandLevel: 'HIGH' },
       { id: 'c12', crop: 'In-Calf Friesian Dairy Heifer', market: 'Naivasha Livestock Yard', wholesalePriceKes: 115000, unit: 'Head', trend: 'UP', changePct: 4.5, demandLevel: 'HIGH' },
-      { id: 'c13', crop: 'Boma Rhodes Hay Bales (18kg)', market: 'Nakuru / Rumuruti Fodder Yard', wholesalePriceKes: 320, unit: 'Bale', trend: 'UP', changePct: 6.2, demandLevel: 'VERY_HIGH' },
-      { id: 'c14', crop: 'Pure Raw Acacia Honey', market: 'Baringo / Kitui Apiary Co-op', wholesalePriceKes: 900, unit: 'Litre', trend: 'STABLE', changePct: 1.1, demandLevel: 'HIGH' }
+      { id: 'c13', crop: 'Boma Rhodes Hay Bales (18kg)', market: 'Nakuru / Rumuruti Fodder Yard', wholesalePriceKes: 320, unit: 'Bale', trend: 'UP', changePct: 6.2, demandLevel: 'VERY_HIGH' }
     ];
 
     res.json({
@@ -5215,20 +5122,6 @@ async function ensureSeedDemands() {
         targetDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
         qualityGrade: 'GRADE_A',
         notes: 'Hermetically sealed 50kg bags, sweet ferment aroma, pH 3.8-4.2, grain content >30%.'
-      },
-
-      // 🍯 APICULTURE
-      {
-        buyerId: buyer.id,
-        cropName: 'Pure Raw Acacia Honey (Bulk Food-Grade)',
-        category: 'APICULTURE',
-        unit: 'litres',
-        requiredQty: 800,
-        targetPrice: 6.92, // ~KES 900/L
-        deliveryLocation: 'Herbal Pharmaceuticals & Organics Plant, Industrial Area, Nairobi',
-        targetDate: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
-        qualityGrade: 'GRADE_A',
-        notes: '100% pure raw unheated honey, moisture below 18%, supplied in 20-litre food-grade buckets.'
       }
     ];
 

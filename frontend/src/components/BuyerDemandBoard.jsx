@@ -61,13 +61,6 @@ export const COMMODITY_MARKET_BENCHMARKS = [
   { name: 'High-Yield Dairy Meal (16% CP, 70kg Bag)', category: 'FODDER_FEEDS', unit: 'bags', priceKes: 2850, priceUsd: 21.92 },
   { name: 'Wheat Pollard & Bran Blend (50kg Bag)', category: 'FODDER_FEEDS', unit: 'bags', priceKes: 1650, priceUsd: 12.69 },
 
-  // 🍯 APICULTURE
-  { name: 'Pure Raw Acacia Honey', category: 'APICULTURE', unit: 'litres', priceKes: 900, priceUsd: 6.92 },
-  { name: 'Organic Forest Multi-Floral Honey (Raw Unfiltered)', category: 'APICULTURE', unit: 'litres', priceKes: 950, priceUsd: 7.30 },
-  { name: 'Natural Refined Beeswax Blocks', category: 'APICULTURE', unit: 'kg', priceKes: 800, priceUsd: 6.15 },
-  { name: 'Natural Pure Comb Honey in Timber Frames', category: 'APICULTURE', unit: 'kg', priceKes: 1100, priceUsd: 8.46 },
-  { name: 'Raw Bee Propolis Tincture & Extract', category: 'APICULTURE', unit: 'litres', priceKes: 2400, priceUsd: 18.46 },
-
   // 🥬 HORTICULTURE, CEREALS & TUBERS
   { name: 'Roma Plum Tomatoes', category: 'HORTICULTURE', unit: 'kg', priceKes: 95, priceUsd: 0.73 },
   { name: 'Red Bulb Onions', category: 'HORTICULTURE', unit: 'kg', priceKes: 85, priceUsd: 0.65 },
@@ -474,7 +467,6 @@ export default function BuyerDemandBoard({ user, token, apiBase, formatMoney, cu
             { key: 'LIVESTOCK', label: '🐄 Livestock' },
             { key: 'POULTRY', label: '🐔 Poultry & Eggs' },
             { key: 'FODDER_FEEDS', label: '🌿 Feeds & Fodder' },
-            { key: 'APICULTURE', label: '🍯 Apiculture (Honey)' },
             { key: 'HORTICULTURE', label: '🥬 Horticulture' },
             { key: 'CEREAL', label: '🌾 Cereals' },
             { key: 'TUBER', label: '🥔 Tubers' }
@@ -801,7 +793,6 @@ export default function BuyerDemandBoard({ user, token, apiBase, formatMoney, cu
                       else if (cat === 'LIVESTOCK') defUnit = 'heads';
                       else if (cat === 'POULTRY') defUnit = 'birds';
                       else if (cat === 'FODDER_FEEDS') defUnit = 'bales';
-                      else if (cat === 'APICULTURE') defUnit = 'litres';
                       else if (cat === 'CEREAL') defUnit = 'bags';
                       else defUnit = 'kg';
                       setCreateForm({ ...createForm, category: cat, unit: defUnit });
@@ -812,7 +803,6 @@ export default function BuyerDemandBoard({ user, token, apiBase, formatMoney, cu
                     <option value="LIVESTOCK">🐄 Live Livestock (Cattle, Goats, Sheep, Pigs)</option>
                     <option value="POULTRY">🐔 Poultry & Eggs (Kienyeji, Broilers, Trays)</option>
                     <option value="FODDER_FEEDS">🌿 Feeds & Fodder (Hay, Lucerne, Silage)</option>
-                    <option value="APICULTURE">🍯 Apiculture (Raw Honey, Beeswax)</option>
                     <option value="HORTICULTURE">🥬 Horticulture (Fruits & Veg)</option>
                     <option value="CEREAL">🌾 Cereal & Grains</option>
                     <option value="TUBER">🥔 Tubers & Roots</option>

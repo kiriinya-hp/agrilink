@@ -333,10 +333,7 @@ export default function KilimoAIAssistant({
 
 🐔 **Kuku wa Kienyeji & Mayai**:
 • **Ratiba ya Chanjo**: Siku ya 7 & 21 (Gumboro), Siku ya 14 & 28 (Newcastle/Kideri), Wiki ya 6 (Ndui ya Kuku / Fowl Pox).
-• **Uzalishaji wa Mayai**: Wape kuku wa mayai Layers Mash safi na madini ya chokaa (Limestone/Calcium) ili maganda yawe magumu.
-
-🍯 **Ufugaji wa Nyuki (Asali Safi)**:
-• Tumia mizinga ya kisasa ya Langstroth au KTBH, weka kivulini mita 1 kutoka ardhini karibu na miti inayotoa maua.`,
+• **Uzalishaji wa Mayai**: Wape kuku wa mayai Layers Mash safi na madini ya chokaa (Limestone/Calcium) ili maganda yawe magumu.`,
           actions: [
             { label: 'Tazama Mifugo & Maziwa Sokoni', action: 'navigate_main' },
             { label: 'Weka Mifugo Yako Sokoni', action: 'navigate_farmer' }
@@ -386,7 +383,7 @@ Every diagnosis includes exact chemical dosage per 20L knapsack sprayer, pre-har
     }
 
     // 1.8 LIVESTOCK HUSBANDRY & VETERINARY CARE
-    if (q.includes('livestock') || q.includes('cow') || q.includes('cattle') || q.includes('dairy') || q.includes('milk') || q.includes('poultry') || q.includes('chicken') || q.includes('egg') || q.includes('feed') || q.includes('fodder') || q.includes('hay') || q.includes('silage') || q.includes('honey') || q.includes('bee') || q.includes('vaccin') || q.includes('mastitis') || q.includes('veterinary')) {
+    if (q.includes('livestock') || q.includes('cow') || q.includes('cattle') || q.includes('dairy') || q.includes('milk') || q.includes('poultry') || q.includes('chicken') || q.includes('egg') || q.includes('feed') || q.includes('fodder') || q.includes('hay') || q.includes('silage') || q.includes('vaccin') || q.includes('mastitis') || q.includes('veterinary')) {
       return {
         text: `🐄 **Kilimo AI Livestock, Dairy & Poultry Veterinary Advisory:**
 
@@ -407,10 +404,7 @@ Every diagnosis includes exact chemical dosage per 20L knapsack sprayer, pre-har
 • **Egg Shell Strength**: Provide coarse limestone grit / crushed oyster shells for continuous calcium supply.
 
 🌿 **Animal Feeds & Fodder Management**:
-• Test silage pH (ideal 3.8–4.2 with sweet fermentation aroma). Keep bales elevated on wooden pallets away from damp soil.
-
-🍯 **Apiculture & Raw Honey**:
-• Position Langstroth or Kenya Top Bar Hives (KTBH) 1 metre above ground facing away from direct high winds, within 500m of clean fresh water.`,
+• Test silage pH (ideal 3.8–4.2 with sweet fermentation aroma). Keep bales elevated on wooden pallets away from damp soil.`,
         actions: [
           { label: 'Explore Dairy & Livestock Listings', action: 'navigate_main' },
           { label: 'Post Livestock on AgriShamba', action: 'navigate_farmer' }
@@ -434,7 +428,6 @@ Every diagnosis includes exact chemical dosage per 20L knapsack sprayer, pre-har
 • 🐔 **Improved Kienyeji Chicken**: **KES 950 / Bird** at Kariokor Market (Nairobi)
 • 🐄 **In-Calf Friesian Heifer**: **KES 115,000 / Head** at Naivasha Livestock Yard
 • 🌿 **Boma Rhodes Hay (18kg Bale)**: **KES 320 / Bale** at Nakuru / Rumuruti
-• 🍯 **Pure Raw Acacia Honey**: **KES 900 / Litre** at Baringo & Kitui Co-ops
 
 *Benchmark updates reflect daily weighted clearinghouse transactions across verified markets.*`,
         actions: [

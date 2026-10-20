@@ -4,7 +4,7 @@ import { Bell, X, ShieldCheck, Truck, Sparkles, Milk, Egg, Leaf, CheckCheck } fr
 /**
  * Mobile Heads-Up Floating Notification Pill
  * ─ Slides down from top on new alerts
- * ─ Category-aware icon & colour theming (ESCROW, ORDER, DAIRY, LIVESTOCK, POULTRY, APICULTURE, SYSTEM)
+ * ─ Category-aware icon & colour theming (ESCROW, ORDER, DAIRY, LIVESTOCK, POULTRY, SYSTEM)
  * ─ Animated countdown progress bar (5 s auto-dismiss)
  * ─ Swipe-up gesture to dismiss early
  * ─ One-tap to open Notification Drawer
@@ -70,7 +70,6 @@ export default function MobileNotificationPill({ notification, onOpenDrawer, onD
   const isDairy      = text.includes('dairy') || text.includes('milk') || text.includes('yoghurt');
   const isLivestock  = text.includes('livestock') || text.includes('cattle') || text.includes('goat') || text.includes('sheep') || text.includes('pig');
   const isPoultry    = text.includes('poultry') || text.includes('chicken') || text.includes('egg') || text.includes('layer') || text.includes('broiler');
-  const isApiculture = text.includes('apiculture') || text.includes('honey') || text.includes('beeswax') || text.includes('bee');
   const isFodder     = text.includes('fodder') || text.includes('hay') || text.includes('silage') || text.includes('lucerne');
 
   // ── Theme map ────────────────────────────────────────────────────────────────
@@ -79,7 +78,6 @@ export default function MobileNotificationPill({ notification, onOpenDrawer, onD
               : isDairy      ? { bg: 'bg-sky-500/20',     border: 'border-sky-500/40',     ring: 'bg-sky-400',    badge: 'bg-sky-600/40 text-sky-200',      Icon: Milk        }
               : isPoultry    ? { bg: 'bg-orange-500/20',  border: 'border-orange-500/40',  ring: 'bg-orange-400', badge: 'bg-orange-600/40 text-orange-200', Icon: Egg         }
               : isLivestock  ? { bg: 'bg-lime-500/20',    border: 'border-lime-500/40',    ring: 'bg-lime-400',   badge: 'bg-lime-600/40 text-lime-200',    Icon: Leaf        }
-              : isApiculture ? { bg: 'bg-yellow-500/20',  border: 'border-yellow-500/40',  ring: 'bg-yellow-400', badge: 'bg-yellow-600/40 text-yellow-200', Icon: Sparkles    }
               : isFodder     ? { bg: 'bg-teal-500/20',    border: 'border-teal-500/40',    ring: 'bg-teal-400',   badge: 'bg-teal-600/40 text-teal-200',    Icon: Leaf        }
               :                { bg: 'bg-indigo-500/20',  border: 'border-indigo-500/40',  ring: 'bg-indigo-400', badge: 'bg-indigo-600/40 text-indigo-200', Icon: Bell        };
 

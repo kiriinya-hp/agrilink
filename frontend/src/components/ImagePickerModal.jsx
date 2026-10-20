@@ -128,26 +128,6 @@ const PRESET_CROPS = [
     url: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&auto=format&fit=crop'
   },
   {
-    name: 'Pure Raw Acacia Honey',
-    category: 'APICULTURE',
-    url: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
-  },
-  {
-    name: 'Organic Multi-Floral Forest Honey',
-    category: 'APICULTURE',
-    url: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
-  },
-  {
-    name: 'Natural Pure Beeswax Cakes',
-    category: 'APICULTURE',
-    url: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
-  },
-  {
-    name: 'Seasoned Langstroth Beehives',
-    category: 'APICULTURE',
-    url: 'https://images.unsplash.com/photo-1473081556163-2a17de81fc97?w=600&auto=format&fit=crop'
-  },
-  {
     name: 'Pure Grass-Fed Traditional Ghee',
     category: 'DAIRY',
     url: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=600&auto=format&fit=crop'
@@ -171,11 +151,6 @@ const PRESET_CROPS = [
     name: 'Pasture Seed & Cane Molasses',
     category: 'FODDER_FEEDS',
     url: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&auto=format&fit=crop'
-  },
-  {
-    name: 'Comb Honey in Frames & Bee Pollen',
-    category: 'APICULTURE',
-    url: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
   }
 ];
 

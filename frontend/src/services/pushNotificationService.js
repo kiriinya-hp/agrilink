@@ -7,7 +7,7 @@ import { Capacitor } from '@capacitor/core';
  * • Android: uses Capacitor LocalNotifications with multiple priority channels
  *   - agrishamba_escrow   (Importance 5 – heads-up, max priority)
  *   - agrishamba_orders   (Importance 4 – high)
- *   - agrishamba_livestock (Importance 4 – high, for dairy/livestock/poultry/apiculture/fodder)
+ *   - agrishamba_livestock (Importance 4 – high, for dairy/livestock/poultry/fodder)
  *   - agrishamba_system   (Importance 3 – default)
  * • Web fallback: browser Notification API
  */
@@ -38,7 +38,7 @@ const CHANNELS = [
   {
     id: 'agrishamba_livestock',
     name: 'AgriShamba Livestock & Animal Farming',
-    description: 'Dairy, livestock, poultry, apiculture, and fodder alerts',
+    description: 'Dairy, livestock, poultry, and fodder alerts',
     importance: 4,
     visibility: 1,
     vibration: true,
@@ -70,7 +70,6 @@ function resolveChannel(title = '', body = '') {
     t.includes('dairy') || t.includes('milk') || t.includes('yoghurt') ||
     t.includes('livestock') || t.includes('cattle') || t.includes('goat') || t.includes('sheep') || t.includes('pig') || t.includes('heifer') ||
     t.includes('poultry') || t.includes('chicken') || t.includes('egg') || t.includes('layer') || t.includes('broiler') ||
-    t.includes('honey') || t.includes('beeswax') || t.includes('apiculture') ||
     t.includes('fodder') || t.includes('hay') || t.includes('silage') || t.includes('lucerne')
   ) {
     return 'agrishamba_livestock';

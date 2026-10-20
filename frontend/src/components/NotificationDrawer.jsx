@@ -57,7 +57,6 @@ function classifyNotification(n) {
   if (t.includes('dairy') || t.includes('milk') || t.includes('yoghurt')) return 'DAIRY';
   if (t.includes('livestock') || t.includes('cattle') || t.includes('goat') || t.includes('sheep') || t.includes('pig') || t.includes('heifer')) return 'LIVESTOCK';
   if (t.includes('poultry') || t.includes('chicken') || t.includes('egg') || t.includes('layer') || t.includes('broiler') || t.includes('kienyeji')) return 'POULTRY';
-  if (t.includes('apiculture') || t.includes('honey') || t.includes('beeswax') || t.includes('bee')) return 'APICULTURE';
   if (t.includes('fodder') || t.includes('hay') || t.includes('silage') || t.includes('lucerne') || t.includes('pollard')) return 'FODDER';
   if (t.includes('system') || t.includes('weather') || t.includes('price') || t.includes('harvest') || t.includes('broadcast') || t.includes('alert')) return 'SYSTEM';
   return 'SYSTEM';
@@ -71,7 +70,6 @@ const CATEGORIES = {
   DAIRY:     { label: '🥛 Dairy',     active: 'bg-sky-600 text-white',            dot: 'bg-sky-500'     },
   LIVESTOCK: { label: '🐄 Livestock', active: 'bg-lime-700 text-white',           dot: 'bg-lime-500'    },
   POULTRY:   { label: '🐔 Poultry',   active: 'bg-orange-600 text-white',         dot: 'bg-orange-500'  },
-  APICULTURE:{ label: '🍯 Honey',     active: 'bg-yellow-600 text-white',         dot: 'bg-yellow-500'  },
   FODDER:    { label: '🌿 Fodder',    active: 'bg-teal-700 text-white',           dot: 'bg-teal-500'    },
   SYSTEM:    { label: '🌾 System',    active: 'bg-indigo-700 text-white',         dot: 'bg-indigo-500'  },
 };
@@ -84,7 +82,6 @@ function getCategoryIcon(cat) {
     case 'DAIRY':     return <Milk className="w-4 h-4 text-sky-500" />;
     case 'LIVESTOCK': return <Leaf className="w-4 h-4 text-lime-600" />;
     case 'POULTRY':   return <Egg className="w-4 h-4 text-orange-500" />;
-    case 'APICULTURE':return <Sparkles className="w-4 h-4 text-yellow-500" />;
     case 'FODDER':    return <Leaf className="w-4 h-4 text-teal-500" />;
     default:          return <Bell className="w-4 h-4 text-indigo-500" />;
   }
@@ -423,7 +420,6 @@ function EmptyState({ category }) {
     DAIRY:     { emoji: '🥛', title: 'No dairy alerts',      sub: 'Fresh milk price alerts, dairy tender bids and collection reminders will appear here.' },
     LIVESTOCK: { emoji: '🐄', title: 'No livestock alerts',  sub: 'Cattle sale requests, heifer availability and veterinary alerts will appear here.' },
     POULTRY:   { emoji: '🐔', title: 'No poultry alerts',    sub: 'Egg price updates, broiler availability and buyer bids will appear here.' },
-    APICULTURE:{ emoji: '🍯', title: 'No honey alerts',      sub: 'Honey harvest readiness, beeswax pricing and buyer requests will appear here.' },
     FODDER:    { emoji: '🌿', title: 'No fodder alerts',     sub: 'Hay bale availability, silage pricing and bulk feed requests will appear here.' },
     SYSTEM:    { emoji: '🌾', title: 'No system alerts',     sub: 'Weather advisories, commodity price changes and broadcast messages will appear here.' },
     ALL:       { emoji: '🔔', title: 'All quiet right now',  sub: 'Payment receipts, delivery OTPs, and agricultural alerts will appear here in real time.' },

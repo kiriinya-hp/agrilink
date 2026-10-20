@@ -1559,8 +1559,7 @@ function MainApp({ onReplayIntro }) {
                   { key: 'DAIRY', label: `🥛 ${t('dairy')}` },
                   { key: 'LIVESTOCK', label: `🐄 ${t('livestock')}` },
                   { key: 'POULTRY', label: `🐔 ${t('poultry')}` },
-                  { key: 'FODDER_FEEDS', label: `🌿 ${t('fodderFeeds')}` },
-                  { key: 'APICULTURE', label: `🍯 ${t('apiculture')}` }
+                  { key: 'FODDER_FEEDS', label: `🌿 ${t('fodderFeeds')}` }
                 ].map((cat) => (
                   <button
                     key={cat.key}
@@ -1953,7 +1952,6 @@ function MainApp({ onReplayIntro }) {
                         else if (cat === 'LIVESTOCK') defUnit = 'heads';
                         else if (cat === 'POULTRY') defUnit = 'birds';
                         else if (cat === 'FODDER_FEEDS') defUnit = 'bales';
-                        else if (cat === 'APICULTURE') defUnit = 'litres';
                         else if (cat === 'CEREAL') defUnit = 'bags';
                         else defUnit = 'kg';
                         setNewListing({ ...newListing, category: cat, unit: defUnit });
@@ -1967,7 +1965,6 @@ function MainApp({ onReplayIntro }) {
                       <option value="LIVESTOCK">🐄 {t('livestock')}</option>
                       <option value="POULTRY">🐔 {t('poultry')}</option>
                       <option value="FODDER_FEEDS">🌿 {t('fodderFeeds')}</option>
-                      <option value="APICULTURE">🍯 {t('apiculture')}</option>
                     </select>
                   </div>
                   <div>
