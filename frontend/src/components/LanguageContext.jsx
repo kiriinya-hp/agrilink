@@ -79,7 +79,7 @@ export const TRANSLATIONS = {
 
     // Orders / Buyer
     ordersTitle: 'My Purchase Orders & Escrow Tracker',
-    ordersSub: 'Funds remain in escrow until you inspect physical delivery and provide the 4-digit PIN.',
+    ordersSub: 'Funds remain in escrow until you inspect physical delivery and provide the 6-digit PIN.',
     noOrdersYet: 'No active orders placed yet.',
     deliveryConfirmed: 'Delivery Confirmed & Settled',
     viewSettlementReceipt: 'View Settlement Receipt & Invoice',

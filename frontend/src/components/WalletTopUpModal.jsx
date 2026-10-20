@@ -18,7 +18,7 @@ import { USD_TO_KES } from './CurrencyUnitContext';
 
 const PRESET_AMOUNTS = [10, 25, 50, 100, 250];
 
-export default function WalletTopUpModal({ isOpen, onClose, user, onBalanceUpdated }) {
+export default function WalletTopUpModal({ isOpen, onClose, user, token, onBalanceUpdated }) {
   const [step, setStep] = useState('form'); // 'form' | 'awaiting_pin' | 'cancelled' | 'success'
   const [amount, setAmount] = useState('50');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -73,7 +73,10 @@ export default function WalletTopUpModal({ isOpen, onClose, user, onBalanceUpdat
 
       const res = await fetch('/api/wallet/topup/stk', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           userId: user.id,
           amount: numAmount,
@@ -168,7 +171,10 @@ export default function WalletTopUpModal({ isOpen, onClose, user, onBalanceUpdat
       const receiptNum = explicitReceipt || `QJK${Date.now().toString().slice(-7)}`;
       const res = await fetch('/api/wallet/topup/confirm', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           userId: user.id,
           amount: numAmount,

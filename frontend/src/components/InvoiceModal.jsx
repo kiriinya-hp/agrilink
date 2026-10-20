@@ -237,7 +237,7 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
                   </div>
                   <div>
                     <p className="font-bold">Safaricom M-Pesa Smart Escrow Guarantee</p>
-                    <p className="text-emerald-700">100% of payment held securely in escrow until 4-digit OTP is validated at delivery point.</p>
+                    <p className="text-emerald-700">100% of payment held securely in escrow until 6-digit cryptographic OTP is validated at delivery point.</p>
                   </div>
                 </div>
                 <div className="hidden sm:block text-right font-mono font-bold text-emerald-800">

@@ -500,7 +500,7 @@ Every diagnosis includes exact chemical dosage per 20L knapsack sprayer, pre-har
 
 • **Buyer Peace of Mind**: Your money is held in an encrypted digital vault. The farmer does NOT get paid until you receive and inspect the goods.
 • **Farmer Assurance**: Farmers harvest and load trucks knowing 100% of the funds are already deposited and verified in escrow.
-• **4-Digit Confidential OTP**: When a driver picks up cargo, the system generates a secure 4-digit PIN stored in the driver's manifest.
+• **6-Digit Cryptographic OTP**: When a driver picks up cargo, the system generates a secure 6-digit cryptographic PIN with rate-limiting and tamper protection.
 • **Settlement on Inspection**: Upon delivery at your depot, inspect the grade and weight. If satisfied, hand over the OTP.
 • **Instant Settlement**: Once verified, 95% goes to the farmer, the transport fee goes to the driver, and 5% platform fee is deducted.`,
         actions: [

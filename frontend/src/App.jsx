@@ -255,7 +255,7 @@ function MainApp({ onReplayIntro }) {
     const msg = `*AgriShamba SCM Official Alert*\n` +
       `📦 *Order #${orderNo}* (${crop} • ${qty} kg)\n` +
       `💰 Amount: *KES ${Number(total).toLocaleString()}* (M-Pesa Escrow Protected)\n` +
-      `🔐 4-Digit Delivery OTP: *${otp}*\n` +
+      `🔐 6-Digit Delivery OTP: *${otp}*\n` +
       `📍 Current Status: *${order.status}*\n` +
       `🔗 Digital Trace: https://agrilink-pyrv.onrender.com/trace/${order.id || ''}\n\n` +
       `_Toka Shambani Hadi Sokoni • AgriShamba Kenya_`;
@@ -521,7 +521,10 @@ function MainApp({ onReplayIntro }) {
       // 2. Trigger Escrow Deposit (Daraja STK or Wallet)
       const resEscrow = await fetch(`${API_BASE}/escrow/deposit`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           orderId: orderData.order.id,
           paymentGateway,
@@ -876,17 +879,41 @@ function MainApp({ onReplayIntro }) {
   const handleVerifyDelivery = async (shipmentId) => {
     const otp = otpInputs[shipmentId];
     if (!otp) {
-      showNotification('Please enter the 4-digit Delivery OTP provided by the driver', 'error');
+      showNotification('Please enter the 6-digit Delivery OTP provided by the driver', 'error');
       return;
     }
 
     try {
+      // Optional GPS location tag for delivery geofence audit
+      let geoData = {};
+      if ('geolocation' in navigator) {
+        try {
+          const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, { timeout: 2000, maximumAge: 60000 }));
+          geoData = {
+            gpsLatitude: pos.coords.latitude,
+            gpsLongitude: pos.coords.longitude,
+            accuracyMeters: pos.coords.accuracy
+          };
+        } catch (e) {
+          // GPS optional
+        }
+      }
+
       const res = await fetch(`${API_BASE}/shipments/${shipmentId}/verify-delivery`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ otp })
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ 
+          otp,
+          ...geoData
+        })
       });
       const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Verification failed');
+      }
       if (data.success) {
         showNotification(
           `Delivery confirmed! Escrow disbursed: $${data.settlement.farmerPayout.toFixed(2)} to Farmer, $${data.settlement.transporterPayout.toFixed(2)} to Driver. Official receipt generated.`
@@ -1819,11 +1846,11 @@ function MainApp({ onReplayIntro }) {
                             <div className="flex gap-2">
                               <input
                                 type="text"
-                                maxLength="4"
-                                placeholder="OTP"
+                                maxLength="6"
+                                placeholder="6-digit OTP"
                                 value={otpInputs[shipment?.id] || ''}
                                 onChange={(e) => setOtpInputs({ ...otpInputs, [shipment?.id]: e.target.value })}
-                                className="w-24 px-3 py-1.5 bg-white border border-slate-300 rounded font-mono font-bold text-center text-sm"
+                                className="w-28 px-2 py-1.5 bg-white border border-slate-300 rounded font-mono font-bold text-center text-xs tracking-wider"
                               />
                               <button
                                 onClick={() => handleVerifyDelivery(shipment?.id)}
@@ -3277,6 +3304,7 @@ function MainApp({ onReplayIntro }) {
         isOpen={showTopUpModal}
         onClose={() => setShowTopUpModal(false)}
         user={user}
+        token={token}
         onBalanceUpdated={(newBal) => {
           user.walletBalance = newBal;
           refreshUser();
@@ -3292,6 +3320,7 @@ function MainApp({ onReplayIntro }) {
         isOpen={showWithdrawModal}
         onClose={() => setShowWithdrawModal(false)}
         user={user}
+        token={token}
         onBalanceUpdated={(newBal) => {
           user.walletBalance = newBal;
           refreshUser();

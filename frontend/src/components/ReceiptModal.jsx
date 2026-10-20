@@ -467,7 +467,7 @@ export default function ReceiptModal({ order, onClose }) {
               <div className="bg-amber-50 border-2 border-dashed border-amber-300 p-3.5 rounded-xl flex items-center justify-between">
                 <div>
                   <p className="text-xs font-black uppercase tracking-wider text-amber-900">
-                    4-Digit Delivery Verification OTP
+                    6-Digit Delivery Verification OTP
                   </p>
                   <p className="text-[11px] text-amber-800 mt-0.5">
                     Driver presents this PIN to the receiving storekeeper upon physical cargo inspection.

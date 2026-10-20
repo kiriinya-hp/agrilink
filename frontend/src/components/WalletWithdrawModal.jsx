@@ -25,7 +25,7 @@ const KENYAN_BANKS = [
   'Standard Chartered Kenya'
 ];
 
-export default function WalletWithdrawModal({ isOpen, onClose, user, onBalanceUpdated }) {
+export default function WalletWithdrawModal({ isOpen, onClose, user, token, onBalanceUpdated }) {
   const [method, setMethod] = useState('MPESA'); // 'MPESA', 'BANK', 'AIRTEL'
   const [amount, setAmount] = useState('');
   const [recipientPhone, setRecipientPhone] = useState(user?.phone || '254711223344');
@@ -81,7 +81,10 @@ export default function WalletWithdrawModal({ isOpen, onClose, user, onBalanceUp
     try {
       const res = await fetch('/api/wallet/withdraw', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           userId: user.id,
           amount: withdrawAmt,
