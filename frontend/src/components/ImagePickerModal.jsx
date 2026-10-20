@@ -146,6 +146,36 @@ const PRESET_CROPS = [
     name: 'Seasoned Langstroth Beehives',
     category: 'APICULTURE',
     url: 'https://images.unsplash.com/photo-1473081556163-2a17de81fc97?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Pure Grass-Fed Traditional Ghee',
+    category: 'DAIRY',
+    url: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Pure Boran Beef Bull',
+    category: 'LIVESTOCK',
+    url: 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Red Maasai Sheep',
+    category: 'LIVESTOCK',
+    url: 'https://images.unsplash.com/photo-1484557052118-f32bd25b45b5?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Kuroiler Mature Chickens',
+    category: 'POULTRY',
+    url: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Pasture Seed & Cane Molasses',
+    category: 'FODDER_FEEDS',
+    url: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Comb Honey in Frames & Bee Pollen',
+    category: 'APICULTURE',
+    url: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
   }
 ];
 

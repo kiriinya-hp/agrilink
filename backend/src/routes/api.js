@@ -1495,6 +1495,192 @@ async function ensureSeedAnimalListings() {
         grade: 'GRADE_A',
         location: 'Machakos Apiary Crafts, Machakos',
         imageUrl: 'https://images.unsplash.com/photo-1473081556163-2a17de81fc97?w=600&auto=format&fit=crop'
+      },
+
+      // 🥛 DAIRY (Expanded Marketplace Products)
+      {
+        farmerId: farmer.id,
+        cropName: 'KCC-Grade Chilled Bulk Raw Milk',
+        category: 'DAIRY',
+        unit: 'litres',
+        availableQty: 4500,
+        unitPrice: 0.43, // ~KES 56/L
+        grade: 'GRADE_A',
+        location: 'Nyahururu Dairy Hub, Laikipia County',
+        imageUrl: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Pure Grass-Fed Traditional Ghee (1kg Jars)',
+        category: 'DAIRY',
+        unit: 'kg',
+        availableQty: 250,
+        unitPrice: 10.77, // ~KES 1,400/kg
+        grade: 'GRADE_A',
+        location: 'Maasai Mara Pastoralists, Narok',
+        imageUrl: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Cultured Buttermilk / Traditional Mtindi',
+        category: 'DAIRY',
+        unit: 'litres',
+        availableQty: 600,
+        unitPrice: 0.81, // ~KES 105/L
+        grade: 'GRADE_A',
+        location: 'Meru Central Dairy Co-op, Meru',
+        imageUrl: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&auto=format&fit=crop'
+      },
+
+      // 🐄 LIVESTOCK (Expanded Marketplace Products)
+      {
+        farmerId: farmer.id,
+        cropName: 'Pure Boran Beef Bull (Grass-Fed Feeder)',
+        category: 'LIVESTOCK',
+        unit: 'heads',
+        availableQty: 8,
+        unitPrice: 653.8, // ~KES 85,000/head
+        grade: 'GRADE_A',
+        location: 'Laikipia Nature Conservancy, Laikipia',
+        imageUrl: 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Sahiwal Dual-Purpose Breeding Cow',
+        category: 'LIVESTOCK',
+        unit: 'heads',
+        availableQty: 5,
+        unitPrice: 807.7, // ~KES 105,000/head
+        grade: 'GRADE_A',
+        location: 'Naivasha Research Farm, Nakuru',
+        imageUrl: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Red Maasai Meat Sheep (Hardy Indigenous)',
+        category: 'LIVESTOCK',
+        unit: 'heads',
+        availableQty: 45,
+        unitPrice: 88.5, // ~KES 11,500/head
+        grade: 'GRADE_A',
+        location: 'Narok South Plains, Narok County',
+        imageUrl: 'https://images.unsplash.com/photo-1484557052118-f32bd25b45b5?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Large White Weaner Piglets (8 Weeks, Vaccinated)',
+        category: 'LIVESTOCK',
+        unit: 'heads',
+        availableQty: 20,
+        unitPrice: 50.0, // ~KES 6,500/head
+        grade: 'GRADE_A',
+        location: 'Gatundu Farm, Kiambu County',
+        imageUrl: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=600&auto=format&fit=crop'
+      },
+
+      // 🐔 POULTRY (Expanded Marketplace Products)
+      {
+        farmerId: farmer.id,
+        cropName: 'Kuroiler Dual-Purpose Mature Birds',
+        category: 'POULTRY',
+        unit: 'birds',
+        availableQty: 350,
+        unitPrice: 8.46, // ~KES 1,100/bird
+        grade: 'GRADE_A',
+        location: 'Machakos Rural Hub, Machakos County',
+        imageUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Fertile Rainbow Rooster Hatching Eggs (30-Egg Trays)',
+        category: 'POULTRY',
+        unit: 'trays',
+        availableQty: 120,
+        unitPrice: 5.0, // ~KES 650/tray
+        grade: 'GRADE_A',
+        location: 'Nakuru Pure Breeding Hatchery, Nakuru',
+        imageUrl: 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Spent Commercial Layers (Live Offtake)',
+        category: 'POULTRY',
+        unit: 'birds',
+        availableQty: 1000,
+        unitPrice: 3.46, // ~KES 450/bird
+        grade: 'GRADE_A',
+        location: 'Thika Layer Farms, Kiambu County',
+        imageUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=600&auto=format&fit=crop'
+      },
+
+      // 🌿 FODDER & FEEDS (Expanded Marketplace Products)
+      {
+        farmerId: farmer.id,
+        cropName: 'Certified Boma Rhodes Pasture Seed',
+        category: 'FODDER_FEEDS',
+        unit: 'kg',
+        availableQty: 300,
+        unitPrice: 9.23, // ~KES 1,200/kg
+        grade: 'GRADE_A',
+        location: 'Kitale Seed Center, Trans Nzoia',
+        imageUrl: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Pure Cane Molasses Fodder Additive (20L Jerrycan)',
+        category: 'FODDER_FEEDS',
+        unit: 'litres',
+        availableQty: 150,
+        unitPrice: 13.85, // ~KES 1,800/20L
+        grade: 'GRADE_A',
+        location: 'Mumias Western Hub, Kakamega',
+        imageUrl: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Cotton Seed Cake (High Protein Feed Meal, 50kg)',
+        category: 'FODDER_FEEDS',
+        unit: 'bags',
+        availableQty: 180,
+        unitPrice: 22.3, // ~KES 2,900/bag
+        grade: 'GRADE_A',
+        location: 'Kisumu Oil Mills, Kisumu County',
+        imageUrl: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&auto=format&fit=crop'
+      },
+
+      // 🍯 APICULTURE (Expanded Marketplace Products)
+      {
+        farmerId: farmer.id,
+        cropName: 'Natural Pure Comb Honey in Timber Frames',
+        category: 'APICULTURE',
+        unit: 'kg',
+        availableQty: 120,
+        unitPrice: 8.46, // ~KES 1,100/kg
+        grade: 'GRADE_A',
+        location: 'Baringo Hills Organic Apiary, Baringo',
+        imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Raw Bee Pollen Granules (Protein Superfood)',
+        category: 'APICULTURE',
+        unit: 'kg',
+        availableQty: 60,
+        unitPrice: 16.92, // ~KES 2,200/kg
+        grade: 'GRADE_A',
+        location: 'Mt. Kenya Highland Beekeepers, Embu',
+        imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Heavy-Duty Beekeeper Protection Suit & Smoker Kit',
+        category: 'APICULTURE',
+        unit: 'heads',
+        availableQty: 25,
+        unitPrice: 29.23, // ~KES 3,800/set
+        grade: 'GRADE_A',
+        location: 'Nairobi Apiary Supplies, Industrial Area',
+        imageUrl: 'https://images.unsplash.com/photo-1473081556163-2a17de81fc97?w=600&auto=format&fit=crop'
       }
     ];
 
@@ -5136,6 +5322,23 @@ async function ensureSeedDemands() {
 // 1. Fetch all wholesale demand requests
 router.get('/demands', async (req, res) => {
   try {
+    // Automatically delete/prune expired tenders whose deadline has passed
+    try {
+      const now = new Date();
+      const expiredDemands = await prisma.buyerDemandRequest.findMany({
+        where: { targetDate: { lt: now } },
+        select: { id: true }
+      });
+      if (expiredDemands.length > 0) {
+        const expiredIds = expiredDemands.map(d => d.id);
+        await prisma.demandBid.deleteMany({ where: { demandId: { in: expiredIds } } }).catch(() => {});
+        await prisma.buyerDemandRequest.deleteMany({ where: { id: { in: expiredIds } } }).catch(() => {});
+        console.log(`[Demand Prune] Automatically deleted ${expiredIds.length} expired wholesale tenders`);
+      }
+    } catch (pruneErr) {
+      console.warn('[Demand Prune] Error pruning expired tenders:', pruneErr.message);
+    }
+
     await ensureSeedDemands();
 
     const { category, search, status } = req.query;
@@ -5220,6 +5423,11 @@ router.post('/demands', async (req, res) => {
       });
     }
 
+    const resolvedTargetDate = targetDate ? new Date(targetDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    if (resolvedTargetDate <= new Date()) {
+      return res.status(400).json({ success: false, error: 'Tender expiration deadline must be in the future' });
+    }
+
     const newDemand = await prisma.buyerDemandRequest.create({
       data: {
         buyerId: decoded.id,
@@ -5229,7 +5437,7 @@ router.post('/demands', async (req, res) => {
         requiredQty: parseFloat(requiredQty),
         targetPrice: parseFloat(targetPrice),
         deliveryLocation: deliveryLocation.trim(),
-        targetDate: targetDate ? new Date(targetDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        targetDate: resolvedTargetDate,
         qualityGrade,
         notes: notes ? notes.trim() : null
       },
