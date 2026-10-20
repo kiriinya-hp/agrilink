@@ -56,28 +56,34 @@ export default function Login({ onNavigateRegister, onNavigateAdmin, onNavigateF
       <AuthAnimatedBackground />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="flex justify-center">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white/10 border border-emerald-500/40 p-1 flex items-center justify-center shadow-xl shadow-emerald-500/20">
-            <img 
-              src="/AgriShamba-logo.png" 
-              alt="AgriShamba Logo" 
-              className="w-full h-full object-contain"
+        {/* AgriShamba v2 Logo — Livestock Triad Emblem */}
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-emerald-500/50 shadow-2xl shadow-emerald-500/30 bg-slate-900 flex items-center justify-center ring-4 ring-emerald-500/10">
+            <img
+              src="/agrishamba-logo.png"
+              alt="AgriShamba Logo"
+              className="w-full h-full object-cover"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
                 if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'flex';
               }}
             />
-            <div className="w-full h-full bg-emerald-600 hidden items-center justify-center text-white rounded-xl">
-              <Sprout className="w-8 h-8" />
+            <div className="w-full h-full bg-emerald-600 hidden items-center justify-center text-white rounded-2xl">
+              <Sprout className="w-10 h-10" />
             </div>
           </div>
+          <div className="text-center">
+            <h2 className="text-3xl font-extrabold tracking-tight text-white">
+              Agri<span className="text-emerald-400">Shamba</span>
+            </h2>
+            <p className="mt-1 text-[11px] text-emerald-500/80 font-bold uppercase tracking-widest">
+              Sign In to Portal
+            </p>
+            <p className="mt-1 text-[10px] text-slate-500">
+              Toka Shambani Hadi Sokoni — B2B Agri SCM & Escrow System
+            </p>
+          </div>
         </div>
-        <h2 className="mt-4 text-center text-3xl font-extrabold tracking-tight text-white">
-          Agri<span className="text-emerald-500">Shamba</span> — Sign In
-        </h2>
-        <p className="mt-2 text-center text-xs text-slate-400 font-medium">
-          Toka Shambani Hadi Sokoni — B2B Agri SCM & Escrow System
-        </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4">

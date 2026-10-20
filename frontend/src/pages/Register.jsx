@@ -203,20 +203,33 @@ export default function Register({ onNavigateLogin }) {
       <AuthAnimatedBackground />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-lg relative z-10">
-        <div className="flex justify-center">
-          <div className="w-12 h-12 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
-            <Sprout className="w-7 h-7" />
+        {/* AgriShamba v2 Logo — Livestock Triad Emblem */}
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-emerald-500/50 shadow-2xl shadow-emerald-500/30 bg-slate-900 flex items-center justify-center ring-4 ring-emerald-500/10">
+            <img
+              src="/agrishamba-logo.png"
+              alt="AgriShamba Logo"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'flex';
+              }}
+            />
+            <div className="w-full h-full bg-emerald-600 hidden items-center justify-center text-white rounded-2xl">
+              <Sprout className="w-9 h-9" />
+            </div>
+          </div>
+          <div className="text-center">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
+              Join <span className="text-emerald-400">AgriShamba</span>
+            </h2>
+            <p className="mt-1 text-[10px] text-slate-500">
+              {step === 'form'
+                ? 'Create an account to start trading, sourcing, or providing logistics.'
+                : `Verifying email address for ${formData.email}`}
+            </p>
           </div>
         </div>
-
-        <h2 className="mt-3 text-center text-2xl sm:text-3xl font-extrabold text-white">
-          Join the Agri<span className="text-emerald-500">Shamba</span> Ecosystem
-        </h2>
-        <p className="mt-1 text-center text-xs text-slate-400">
-          {step === 'form' 
-            ? 'Create an account to start trading, sourcing, or providing logistics.'
-            : `Verifying email address for ${formData.email}`}
-        </p>
 
         {/* STEP 1: REGISTRATION FORM */}
         {step === 'form' && (
