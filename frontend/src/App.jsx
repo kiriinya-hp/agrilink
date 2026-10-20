@@ -142,11 +142,52 @@ function MainApp({ onReplayIntro }) {
   const [notificationsList, setNotificationsList] = useState([]);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
   const [activeHeadsUpNotification, setActiveHeadsUpNotification] = useState(null);
+  const prevUnreadCountRef = React.useRef(0);
+  const notifPollRef = React.useRef(null);
 
   const handleDeleteNotification = (notifId) => {
     setNotificationsList(prev => prev.filter(n => n.id !== notifId));
     setUnreadNotifCount(prev => Math.max(0, prev - 1));
   };
+
+  /**
+   * Fetch fresh notifications from server and show heads-up pill if a new
+   * unread notification has arrived since the last poll.
+   */
+  const fetchNotifications = React.useCallback(async (userId) => {
+    if (!userId) return;
+    try {
+      const res  = await fetch(`${API_BASE}/notifications?userId=${userId}`);
+      const data = await res.json();
+      if (!data.success) return;
+
+      const incoming = data.notifications || [];
+      const newCount = data.unreadCount   || 0;
+
+      setNotificationsList(incoming);
+      setUnreadNotifCount(newCount);
+
+      // If unread count grew since last poll, surface the newest as heads-up pill
+      if (newCount > prevUnreadCountRef.current && incoming.length > 0) {
+        const newest = incoming.find(n => !n.read) || incoming[0];
+        setActiveHeadsUpNotification({
+          id:        'hud_' + newest.id,
+          title:     newest.title,
+          message:   newest.message,
+          type:      newest.type || 'ALERT',
+          createdAt: newest.createdAt,
+        });
+
+        // Also fire native notification tray if in background/foreground
+        scheduleNativeNotification({
+          title: newest.title  || 'AgriShamba',
+          body:  newest.message || 'You have a new alert on AgriShamba.',
+        }).catch(() => {});
+      }
+
+      prevUnreadCountRef.current = newCount;
+    } catch {}
+  }, []);
 
   // Modals
   const [orderModalListing, setOrderModalListing] = useState(null);
@@ -296,6 +337,9 @@ function MainApp({ onReplayIntro }) {
       // Initialize native push / local notification service
       initPushNotifications();
     }
+    return () => {
+      if (notifPollRef.current) clearInterval(notifPollRef.current);
+    };
   }, [user]);
 
 
@@ -330,16 +374,14 @@ function MainApp({ onReplayIntro }) {
         })
         .catch(() => {});
 
-      // 2. Fetch user's notification center alerts
-      fetch(`${API_BASE}/notifications?userId=${user.id}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            setNotificationsList(data.notifications || []);
-            setUnreadNotifCount(data.unreadCount || 0);
-          }
-        })
-        .catch(() => {});
+      // 2. Fetch user's notification center alerts (initial load + start 30s poll)
+      fetchNotifications(user.id);
+
+      // Clear any existing poll interval then start fresh 30-second polling
+      if (notifPollRef.current) clearInterval(notifPollRef.current);
+      notifPollRef.current = setInterval(() => {
+        fetchNotifications(user.id);
+      }, 30_000);
 
       // 3. Always fetch all public marketplace produce listings
       const query = new URLSearchParams();
@@ -3069,6 +3111,7 @@ function MainApp({ onReplayIntro }) {
         notifications={notificationsList}
         onMarkAllRead={handleMarkAllNotificationsRead}
         onDeleteNotification={handleDeleteNotification}
+        onRefresh={() => fetchNotifications(user?.id)}
         onOpenOrderInvoice={(order) => {
           setShowNotificationDrawer(false);
           setInvoiceModalOrder(order);
