@@ -224,6 +224,7 @@ function MainApp({ onReplayIntro }) {
   const [newListing, setNewListing] = useState({
     cropName: '',
     category: 'HORTICULTURE',
+    unit: 'kg',
     availableQty: '',
     unitPrice: '',
     grade: 'GRADE_A',
@@ -602,6 +603,7 @@ function MainApp({ onReplayIntro }) {
       setNewListing({
         cropName: '',
         category: 'HORTICULTURE',
+        unit: 'kg',
         availableQty: '',
         unitPrice: '',
         grade: 'GRADE_A',
@@ -628,6 +630,7 @@ function MainApp({ onReplayIntro }) {
         setNewListing({
           cropName: '',
           category: 'HORTICULTURE',
+          unit: 'kg',
           availableQty: '',
           unitPrice: '',
           grade: 'GRADE_A',
@@ -1505,18 +1508,23 @@ function MainApp({ onReplayIntro }) {
                 />
               </div>
 
-              <div className="flex gap-2 w-full md:w-auto overflow-x-auto">
+              <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 scrollbar-none">
                 {[
                   { key: 'ALL', label: t('allCategories') },
-                  { key: 'HORTICULTURE', label: t('horticulture') },
-                  { key: 'CEREAL', label: t('cereal') },
-                  { key: 'TUBER', label: t('tuber') }
+                  { key: 'HORTICULTURE', label: `🥬 ${t('horticulture')}` },
+                  { key: 'CEREAL', label: `🌾 ${t('cereal')}` },
+                  { key: 'TUBER', label: `🥔 ${t('tuber')}` },
+                  { key: 'DAIRY', label: `🥛 ${t('dairy')}` },
+                  { key: 'LIVESTOCK', label: `🐄 ${t('livestock')}` },
+                  { key: 'POULTRY', label: `🐔 ${t('poultry')}` },
+                  { key: 'FODDER_FEEDS', label: `🌿 ${t('fodderFeeds')}` },
+                  { key: 'APICULTURE', label: `🍯 ${t('apiculture')}` }
                 ].map((cat) => (
                   <button
                     key={cat.key}
                     onClick={() => setSelectedCategory(cat.key)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                      selectedCategory === cat.key ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                      selectedCategory === cat.key ? 'bg-slate-900 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
                   >
                     {cat.label}
@@ -1556,13 +1564,13 @@ function MainApp({ onReplayIntro }) {
                         <div className="text-right">
                           <p className="text-base font-extrabold text-emerald-600">
                             {currency === 'KES' ? (
-                              <><span>KES {Math.round(item.unitPrice * 130).toLocaleString()}</span><span className="text-[10px] text-slate-400 font-normal"> / kg</span></>
+                              <><span>KES {Math.round(item.unitPrice * 130).toLocaleString()}</span><span className="text-[10px] text-slate-400 font-normal"> / {item.unit || 'kg'}</span></>
                             ) : (
-                              <><span>${item.unitPrice.toFixed(2)}</span><span className="text-[10px] text-slate-400 font-normal"> / kg</span></>
+                              <><span>${item.unitPrice.toFixed(2)}</span><span className="text-[10px] text-slate-400 font-normal"> / {item.unit || 'kg'}</span></>
                             )}
                           </p>
                           {currency === 'KES' && (
-                            <span className="text-[10px] text-slate-400">${item.unitPrice.toFixed(2)} / kg</span>
+                            <span className="text-[10px] text-slate-400">${item.unitPrice.toFixed(2)} / {item.unit || 'kg'}</span>
                           )}
                         </div>
                       </div>
@@ -1586,7 +1594,7 @@ function MainApp({ onReplayIntro }) {
                     <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                       <div>
                         <span className="text-[10px] text-slate-400 block">{t('availableVolume')}</span>
-                        <span className="text-xs font-bold text-slate-800">{item.availableQty.toLocaleString()} kg</span>
+                        <span className="text-xs font-bold text-slate-800">{item.availableQty.toLocaleString()} {item.unit || 'kg'}</span>
                       </div>
 
                       <div className="flex items-center gap-1.5">
@@ -1891,17 +1899,50 @@ function MainApp({ onReplayIntro }) {
                     className="w-full px-3 py-2 bg-slate-50 border rounded-lg text-xs focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div>
                     <label className="block mb-1">{t('categoryLabel')}</label>
                     <select
                       value={newListing.category}
-                      onChange={(e) => setNewListing({ ...newListing, category: e.target.value })}
+                      onChange={(e) => {
+                        const cat = e.target.value;
+                        let defUnit = newListing.unit;
+                        if (cat === 'DAIRY') defUnit = 'litres';
+                        else if (cat === 'LIVESTOCK') defUnit = 'heads';
+                        else if (cat === 'POULTRY') defUnit = 'birds';
+                        else if (cat === 'FODDER_FEEDS') defUnit = 'bales';
+                        else if (cat === 'APICULTURE') defUnit = 'litres';
+                        else if (cat === 'CEREAL') defUnit = 'bags';
+                        else defUnit = 'kg';
+                        setNewListing({ ...newListing, category: cat, unit: defUnit });
+                      }}
                       className="w-full px-2 py-2 bg-slate-50 border rounded-lg text-xs"
                     >
-                      <option value="HORTICULTURE">{t('horticulture')}</option>
-                      <option value="CEREAL">{t('cereal')}</option>
-                      <option value="TUBER">{t('tuber')}</option>
+                      <option value="HORTICULTURE">🥬 {t('horticulture')}</option>
+                      <option value="CEREAL">🌾 {t('cereal')}</option>
+                      <option value="TUBER">🥔 {t('tuber')}</option>
+                      <option value="DAIRY">🥛 {t('dairy')}</option>
+                      <option value="LIVESTOCK">🐄 {t('livestock')}</option>
+                      <option value="POULTRY">🐔 {t('poultry')}</option>
+                      <option value="FODDER_FEEDS">🌿 {t('fodderFeeds')}</option>
+                      <option value="APICULTURE">🍯 {t('apiculture')}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block mb-1">Trading Unit</label>
+                    <select
+                      value={newListing.unit || 'kg'}
+                      onChange={(e) => setNewListing({ ...newListing, unit: e.target.value })}
+                      className="w-full px-2 py-2 bg-slate-50 border rounded-lg text-xs font-semibold"
+                    >
+                      <option value="kg">Kilogram (kg)</option>
+                      <option value="litres">Litres (L)</option>
+                      <option value="heads">Heads / Animals</option>
+                      <option value="trays">Trays (30 pcs)</option>
+                      <option value="birds">Birds / Chickens</option>
+                      <option value="bales">Bales (Hay)</option>
+                      <option value="bags">Bags (50kg/90kg)</option>
+                      <option value="tons">Tons</option>
                     </select>
                   </div>
                   <div>
@@ -1911,27 +1952,27 @@ function MainApp({ onReplayIntro }) {
                       onChange={(e) => setNewListing({ ...newListing, grade: e.target.value })}
                       className="w-full px-2 py-2 bg-slate-50 border rounded-lg text-xs"
                     >
-                      <option value="GRADE_A">Grade A</option>
-                      <option value="GRADE_B">Grade B</option>
+                      <option value="GRADE_A">Grade A (Premium / Export)</option>
+                      <option value="GRADE_B">Grade B (Standard Commercial)</option>
                       <option value="STANDARD">Standard</option>
                     </select>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block mb-1">{t('volumeKgLabel')}</label>
+                    <label className="block mb-1">Available Quantity ({newListing.unit || 'kg'})</label>
                     <input
                       type="number"
                       required
                       min="1"
-                      placeholder="e.g. 1000"
+                      placeholder="e.g. 500"
                       value={newListing.availableQty}
                       onChange={(e) => setNewListing({ ...newListing, availableQty: e.target.value })}
                       className="w-full px-3 py-2 bg-slate-50 border rounded-lg text-xs"
                     />
                   </div>
                   <div>
-                    <label className="block mb-1">{t('unitPriceLabel')} ({currency === 'KES' ? 'KES / kg' : '$ / kg'})</label>
+                    <label className="block mb-1">{t('unitPriceLabel')} ({currency === 'KES' ? `KES / ${newListing.unit || 'kg'}` : `$ / ${newListing.unit || 'kg'}`})</label>
                     <input
                       type="number"
                       step={currency === 'KES' ? '1' : '0.01'}
@@ -2495,10 +2536,10 @@ function MainApp({ onReplayIntro }) {
 
                   {/* Quantity */}
                   <div>
-                    <label className="block mb-1">{t('orderVolumeKg')}</label>
+                    <label className="block mb-1">Order Volume ({orderModalListing.unit || 'kg'})</label>
                     <input
                       type="number"
-                      min="10"
+                      min="1"
                       max={orderModalListing.availableQty}
                       value={orderQty}
                       onChange={(e) => setOrderQty(Math.max(1, Number(e.target.value)))}
@@ -2632,7 +2673,7 @@ function MainApp({ onReplayIntro }) {
                   {/* Breakdown */}
                   <div className="bg-slate-50 p-3 rounded-xl border space-y-1 text-xs">
                     <div className="flex justify-between text-slate-600 font-normal">
-                      <span>{t('produceCost')} ({orderQty} kg @ {formatMoney(orderModalListing.unitPrice)}):</span>
+                      <span>{t('produceCost')} ({orderQty} {orderModalListing.unit || 'kg'} @ {formatMoney(orderModalListing.unitPrice)}):</span>
                       <span>{formatMoney(produceCost)}</span>
                     </div>
                     <div className="flex justify-between text-slate-600 font-normal">

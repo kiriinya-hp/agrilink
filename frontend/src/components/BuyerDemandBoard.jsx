@@ -35,6 +35,7 @@ export default function BuyerDemandBoard({ user, token, apiBase, formatMoney, cu
   const [createForm, setCreateForm] = useState({
     cropName: '',
     category: 'HORTICULTURE',
+    unit: 'kg',
     requiredQty: '',
     targetPrice: '', // in USD internally or KES input
     targetPriceKes: '',
@@ -103,6 +104,7 @@ export default function BuyerDemandBoard({ user, token, apiBase, formatMoney, cu
         body: JSON.stringify({
           cropName: createForm.cropName,
           category: createForm.category,
+          unit: createForm.unit || 'kg',
           requiredQty: parseFloat(createForm.requiredQty),
           targetPrice: priceUsd,
           deliveryLocation: createForm.deliveryLocation,
@@ -119,6 +121,7 @@ export default function BuyerDemandBoard({ user, token, apiBase, formatMoney, cu
         setCreateForm({
           cropName: '',
           category: 'HORTICULTURE',
+          unit: 'kg',
           requiredQty: '',
           targetPrice: '',
           targetPriceKes: '',
@@ -284,18 +287,23 @@ export default function BuyerDemandBoard({ user, token, apiBase, formatMoney, cu
           />
         </div>
 
-        <div className="flex gap-2 w-full md:w-auto overflow-x-auto">
+        <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 scrollbar-none">
           {[
             { key: 'ALL', label: 'All Tenders' },
-            { key: 'HORTICULTURE', label: 'Horticulture' },
-            { key: 'CEREAL', label: 'Cereals' },
-            { key: 'TUBER', label: 'Tubers' }
+            { key: 'HORTICULTURE', label: '🥬 Horticulture' },
+            { key: 'CEREAL', label: '🌾 Cereals' },
+            { key: 'TUBER', label: '🥔 Tubers' },
+            { key: 'DAIRY', label: '🥛 Dairy' },
+            { key: 'LIVESTOCK', label: '🐄 Livestock' },
+            { key: 'POULTRY', label: '🐔 Poultry & Eggs' },
+            { key: 'FODDER_FEEDS', label: '🌿 Feeds & Fodder' },
+            { key: 'APICULTURE', label: '🍯 Apiculture (Honey)' }
           ].map((cat) => (
             <button
               key={cat.key}
               onClick={() => setSelectedCategory(cat.key)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                selectedCategory === cat.key ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                selectedCategory === cat.key ? 'bg-slate-900 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
               {cat.label}
@@ -381,15 +389,17 @@ export default function BuyerDemandBoard({ user, token, apiBase, formatMoney, cu
                     <div>
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Required Volume</span>
                       <span className="text-base font-black text-slate-900 mt-0.5 block">
-                        {demand.requiredQty.toLocaleString()} kg
+                        {demand.requiredQty.toLocaleString()} {demand.unit || 'kg'}
                       </span>
-                      <span className="text-[10px] text-slate-500">({(demand.requiredQty / 1000).toFixed(1)} Tonnes)</span>
+                      {(!demand.unit || demand.unit.toLowerCase() === 'kg') && (
+                        <span className="text-[10px] text-slate-500">({(demand.requiredQty / 1000).toFixed(1)} Tonnes)</span>
+                      )}
                     </div>
 
                     <div>
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Target Price</span>
                       <span className="text-base font-black text-teal-700 mt-0.5 block">
-                        KES {targetKes} <span className="text-[11px] font-normal text-slate-400">/ kg</span>
+                        KES {targetKes.toLocaleString()} <span className="text-[11px] font-normal text-slate-400">/ {demand.unit || 'kg'}</span>
                       </span>
                       <span className="text-[10px] text-slate-500">${demand.targetPrice.toFixed(2)} USD</span>
                     </div>
@@ -525,43 +535,77 @@ export default function BuyerDemandBoard({ user, token, apiBase, formatMoney, cu
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2">
                   <label className="font-bold text-slate-700 block mb-1">Commodity Category</label>
                   <select
                     value={createForm.category}
-                    onChange={(e) => setCreateForm({ ...createForm, category: e.target.value })}
+                    onChange={(e) => {
+                      const cat = e.target.value;
+                      let defUnit = createForm.unit;
+                      if (cat === 'DAIRY') defUnit = 'litres';
+                      else if (cat === 'LIVESTOCK') defUnit = 'heads';
+                      else if (cat === 'POULTRY') defUnit = 'birds';
+                      else if (cat === 'FODDER_FEEDS') defUnit = 'bales';
+                      else if (cat === 'APICULTURE') defUnit = 'litres';
+                      else if (cat === 'CEREAL') defUnit = 'bags';
+                      else defUnit = 'kg';
+                      setCreateForm({ ...createForm, category: cat, unit: defUnit });
+                    }}
                     className="w-full p-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-teal-500"
                   >
-                    <option value="HORTICULTURE">Horticulture (Fruits & Veg)</option>
-                    <option value="CEREAL">Cereal & Grains</option>
-                    <option value="TUBER">Tubers & Roots</option>
-                    <option value="LEGUME">Legumes & Pulses</option>
+                    <option value="HORTICULTURE">🥬 Horticulture (Fruits & Veg)</option>
+                    <option value="CEREAL">🌾 Cereal & Grains</option>
+                    <option value="TUBER">🥔 Tubers & Roots</option>
+                    <option value="LEGUME">🫘 Legumes & Pulses</option>
+                    <option value="DAIRY">🥛 Dairy Products (Fresh Milk, Cream)</option>
+                    <option value="LIVESTOCK">🐄 Live Livestock (Cattle, Goats, Sheep, Pigs)</option>
+                    <option value="POULTRY">🐔 Poultry & Eggs (Kienyeji, Broilers, Trays)</option>
+                    <option value="FODDER_FEEDS">🌿 Feeds & Fodder (Hay, Lucerne, Silage)</option>
+                    <option value="APICULTURE">🍯 Apiculture (Raw Honey, Beeswax)</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Quality Grade</label>
+                  <label className="font-bold text-slate-700 block mb-1">Trading Unit</label>
                   <select
-                    value={createForm.qualityGrade}
-                    onChange={(e) => setCreateForm({ ...createForm, qualityGrade: e.target.value })}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-teal-500"
+                    value={createForm.unit || 'kg'}
+                    onChange={(e) => setCreateForm({ ...createForm, unit: e.target.value })}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-teal-500 font-semibold"
                   >
-                    <option value="GRADE_A">Grade A (Export / Premium)</option>
-                    <option value="GRADE_B">Grade B (Wholesale Standard)</option>
-                    <option value="STANDARD">Standard Commercial</option>
+                    <option value="kg">Kilogram (kg)</option>
+                    <option value="litres">Litres (L)</option>
+                    <option value="heads">Heads / Animals</option>
+                    <option value="trays">Trays (30 pcs)</option>
+                    <option value="birds">Birds / Chickens</option>
+                    <option value="bales">Bales (Hay/Fodder)</option>
+                    <option value="bags">Bags (50kg / 90kg)</option>
+                    <option value="tons">Tons</option>
                   </select>
                 </div>
               </div>
 
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Quality Grade</label>
+                <select
+                  value={createForm.qualityGrade}
+                  onChange={(e) => setCreateForm({ ...createForm, qualityGrade: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-teal-500"
+                >
+                  <option value="GRADE_A">Grade A (Export / Premium / Pedigree)</option>
+                  <option value="GRADE_B">Grade B (Wholesale Standard / Commercial)</option>
+                  <option value="STANDARD">Standard Commercial</option>
+                </select>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Required Volume (KG) *</label>
+                  <label className="font-bold text-slate-700 block mb-1">Required Volume ({createForm.unit || 'kg'}) *</label>
                   <input
                     type="number"
                     required
-                    min="100"
-                    placeholder="e.g. 5000"
+                    min="1"
+                    placeholder="e.g. 500"
                     value={createForm.requiredQty}
                     onChange={(e) => setCreateForm({ ...createForm, requiredQty: e.target.value })}
                     className="w-full p-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-teal-500 font-semibold"
@@ -569,7 +613,7 @@ export default function BuyerDemandBoard({ user, token, apiBase, formatMoney, cu
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Target Buying Price (KES/KG) *</label>
+                  <label className="font-bold text-slate-700 block mb-1">Target Price (KES/{createForm.unit || 'kg'}) *</label>
                   <input
                     type="number"
                     required
@@ -655,11 +699,11 @@ export default function BuyerDemandBoard({ user, token, apiBase, formatMoney, cu
             <div className="p-3 bg-slate-50 rounded-xl space-y-1 text-xs">
               <div className="flex justify-between">
                 <span className="text-slate-500">Buyer Target:</span>
-                <span className="font-bold text-slate-800">{biddingDemand.requiredQty.toLocaleString()} kg</span>
+                <span className="font-bold text-slate-800">{biddingDemand.requiredQty.toLocaleString()} {biddingDemand.unit || 'kg'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Target Price:</span>
-                <span className="font-bold text-teal-700">KES {Math.round(biddingDemand.targetPrice * 130)} / kg</span>
+                <span className="font-bold text-teal-700">KES {Math.round(biddingDemand.targetPrice * 130).toLocaleString()} / {biddingDemand.unit || 'kg'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Delivery Destination:</span>
@@ -670,11 +714,11 @@ export default function BuyerDemandBoard({ user, token, apiBase, formatMoney, cu
             <form onSubmit={handleSubmitBid} className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">You Can Supply (KG) *</label>
+                  <label className="font-bold text-slate-700 block mb-1">You Can Supply ({biddingDemand.unit || 'kg'}) *</label>
                   <input
                     type="number"
                     required
-                    min="50"
+                    min="1"
                     value={bidForm.offeredQty}
                     onChange={(e) => setBidForm({ ...bidForm, offeredQty: e.target.value })}
                     className="w-full p-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 font-semibold"
@@ -682,7 +726,7 @@ export default function BuyerDemandBoard({ user, token, apiBase, formatMoney, cu
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Your Price (KES/KG) *</label>
+                  <label className="font-bold text-slate-700 block mb-1">Your Price (KES/{biddingDemand.unit || 'kg'}) *</label>
                   <input
                     type="number"
                     required

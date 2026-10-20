@@ -46,6 +46,46 @@ const PRESET_CROPS = [
     name: 'Organic Carrots',
     category: 'TUBER',
     url: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Fresh Raw Cow Milk',
+    category: 'DAIRY',
+    url: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Friesian Dairy Cow (In-Calf)',
+    category: 'LIVESTOCK',
+    url: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Boer & Galla Dairy Goats',
+    category: 'LIVESTOCK',
+    url: 'https://images.unsplash.com/photo-1524024973431-2ad916746881?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Dorper Breeding Sheep',
+    category: 'LIVESTOCK',
+    url: 'https://images.unsplash.com/photo-1484557052118-f32bd25b45b5?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Improved Kienyeji Chickens',
+    category: 'POULTRY',
+    url: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Fresh Farm Egg Trays (30 Pcs)',
+    category: 'POULTRY',
+    url: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Boma Rhodes Hay Bales',
+    category: 'FODDER_FEEDS',
+    url: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&auto=format&fit=crop'
+  },
+  {
+    name: 'Pure Raw Acacia Honey',
+    category: 'APICULTURE',
+    url: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
   }
 ];
 

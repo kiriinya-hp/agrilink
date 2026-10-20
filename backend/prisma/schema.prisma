@@ -37,10 +37,11 @@ model ProduceListing {
   id           String      @id @default(auto()) @map("_id") @db.ObjectId
   farmerId     String      @db.ObjectId
   cropName     String
-  category     String      // HORTICULTURE, CEREAL, TUBER, LEGUME
+  category     String      // HORTICULTURE, CEREAL, TUBER, LEGUME, DAIRY, LIVESTOCK, POULTRY, FODDER_FEEDS, APICULTURE
+  unit         String?     @default("kg") // kg, litres, heads, trays, bales, bags, birds
   availableQty Float
   unitPrice    Float
-  grade        String      // GRADE_A, GRADE_B, STANDARD
+  grade        String      // GRADE_A, GRADE_B, STANDARD, BREEDING, COMMERCIAL
   harvestDate  DateTime
   location     String
   status       String      @default("ACTIVE") // ACTIVE, RESERVED, SOLD_OUT
@@ -134,9 +135,10 @@ model BuyerDemandRequest {
   id               String      @id @default(auto()) @map("_id") @db.ObjectId
   buyerId          String      @db.ObjectId
   cropName         String
-  category         String      // HORTICULTURE, CEREAL, TUBER, LEGUME
-  requiredQty      Float       // in kg
-  targetPrice      Float       // per kg in USD
+  category         String      // HORTICULTURE, CEREAL, TUBER, LEGUME, DAIRY, LIVESTOCK, POULTRY, FODDER_FEEDS, APICULTURE
+  unit             String?     @default("kg") // kg, litres, heads, trays, bales, bags, birds
+  requiredQty      Float       // in units
+  targetPrice      Float       // per unit in USD
   deliveryLocation String
   targetDate       DateTime
   qualityGrade     String      // GRADE_A, GRADE_B, STANDARD

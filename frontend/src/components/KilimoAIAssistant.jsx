@@ -31,8 +31,15 @@ const QUICK_PROMPTS_EN = [
     icon: TrendingUp,
     color: 'text-emerald-600 bg-emerald-50 border-emerald-200',
     title: 'Live Market Prices',
-    subtitle: 'Nairobi Wakulima, Mombasa Kongowea & Nakuru benchmarks',
+    subtitle: 'Nairobi Wakulima, Milk hubs, Poultry & Nakuru benchmarks',
     query: 'What are current wholesale commodity prices across Kenya?'
+  },
+  {
+    icon: Leaf,
+    color: 'text-teal-700 bg-teal-50 border-teal-200',
+    title: 'Livestock & Veterinary Care',
+    subtitle: 'Dairy cow feeding, poultry vaccination & disease control',
+    query: 'What are best practices for dairy cow feeding, poultry vaccination, and livestock health?'
   },
   {
     icon: ShieldCheck,
@@ -52,7 +59,7 @@ const QUICK_PROMPTS_EN = [
     icon: Sprout,
     color: 'text-purple-600 bg-purple-50 border-purple-200',
     title: 'How to Post Your Harvest',
-    subtitle: 'Step-by-step farmer guide to listing produce on AgriShamba',
+    subtitle: 'Step-by-step farmer guide to listing crops or livestock on AgriShamba',
     query: 'How do I post my farm harvest on AgriShamba as a farmer?'
   }
 ];
@@ -62,8 +69,15 @@ const QUICK_PROMPTS_SW = [
     icon: TrendingUp,
     color: 'text-emerald-600 bg-emerald-50 border-emerald-200',
     title: 'Bei Halisi za Soko',
-    subtitle: 'Bei za jumla Marikiti, Kongowea na Nakuru',
-    query: 'Nielezee bei za sasa za nyanya, vitunguu na viazi sokoni Kenya.'
+    subtitle: 'Bei za jumla Marikiti, Maziwa, Kuku na Nakuru',
+    query: 'Nielezee bei za sasa za nyanya, maziwa, mayai na viazi sokoni Kenya.'
+  },
+  {
+    icon: Leaf,
+    color: 'text-teal-700 bg-teal-50 border-teal-200',
+    title: 'Ufugaji Bora wa Mifugo',
+    subtitle: 'Maziwa mengi, chanjo za kuku na chakula bora',
+    query: 'Nielezee kuhusu ufugaji bora wa ng’ombe wa maziwa na ratiba ya chanjo ya kuku.'
   },
   {
     icon: ShieldCheck,
@@ -82,7 +96,7 @@ const QUICK_PROMPTS_SW = [
   {
     icon: Sprout,
     color: 'text-purple-600 bg-purple-50 border-purple-200',
-    title: 'Kuuza Mazao Shambani',
+    title: 'Kuuza Mazao & Mifugo',
     subtitle: 'Jinsi ya kuweka mavuno yako sokoni kama mkulima',
     query: 'Nitawekaje mazao yangu ya shamba kwenye tovuti kama mkulima?'
   }
@@ -306,6 +320,30 @@ export default function KilimoAIAssistant({
         };
       }
 
+      // Swahili: Livestock, Dairy, Poultry & Feeds
+      if (q.includes("ng'ombe") || q.includes('ngombe') || q.includes('kuku') || q.includes('mayai') || q.includes('maziwa') || q.includes('mifugo') || q.includes('asali') || q.includes('chakula cha mifugo') || q.includes('chanjo')) {
+        return {
+          isSwahili: true,
+          text: `Mkulima hodari! Hapa kuna mwongozo wa kitaalamu wa ufugaji wenye tija:
+
+🥛 **Ng'ombe wa Maziwa (Friesian & Ayrshire)**:
+• **Lishe Bora (TMR)**: Lisha kilo 15–20 za silage/nyasi ya Boma Rhodes + Lucerne au Desmodium (protini).
+• **Dairy Meal**: Ongeza kilo 1 ya Dairy Meal kwa kila lita 2 za maziwa anazotoa ng'ombe zaidi ya lita 10.
+• **Kuzuia Ugonjwa wa Kiwele (Mastitis)**: Safisha na tumbukiza chuchu kwenye dawa (Teat Dip ya Iodine) kabla na baada ya kukamua.
+
+🐔 **Kuku wa Kienyeji & Mayai**:
+• **Ratiba ya Chanjo**: Siku ya 7 & 21 (Gumboro), Siku ya 14 & 28 (Newcastle/Kideri), Wiki ya 6 (Ndui ya Kuku / Fowl Pox).
+• **Uzalishaji wa Mayai**: Wape kuku wa mayai Layers Mash safi na madini ya chokaa (Limestone/Calcium) ili maganda yawe magumu.
+
+🍯 **Ufugaji wa Nyuki (Asali Safi)**:
+• Tumia mizinga ya kisasa ya Langstroth au KTBH, weka kivulini mita 1 kutoka ardhini karibu na miti inayotoa maua.`,
+          actions: [
+            { label: 'Tazama Mifugo & Maziwa Sokoni', action: 'navigate_main' },
+            { label: 'Weka Mifugo Yako Sokoni', action: 'navigate_farmer' }
+          ]
+        };
+      }
+
       // Swahili: Default
       return {
         isSwahili: true,
@@ -347,6 +385,39 @@ Every diagnosis includes exact chemical dosage per 20L knapsack sprayer, pre-har
       };
     }
 
+    // 1.8 LIVESTOCK HUSBANDRY & VETERINARY CARE
+    if (q.includes('livestock') || q.includes('cow') || q.includes('cattle') || q.includes('dairy') || q.includes('milk') || q.includes('poultry') || q.includes('chicken') || q.includes('egg') || q.includes('feed') || q.includes('fodder') || q.includes('hay') || q.includes('silage') || q.includes('honey') || q.includes('bee') || q.includes('vaccin') || q.includes('mastitis') || q.includes('veterinary')) {
+      return {
+        text: `🐄 **Kilimo AI Livestock, Dairy & Poultry Veterinary Advisory:**
+
+🥛 **Dairy Cattle & High Milk Yields**:
+• **Total Mixed Ration (TMR)**: Provide 15–20kg good quality silage or Boma Rhodes hay blended with high-protein legumes (Lucerne / Desmodium).
+• **Dairy Meal Supplementation**: Feed 1 kg of commercial Dairy Meal for every 2 Litres of milk produced above a 10L baseline.
+• **Mastitis Prevention Protocol**: Clean udders with warm sanitizing wash, dry with individual paper towels, and always apply pre- and post-milking teat dips (0.5% Iodine).
+• **Mineral Balance**: Provide continuous access to high-phosphorus dairy mineral licks (DCP) to prevent milk fever (hypocalcemia).
+
+🐔 **Poultry & Egg Production**:
+• **Vaccination Timetable**:
+  - Day 1: Marek's disease (at hatchery)
+  - Day 7: Gumboro (IBD) 1st dose (in drinking water with skimmed milk stabilizer)
+  - Day 14: Newcastle (ND) + Infectious Bronchitis (eye drop/water)
+  - Day 21: Gumboro 2nd dose (booster)
+  - Day 28: Newcastle Lasota booster
+  - Week 6–8: Fowl Pox (wing web puncture) & Fowl Typhoid
+• **Egg Shell Strength**: Provide coarse limestone grit / crushed oyster shells for continuous calcium supply.
+
+🌿 **Animal Feeds & Fodder Management**:
+• Test silage pH (ideal 3.8–4.2 with sweet fermentation aroma). Keep bales elevated on wooden pallets away from damp soil.
+
+🍯 **Apiculture & Raw Honey**:
+• Position Langstroth or Kenya Top Bar Hives (KTBH) 1 metre above ground facing away from direct high winds, within 500m of clean fresh water.`,
+        actions: [
+          { label: 'Explore Dairy & Livestock Listings', action: 'navigate_main' },
+          { label: 'Post Livestock on AgriShamba', action: 'navigate_farmer' }
+        ]
+      };
+    }
+
     // 2. LIVE COMMODITY MARKET PRICES
     if (q.includes('price') || q.includes('commodity') || q.includes('rate') || q.includes('cost') || q.includes('wakulima') || q.includes('kongowea') || q.includes('marikiti') || q.includes('wholesale')) {
       return {
@@ -358,6 +429,12 @@ Every diagnosis includes exact chemical dosage per 20L knapsack sprayer, pre-har
 • 🌽 **Dry White Maize**: **KES 4,100 / 90kg bag** at Eldoret Grain Hub (Stable)
 • 🥑 **Export Hass Avocado**: **KES 140/kg** in Murang'a & Meru (▲ +6.5%)
 • 🥬 **Sukuma Wiki & Cabbage**: **KES 38–45/kg** at Kisumu Jubilee Market
+• 🥛 **Fresh Raw Cow Milk**: **KES 58 / Litre** at Central & Rift Valley hubs (▲ +3.5%)
+• 🥚 **Kienyeji Eggs (30-Egg Tray)**: **KES 420 / Tray** at Wangige Poultry Hub (Kiambu)
+• 🐔 **Improved Kienyeji Chicken**: **KES 950 / Bird** at Kariokor Market (Nairobi)
+• 🐄 **In-Calf Friesian Heifer**: **KES 115,000 / Head** at Naivasha Livestock Yard
+• 🌿 **Boma Rhodes Hay (18kg Bale)**: **KES 320 / Bale** at Nakuru / Rumuruti
+• 🍯 **Pure Raw Acacia Honey**: **KES 900 / Litre** at Baringo & Kitui Co-ops
 
 *Benchmark updates reflect daily weighted clearinghouse transactions across verified markets.*`,
         actions: [

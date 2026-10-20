@@ -1182,11 +1182,100 @@ router.post('/admin/database/sync', requireAdmin, async (req, res) => {
   }
 });
 
+// Helper: Seed demo livestock and animal batches if none exist
+async function ensureSeedAnimalListings() {
+  try {
+    const dairyCount = await prisma.produceListing.count({ where: { category: 'DAIRY' } });
+    if (dairyCount > 0) return;
+    const farmer = await prisma.user.findFirst({ where: { role: 'FARMER' } }) ||
+                   await prisma.user.findFirst();
+    if (!farmer) return;
+
+    const animalListings = [
+      {
+        farmerId: farmer.id,
+        cropName: 'Fresh Raw Cow Milk',
+        category: 'DAIRY',
+        unit: 'litres',
+        availableQty: 1200,
+        unitPrice: 0.45, // ~KES 58/L
+        grade: 'GRADE_A',
+        location: 'Limuru, Kiambu County',
+        imageUrl: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Pedigree Friesian Dairy Cow (In-Calf)',
+        category: 'LIVESTOCK',
+        unit: 'heads',
+        availableQty: 4,
+        unitPrice: 884.6, // ~KES 115,000/head
+        grade: 'GRADE_A',
+        location: 'Naivasha, Nakuru County',
+        imageUrl: 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Improved Kienyeji Chickens (Mature)',
+        category: 'POULTRY',
+        unit: 'birds',
+        availableQty: 250,
+        unitPrice: 7.3, // ~KES 950/bird
+        grade: 'GRADE_A',
+        location: 'Wangige, Kiambu County',
+        imageUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Fresh Kienyeji Eggs (30-Egg Trays)',
+        category: 'POULTRY',
+        unit: 'trays',
+        availableQty: 180,
+        unitPrice: 3.23, // ~KES 420/tray
+        grade: 'GRADE_A',
+        location: 'Thika, Kiambu County',
+        imageUrl: 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Boma Rhodes Hay Bales (18kg)',
+        category: 'FODDER_FEEDS',
+        unit: 'bales',
+        availableQty: 500,
+        unitPrice: 2.46, // ~KES 320/bale
+        grade: 'GRADE_A',
+        location: 'Rumuruti, Laikipia County',
+        imageUrl: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=600&auto=format&fit=crop'
+      },
+      {
+        farmerId: farmer.id,
+        cropName: 'Pure Raw Acacia Honey',
+        category: 'APICULTURE',
+        unit: 'litres',
+        availableQty: 300,
+        unitPrice: 6.92, // ~KES 900/L
+        grade: 'GRADE_A',
+        location: 'Baringo Central',
+        imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop'
+      }
+    ];
+
+    for (const item of animalListings) {
+      await prisma.produceListing.create({ data: item });
+    }
+    console.log('[Produce Catalog] Seeded initial livestock & dairy batches');
+  } catch (err) {
+    console.warn('[Produce Catalog] Seed warning:', err.message);
+  }
+}
+
 // ==========================================
 // 2. PRODUCE CATALOG & LISTINGS
 // ==========================================
 router.get('/listings', async (req, res) => {
   try {
+    await ensureSeedAnimalListings();
+
     const { category, search, grade, status = 'ACTIVE' } = req.query;
     const where = {};
     if (status && status !== 'ALL') where.status = status;
@@ -1216,7 +1305,7 @@ router.get('/listings', async (req, res) => {
 
 router.post('/listings', async (req, res) => {
   try {
-    const { farmerId, cropName, category, availableQty, unitPrice, grade, harvestDate, location, imageUrl } = req.body;
+    const { farmerId, cropName, category, availableQty, unitPrice, grade, harvestDate, location, imageUrl, unit } = req.body;
     
     if (!farmerId || !cropName || !availableQty || !unitPrice) {
       return res.status(400).json({ success: false, error: 'Missing required produce listing fields' });
@@ -1227,6 +1316,7 @@ router.post('/listings', async (req, res) => {
         farmerId,
         cropName,
         category: category || 'HORTICULTURE',
+        unit: unit || 'kg',
         availableQty: parseFloat(availableQty),
         unitPrice: parseFloat(unitPrice),
         grade: grade || 'GRADE_A',
@@ -1633,7 +1723,13 @@ router.get('/market/commodity-prices', async (req, res) => {
       { id: 'c5', crop: 'Hass Avocados (Export Grade)', market: 'Murang’a Sacco Depot', wholesalePriceKes: 140, unit: 'kg', trend: 'UP', changePct: 6.5, demandLevel: 'VERY_HIGH' },
       { id: 'c6', crop: 'Sukuma Wiki (Collard Greens)', market: 'Kisumu Jubilee', wholesalePriceKes: 40, unit: 'kg', trend: 'STABLE', changePct: -0.5, demandLevel: 'MEDIUM' },
       { id: 'c7', crop: 'Watermelon (Sukari F1)', market: 'Machakos Wholesale', wholesalePriceKes: 38, unit: 'kg', trend: 'UP', changePct: 2.1, demandLevel: 'HIGH' },
-      { id: 'c8', crop: 'Capsicum (Colored Sweet Pepper)', market: 'Nairobi City Market', wholesalePriceKes: 160, unit: 'kg', trend: 'UP', changePct: 5.0, demandLevel: 'HIGH' }
+      { id: 'c8', crop: 'Capsicum (Colored Sweet Pepper)', market: 'Nairobi City Market', wholesalePriceKes: 160, unit: 'kg', trend: 'UP', changePct: 5.0, demandLevel: 'HIGH' },
+      { id: 'c9', crop: 'Fresh Raw Cow Milk', market: 'Eldoret / Nyandarua Chilling Plant', wholesalePriceKes: 58, unit: 'Litre', trend: 'UP', changePct: 3.5, demandLevel: 'VERY_HIGH' },
+      { id: 'c10', crop: 'Kienyeji Eggs (30-Egg Tray)', market: 'Wangige Poultry Hub (Kiambu)', wholesalePriceKes: 420, unit: 'Tray', trend: 'UP', changePct: 2.4, demandLevel: 'VERY_HIGH' },
+      { id: 'c11', crop: 'Improved Kienyeji Chicken (Mature)', market: 'Kariokor Market (Nairobi)', wholesalePriceKes: 950, unit: 'Bird', trend: 'STABLE', changePct: 0.0, demandLevel: 'HIGH' },
+      { id: 'c12', crop: 'In-Calf Friesian Dairy Heifer', market: 'Naivasha Livestock Yard', wholesalePriceKes: 115000, unit: 'Head', trend: 'UP', changePct: 4.5, demandLevel: 'HIGH' },
+      { id: 'c13', crop: 'Boma Rhodes Hay Bales (18kg)', market: 'Nakuru / Rumuruti Fodder Yard', wholesalePriceKes: 320, unit: 'Bale', trend: 'UP', changePct: 6.2, demandLevel: 'VERY_HIGH' },
+      { id: 'c14', crop: 'Pure Raw Acacia Honey', market: 'Baringo / Kitui Apiary Co-op', wholesalePriceKes: 900, unit: 'Litre', trend: 'STABLE', changePct: 1.1, demandLevel: 'HIGH' }
     ];
 
     res.json({
@@ -4578,12 +4674,57 @@ router.post('/admin/broadcast', requireAdmin, async (req, res) => {
 // Helper: Seed demo tenders if none exist
 async function ensureSeedDemands() {
   try {
-    const count = await prisma.buyerDemandRequest.count();
-    if (count > 0) return;
-
+    const dairyCount = await prisma.buyerDemandRequest.count({ where: { category: 'DAIRY' } });
     const buyer = await prisma.user.findFirst({ where: { role: 'BUYER' } }) ||
                   await prisma.user.findFirst();
     if (!buyer) return;
+
+    if (dairyCount === 0) {
+      const animalDemands = [
+        {
+          buyerId: buyer.id,
+          cropName: 'Fresh Raw Cow Milk',
+          category: 'DAIRY',
+          unit: 'litres',
+          requiredQty: 2500,
+          targetPrice: 0.45, // ~KES 58/L
+          deliveryLocation: 'Highlands Dairy Processor Co-op, Limuru Hub',
+          targetDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+          qualityGrade: 'GRADE_A',
+          notes: 'Chilled raw milk with butterfat above 3.5% and lactometer reading >= 28. Delivered in food-grade aluminum cans.'
+        },
+        {
+          buyerId: buyer.id,
+          cropName: 'Fresh Kienyeji Eggs',
+          category: 'POULTRY',
+          unit: 'trays',
+          requiredQty: 400,
+          targetPrice: 3.23, // ~KES 420/tray
+          deliveryLocation: 'Nairobi Supermarket Logistics Centre, Embakasi',
+          targetDate: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
+          qualityGrade: 'GRADE_A',
+          notes: 'Standard 30-egg trays, clean, candled for freshness, uniform brown shell color.'
+        },
+        {
+          buyerId: buyer.id,
+          cropName: 'Boma Rhodes Hay Bales',
+          category: 'FODDER_FEEDS',
+          unit: 'bales',
+          requiredQty: 600,
+          targetPrice: 2.46, // ~KES 320/bale
+          deliveryLocation: 'Kiambu Zero-Grazing Dairy Cluster Depot',
+          targetDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+          qualityGrade: 'GRADE_A',
+          notes: 'Tight 18kg bales, high leaf-to-stem ratio, zero mold, baled during optimal bloom.'
+        }
+      ];
+      for (const d of animalDemands) {
+        await prisma.buyerDemandRequest.create({ data: d });
+      }
+    }
+
+    const totalCount = await prisma.buyerDemandRequest.count();
+    if (totalCount > 3) return;
 
     const demoDemands = [
       {
@@ -4629,13 +4770,37 @@ async function ensureSeedDemands() {
         targetDate: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000),
         qualityGrade: 'GRADE_B',
         notes: 'Moisture content strictly below 13.5%. Clean 90kg gunny bags, free from weevils and aflatoxin.'
+      },
+      {
+        buyerId: buyer.id,
+        cropName: 'Fresh Raw Cow Milk',
+        category: 'DAIRY',
+        unit: 'litres',
+        requiredQty: 2500,
+        targetPrice: 0.45, // ~KES 58/L
+        deliveryLocation: 'Highlands Dairy Processor Co-op, Limuru Hub',
+        targetDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        qualityGrade: 'GRADE_A',
+        notes: 'Chilled raw milk with butterfat above 3.5% and lactometer reading >= 28. Delivered in food-grade aluminum cans.'
+      },
+      {
+        buyerId: buyer.id,
+        cropName: 'Fresh Kienyeji Eggs',
+        category: 'POULTRY',
+        unit: 'trays',
+        requiredQty: 400,
+        targetPrice: 3.23, // ~KES 420/tray
+        deliveryLocation: 'Nairobi Supermarket Logistics Centre, Embakasi',
+        targetDate: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
+        qualityGrade: 'GRADE_A',
+        notes: 'Standard 30-egg trays, clean, candled for freshness, uniform brown shell color.'
       }
     ];
 
     for (const d of demoDemands) {
       await prisma.buyerDemandRequest.create({ data: d });
     }
-    console.log('[Demand Board] Initialized 4 wholesale reverse tenders in MongoDB Atlas');
+    console.log('[Demand Board] Initialized wholesale reverse tenders in MongoDB Atlas');
   } catch (err) {
     console.warn('[Demand Board] Seed warning:', err.message);
   }
@@ -4712,6 +4877,7 @@ router.post('/demands', async (req, res) => {
     const { 
       cropName, 
       category = 'HORTICULTURE', 
+      unit = 'kg',
       requiredQty, 
       targetPrice, 
       deliveryLocation, 
@@ -4732,6 +4898,7 @@ router.post('/demands', async (req, res) => {
         buyerId: decoded.id,
         cropName: cropName.trim(),
         category,
+        unit: unit || 'kg',
         requiredQty: parseFloat(requiredQty),
         targetPrice: parseFloat(targetPrice),
         deliveryLocation: deliveryLocation.trim(),
@@ -4747,7 +4914,8 @@ router.post('/demands', async (req, res) => {
     // Notify farmers about the new wholesale demand
     const farmers = await prisma.user.findMany({ where: { role: 'FARMER' }, select: { id: true, name: true, email: true } });
     const targetKes = Math.round(newDemand.targetPrice * 130);
-    const tenderMsg = `${newDemand.buyer.name} is seeking ${newDemand.requiredQty.toLocaleString()} kg of ${newDemand.cropName} at KES ${targetKes}/kg ($${newDemand.targetPrice.toFixed(2)}) for delivery to ${newDemand.deliveryLocation}. Submit your supply bid now!`;
+    const unitLabel = newDemand.unit || 'kg';
+    const tenderMsg = `${newDemand.buyer.name} is seeking ${newDemand.requiredQty.toLocaleString()} ${unitLabel} of ${newDemand.cropName} at KES ${targetKes}/${unitLabel} ($${newDemand.targetPrice.toFixed(2)}) for delivery to ${newDemand.deliveryLocation}. Submit your supply bid now!`;
     await Promise.all(
       farmers.map(f =>
         prisma.notification.create({
