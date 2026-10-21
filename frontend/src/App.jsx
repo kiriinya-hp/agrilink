@@ -50,7 +50,8 @@ import {
   Printer,
   Tag,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Wrench
 } from 'lucide-react';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -89,6 +90,8 @@ import AdminEscrowDisputes from './components/AdminEscrowDisputes';
 import AdminBroadcastModal from './components/AdminBroadcastModal';
 import AdminOrdersManagement from './components/AdminOrdersManagement';
 import AdminProduceManagement from './components/AdminProduceManagement';
+import AdminOperationsPanel from './components/AdminOperationsPanel';
+import AdminAnalyticsPlus from './components/AdminAnalyticsPlus';
 import BuyerDemandBoard from './components/BuyerDemandBoard';
 import MobileToolsSheetModal from './components/MobileToolsSheetModal';
 import IntroVideoSplash from './components/IntroVideoSplash';
@@ -1299,6 +1302,26 @@ function MainApp({ onReplayIntro }) {
                   <span className="sm:hidden">Users</span>
                   <span>({allUsers.length})</span>
                 </button>
+                {/* Operations Panel Tab */}
+                <button
+                  onClick={() => setActiveTab('admin-operations')}
+                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+                    activeTab === 'admin-operations' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  <Wrench className="w-3.5 h-3.5 shrink-0 text-orange-300" />
+                  <span>Operations</span>
+                </button>
+                {/* Analytics Plus Tab */}
+                <button
+                  onClick={() => setActiveTab('admin-analytics-plus')}
+                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+                    activeTab === 'admin-analytics-plus' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  <TrendingUp className="w-3.5 h-3.5 shrink-0 text-emerald-300" />
+                  <span>Deep Analytics</span>
+                </button>
                 <button
                   onClick={() => setActiveTab('marketplace')}
                   className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
@@ -1502,7 +1525,7 @@ function MainApp({ onReplayIntro }) {
         {/* ======================================================== */}
         {/* ADMIN ROLE GUARD: Block non-admins from admin-only views  */}
         {/* ======================================================== */}
-        {(activeTab === 'analytics' || activeTab === 'admin-users' || activeTab === 'admin-orders' || activeTab === 'admin-produce' || activeTab === 'admin-escrow' || activeTab === 'admin-health' || activeTab === 'admin-broadcast') && user.role !== 'ADMIN' && (
+        {(activeTab === 'analytics' || activeTab === 'admin-users' || activeTab === 'admin-orders' || activeTab === 'admin-produce' || activeTab === 'admin-escrow' || activeTab === 'admin-health' || activeTab === 'admin-broadcast' || activeTab === 'admin-operations' || activeTab === 'admin-analytics-plus') && user.role !== 'ADMIN' && (
           <div className="min-h-[60vh] flex items-center justify-center">
             <div className="text-center max-w-sm mx-auto">
               <div className="w-16 h-16 bg-rose-100 border-2 border-rose-300 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -2695,6 +2718,25 @@ function MainApp({ onReplayIntro }) {
             token={token} 
             apiBase={API_BASE} 
             onProduceUpdated={loadRoleData} 
+          />
+        )}
+
+        {/* ADMIN VIEW: OPERATIONS CONTROL (Fleet · Listing Queue · Refunds · Fees) */}
+        {user.role === 'ADMIN' && activeTab === 'admin-operations' && (
+          <AdminOperationsPanel
+            token={token}
+            apiBase={API_BASE}
+            allUsers={allUsers}
+          />
+        )}
+
+        {/* ADMIN VIEW: DEEP ANALYTICS (Revenue · Counties · Crop Trends · User Growth) */}
+        {user.role === 'ADMIN' && activeTab === 'admin-analytics-plus' && (
+          <AdminAnalyticsPlus
+            token={token}
+            apiBase={API_BASE}
+            analytics={analytics}
+            allUsers={allUsers}
           />
         )}
       </main>
