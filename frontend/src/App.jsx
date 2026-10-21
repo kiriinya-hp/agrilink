@@ -1585,8 +1585,8 @@ function MainApp({ onReplayIntro }) {
               </div>
             </div>
 
-            {/* Filter Bar */}
-            <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-200 mb-4 sm:mb-6 flex flex-col md:flex-row gap-3 sm:gap-4 justify-between items-center">
+            {/* Glassmorphic Category & Filter Bar */}
+            <div className="glass-panel-climate rounded-2xl p-3 sm:p-4 mb-4 sm:mb-6 flex flex-col md:flex-row gap-3 sm:gap-4 justify-between items-center shadow-xs">
               <div className="relative w-full md:w-96">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                 <input
@@ -1594,7 +1594,7 @@ function MainApp({ onReplayIntro }) {
                   placeholder={t('searchProducePlaceholder')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white/70 backdrop-blur-xs border border-white/90 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-slate-400 shadow-2xs"
                 />
               </div>
 
@@ -1612,67 +1612,103 @@ function MainApp({ onReplayIntro }) {
                   <button
                     key={cat.key}
                     onClick={() => setSelectedCategory(cat.key)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                      selectedCategory === cat.key ? 'bg-slate-900 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap backdrop-blur-xs ${
+                      selectedCategory === cat.key 
+                        ? 'bg-slate-900 text-white shadow-sm border border-slate-700' 
+                        : 'bg-white/60 text-slate-700 hover:bg-white/90 border border-white/80'
                     }`}
                   >
                     {cat.label}
                   </button>
                 ))}
-                <button onClick={loadRoleData} className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 border border-slate-200" title="Refresh Listings">
+                <button onClick={loadRoleData} className="p-2 rounded-xl text-slate-600 hover:bg-white/90 border border-white/80 bg-white/60 transition-colors backdrop-blur-xs" title="Refresh Listings">
                   <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 </button>
               </div>
             </div>
 
-            {/* Produce Grid */}
+            {/* Produce Grid with High-End Glassmorphism Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {listings.map((item) => (
-                <div key={item.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
-                  <div className="h-44 bg-slate-100 relative overflow-hidden">
+                <div 
+                  key={item.id} 
+                  className="glass-card-product rounded-3xl overflow-hidden flex flex-col group relative"
+                >
+                  {/* Card Visual Hero with Gradient Frost & Zoom */}
+                  <div className="h-48 bg-slate-900/10 relative overflow-hidden">
                     <img 
                       src={item.imageUrl} 
                       alt={item.cropName} 
-                      className="w-full h-full object-cover hover:scale-105 transition-transform"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                       onError={(e) => {
                         e.target.src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop';
                       }}
                     />
-                    <span className="absolute top-3 left-3 bg-white/95 px-2.5 py-1 rounded text-xs font-bold text-slate-800 shadow-sm">
+                    {/* Atmospheric Bottom Dark Gradient on image for smooth transition */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-black/20 pointer-events-none" />
+
+                    {/* Frosted Glass Floating Badges */}
+                    <span className="absolute top-3 left-3 glass-pill-badge px-3 py-1 rounded-xl text-[11px] font-extrabold text-white flex items-center gap-1.5">
+                      <Tag className="w-3 h-3 text-emerald-400" />
                       {item.category}
                     </span>
-                    <span className="absolute top-3 right-3 bg-emerald-600 text-white px-2.5 py-1 rounded text-xs font-bold shadow-sm">
+                    <span className="absolute top-3 right-3 glass-pill-emerald px-3 py-1 rounded-xl text-[11px] font-black text-white tracking-wide">
                       {(item.grade || 'GRADE_A').replace('_', ' ')}
                     </span>
                   </div>
 
-                  <div className="p-5 flex-1 flex flex-col justify-between">
+                  {/* Card Body */}
+                  <div className="p-5 flex-1 flex flex-col justify-between relative">
                     <div>
-                      <div className="flex justify-between items-start">
-                        <h3 className="font-bold text-base text-slate-900">{item.cropName}</h3>
-                        <div className="text-right">
-                          <p className="text-base font-extrabold text-emerald-600">
+                      {/* Title & Frosted Price Tag */}
+                      <div className="flex justify-between items-start gap-3">
+                        <div className="min-w-0">
+                          <h3 className="font-extrabold text-base text-slate-900 group-hover:text-emerald-700 transition-colors truncate">
+                            {item.cropName}
+                          </h3>
+                          <span className="text-[11px] text-slate-500 font-medium flex items-center gap-1 mt-0.5">
+                            <MapPin className="w-3 h-3 text-emerald-600 shrink-0" />
+                            <span className="truncate">{item.location}</span>
+                          </span>
+                        </div>
+
+                        {/* Glassmorphic Price Box */}
+                        <div className="text-right shrink-0 bg-emerald-500/10 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-emerald-500/25 shadow-2xs">
+                          <p className="text-base font-black text-emerald-700 leading-tight">
                             {currency === 'KES' ? (
-                              <><span>KES {Math.round(item.unitPrice * 130).toLocaleString()}</span><span className="text-[10px] text-slate-400 font-normal"> / {item.unit || 'kg'}</span></>
+                              <>
+                                <span>KES {Math.round(item.unitPrice * 130).toLocaleString()}</span>
+                                <span className="text-[10px] text-slate-500 font-normal"> / {item.unit || 'kg'}</span>
+                              </>
                             ) : (
-                              <><span>${item.unitPrice.toFixed(2)}</span><span className="text-[10px] text-slate-400 font-normal"> / {item.unit || 'kg'}</span></>
+                              <>
+                                <span>${item.unitPrice.toFixed(2)}</span>
+                                <span className="text-[10px] text-slate-500 font-normal"> / {item.unit || 'kg'}</span>
+                              </>
                             )}
                           </p>
                           {currency === 'KES' && (
-                            <span className="text-[10px] text-slate-400">${item.unitPrice.toFixed(2)} / {item.unit || 'kg'}</span>
+                            <span className="text-[10px] text-slate-500 font-mono block">
+                              ${item.unitPrice.toFixed(2)} / {item.unit || 'kg'}
+                            </span>
                           )}
                         </div>
                       </div>
 
-
-                      <div className="mt-3 space-y-1 text-xs text-slate-600">
-                        <p className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-slate-400" /> {item.location}</p>
-                        <p className="flex items-center gap-1.5"><Sprout className="w-3.5 h-3.5 text-slate-400" /> {t('producer')}: <strong>{item.farmer?.name}</strong></p>
-                        <p className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-slate-400" /> {t('harvestDate')}: {new Date(item.harvestDate).toLocaleDateString()}</p>
+                      {/* Translucent Frosted Producer & Logistics Info Box */}
+                      <div className="mt-3.5 space-y-1.5 text-xs text-slate-700 bg-white/60 backdrop-blur-xs p-3 rounded-2xl border border-white/80 shadow-2xs">
+                        <p className="flex items-center gap-1.5">
+                          <Sprout className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span>{t('producer')}: <strong className="text-slate-900">{item.farmer?.name}</strong></span>
+                        </p>
+                        <p className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <span>{t('harvestDate')}: <strong className="text-slate-800">{new Date(item.harvestDate).toLocaleDateString()}</strong></span>
+                        </p>
                         
                         {/* Live Drivers Available indicator */}
-                        <div className="pt-2">
-                          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        <div className="pt-1">
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 bg-emerald-500/15 backdrop-blur-xs px-2.5 py-1 rounded-xl border border-emerald-400/40">
                             <Truck className="w-3.5 h-3.5 text-emerald-600" />
                             {transporterCount} {t('activeDriversReady')}
                           </span>
@@ -1680,10 +1716,15 @@ function MainApp({ onReplayIntro }) {
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                    {/* Bottom Action Footer */}
+                    <div className="mt-4 pt-3.5 border-t border-slate-200/70 flex items-center justify-between gap-2">
                       <div>
-                        <span className="text-[10px] text-slate-400 block">{t('availableVolume')}</span>
-                        <span className="text-xs font-bold text-slate-800">{item.availableQty.toLocaleString()} {item.unit || 'kg'}</span>
+                        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">
+                          {t('availableVolume')}
+                        </span>
+                        <span className="text-sm font-black text-slate-900 font-mono">
+                          {item.availableQty.toLocaleString()} {item.unit || 'kg'}
+                        </span>
                       </div>
 
                       <div className="flex items-center gap-1.5">
@@ -1694,7 +1735,7 @@ function MainApp({ onReplayIntro }) {
                             setAlertsDefaultCrop(item.cropName);
                             setShowAlertsModal(true);
                           }}
-                          className="p-2 rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-700 transition-colors"
+                          className="p-2.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/40 text-sky-800 transition-all backdrop-blur-xs shadow-2xs"
                           title={`Set alert for ${item.cropName}`}
                         >
                           <Bell className="w-3.5 h-3.5" />
@@ -1707,7 +1748,7 @@ function MainApp({ onReplayIntro }) {
                             setFreightOrigin(item.location || '');
                             setShowFreightCalculator(true);
                           }}
-                          className="p-2 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 transition-colors"
+                          className="p-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-800 transition-all backdrop-blur-xs shadow-2xs"
                           title="Calculate transport cost for this produce"
                         >
                           <Truck className="w-3.5 h-3.5" />
@@ -1721,22 +1762,24 @@ function MainApp({ onReplayIntro }) {
                             setSatelliteLocation(item.location || 'Kinangop, Nyandarua County');
                             setShowSatelliteScanner(true);
                           }}
-                          className="p-2 rounded-lg bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-700 transition-colors"
+                          className="p-2.5 rounded-xl bg-teal-500/15 hover:bg-teal-500/25 border border-teal-400/40 text-teal-800 transition-all backdrop-blur-xs shadow-2xs"
                           title="Verify Farm Canopy Vigor with Sentinel-2 Satellite"
                         >
                           <Radio className="w-3.5 h-3.5" />
                         </button>
 
+                        {/* Make Offer Button */}
                         <button
                           type="button"
                           onClick={() => setNegotiatingListing(item)}
-                          className="flex items-center gap-1 px-2.5 py-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 text-xs font-bold transition-colors"
+                          className="flex items-center gap-1 px-3 py-2 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-400/40 text-indigo-900 text-xs font-extrabold transition-all backdrop-blur-xs shadow-2xs"
                           title="Propose bulk wholesale discount to farmer"
                         >
                           <Handshake className="w-3.5 h-3.5" />
                           <span className="hidden sm:inline">{t('makeOffer')}</span>
                         </button>
 
+                        {/* Escrow Order Button */}
                         <button
                           onClick={() => {
                             setOrderModalListing(item);
@@ -1748,7 +1791,7 @@ function MainApp({ onReplayIntro }) {
                               setPaymentPhone(user.phone);
                             }
                           }}
-                          className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors"
+                          className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white px-3.5 py-2.5 rounded-xl text-xs font-black shadow-md shadow-emerald-600/30 border border-emerald-400/40 transition-all active:scale-95 shrink-0"
                         >
                           <Lock className="w-3.5 h-3.5" />
                           {t('orderWithEscrow')}

@@ -103,13 +103,17 @@ export default function KilimoWeatherAdvisory() {
   const current = userLocationWeather || advisoryData.regions[selectedRegionIndex] || advisoryData.regions[0];
 
   return (
-    <div className="bg-white rounded-3xl p-5 sm:p-6 mb-6 shadow-xs border border-slate-200/80 transition-all hover:border-emerald-300">
+    <div className="glass-panel-climate rounded-3xl p-5 sm:p-6 mb-6 transition-all relative overflow-hidden">
+      {/* Ambient Glassmorphic Background Illumination Orbs */}
+      <div className="absolute -top-16 -right-16 w-64 h-64 bg-emerald-400/20 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-amber-400/15 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute top-1/2 left-1/3 w-72 h-72 bg-sky-400/15 rounded-full blur-3xl pointer-events-none -z-10" />
       
       {/* Top Header & Live Environment Radar */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-100 gap-2">
+      <div className="flex items-center justify-between pb-3 border-b border-white/70 gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="relative shrink-0">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/15">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/25 border border-white/50">
               <CloudSun className="w-5 h-5" />
             </div>
             <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
@@ -123,12 +127,12 @@ export default function KilimoWeatherAdvisory() {
               <h3 className="font-extrabold text-xs sm:text-sm text-slate-900 tracking-tight truncate">
                 Agro-Climate Radar
               </h3>
-              <span className="text-[9px] sm:text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-extrabold flex items-center gap-1">
+              <span className="text-[9px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-800 border border-emerald-500/30 font-extrabold flex items-center gap-1 shadow-2xs backdrop-blur-md">
                 <Radio className="w-2.5 h-2.5 text-emerald-600 animate-pulse" />
                 LIVE SATELLITE
               </span>
             </div>
-            <p className="text-[11px] sm:text-xs text-slate-500 truncate">
+            <p className="text-[11px] sm:text-xs text-slate-600 truncate font-medium">
               {current.region.split('&')[0].trim()} • {current.tempC}°C • {current.condition}
             </p>
           </div>
@@ -138,7 +142,7 @@ export default function KilimoWeatherAdvisory() {
         <button
           type="button"
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors flex items-center gap-1 text-xs font-bold shrink-0 border border-slate-200/60"
+          className="px-3 py-1.5 rounded-xl bg-white/70 hover:bg-white/95 text-slate-700 transition-all flex items-center gap-1 text-xs font-bold shrink-0 border border-white/80 shadow-xs hover:shadow-sm backdrop-blur-md"
           title={isCollapsed ? 'Expand Weather Radar' : 'Collapse Weather Radar'}
         >
           <span className="text-[11px]">{isCollapsed ? 'Radar' : 'Hide'}</span>
@@ -149,15 +153,15 @@ export default function KilimoWeatherAdvisory() {
       {!isCollapsed && (
         <>
           {/* Region Selector Pills & Live GPS Action */}
-          <div className="flex items-center gap-1.5 overflow-x-auto py-3 border-b border-slate-100 scrollbar-none">
+          <div className="flex items-center gap-1.5 overflow-x-auto py-3 border-b border-white/70 scrollbar-none">
           <button
             type="button"
             onClick={handleUseLiveGPS}
             disabled={locatingUser}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 border ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 border backdrop-blur-md shadow-xs ${
               userLocationWeather
-                ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
+                ? 'bg-emerald-600 text-white border-emerald-500 shadow-emerald-600/30'
+                : 'bg-emerald-500/15 text-emerald-800 border-emerald-400/40 hover:bg-emerald-500/25'
             }`}
             title="Detect live environmental weather for your device GPS coordinates"
           >
@@ -174,10 +178,10 @@ export default function KilimoWeatherAdvisory() {
                   setUserLocationWeather(null);
                   setSelectedRegionIndex(idx);
                 }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 border ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 border backdrop-blur-md shadow-2xs ${
                   isSelected
-                    ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                    ? 'bg-slate-900/90 text-white border-slate-700 shadow-md'
+                    : 'bg-white/60 text-slate-700 border-white/80 hover:bg-white/90'
                 }`}
               >
                 {reg.region.split('&')[0].trim()}
@@ -187,7 +191,7 @@ export default function KilimoWeatherAdvisory() {
 
           <button
             onClick={loadWeatherData}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            className="p-1.5 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-white/80 border border-transparent hover:border-white/80 transition-all backdrop-blur-xs"
             title="Refresh Live Satellite Feed"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -198,10 +202,10 @@ export default function KilimoWeatherAdvisory() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
         
         {/* Weather Metrics Card */}
-        <div className="bg-gradient-to-br from-slate-50 to-slate-100/60 rounded-2xl p-4 border border-slate-200 flex flex-col justify-between shadow-2xs">
+        <div className="glass-subcard-weather rounded-2xl p-4 flex flex-col justify-between shadow-xs transition-all hover:border-slate-300">
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block flex items-center gap-1">
+              <span className="text-[10px] font-mono uppercase text-slate-500 font-bold block flex items-center gap-1">
                 <MapPin className="w-3 h-3 text-slate-400" />
                 {userLocationWeather ? 'GPS Location' : 'Regional Station'}
               </span>
@@ -221,11 +225,11 @@ export default function KilimoWeatherAdvisory() {
               <span className="text-3xl font-black text-slate-900 font-mono tracking-tight">
                 {current.tempC}°C
               </span>
-              <span className="text-[10px] text-slate-400 block font-mono">Live Ground Temp</span>
+              <span className="text-[10px] text-slate-500 block font-mono">Live Ground Temp</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-200/80 text-[11px] text-slate-600 font-medium">
+          <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-200/70 text-[11px] text-slate-700 font-medium">
             <div className="flex items-center gap-1">
               <Droplets className="w-3.5 h-3.5 text-blue-500" />
               <span>{current.humidity} Hum.</span>
@@ -234,23 +238,23 @@ export default function KilimoWeatherAdvisory() {
               <Wind className="w-3.5 h-3.5 text-teal-600" />
               <span>{current.windSpeedKmh || 12} km/h</span>
             </div>
-            <div className="text-right font-bold text-slate-700">
+            <div className="text-right font-bold text-slate-800">
               Rain: {current.rainfallChance}
             </div>
           </div>
         </div>
 
         {/* Harvest Window Intelligence Card */}
-        <div className="bg-gradient-to-br from-emerald-50/80 via-emerald-50/40 to-teal-50/30 rounded-2xl p-4 border border-emerald-200 flex flex-col justify-between shadow-2xs">
+        <div className="glass-subcard-harvest rounded-2xl p-4 flex flex-col justify-between shadow-xs transition-all hover:border-emerald-300">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-mono uppercase text-emerald-800 font-extrabold flex items-center gap-1">
+              <span className="text-[10px] font-mono uppercase text-emerald-900 font-extrabold flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
                 Agro-Harvesting Window
               </span>
-              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase font-mono tracking-wider ${
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase font-mono tracking-wider shadow-2xs ${
                 current.harvestSuitability === 'OPTIMAL' || current.harvestSuitability === 'EXCELLENT'
-                  ? 'bg-emerald-600 text-white shadow-2xs'
+                  ? 'bg-emerald-600 text-white'
                   : current.harvestSuitability === 'POSTPONE'
                   ? 'bg-rose-600 text-white'
                   : 'bg-amber-500 text-white'
@@ -264,23 +268,23 @@ export default function KilimoWeatherAdvisory() {
             </p>
           </div>
 
-          <div className="mt-3 pt-2.5 border-t border-emerald-200/60 text-[11px] text-emerald-800/80 font-medium flex items-center justify-between">
+          <div className="mt-3 pt-2.5 border-t border-emerald-300/60 text-[11px] text-emerald-900/90 font-medium flex items-center justify-between">
             <span>Rot & Spoilage Risk: <strong>{current.rainfallChance === '85%' ? 'HIGH' : current.rainfallChance === '55%' ? 'MODERATE' : 'MINIMAL'}</strong></span>
-            <span className="font-mono text-[10px]">Crops: Tomatoes, Onions, Potatoes</span>
+            <span className="font-mono text-[10px] text-emerald-800">Crops: Tomatoes, Onions, Potatoes</span>
           </div>
         </div>
 
         {/* Transport & Road Logistics Card */}
-        <div className="bg-gradient-to-br from-blue-50/80 via-sky-50/40 to-slate-50 rounded-2xl p-4 border border-blue-200 flex flex-col justify-between shadow-2xs">
+        <div className="glass-subcard-freight rounded-2xl p-4 flex flex-col justify-between shadow-xs transition-all hover:border-blue-300">
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] font-mono uppercase text-blue-900 font-extrabold flex items-center gap-1">
                 <Truck className="w-3.5 h-3.5 text-blue-600" />
                 Freight Corridor Status
               </span>
-              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase font-mono tracking-wider ${
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase font-mono tracking-wider shadow-2xs ${
                 current.transportStatus === 'CLEAR' || current.transportStatus === 'EXCELLENT'
-                  ? 'bg-emerald-600 text-white shadow-2xs'
+                  ? 'bg-emerald-600 text-white'
                   : 'bg-amber-600 text-white'
               }`}>
                 {current.transportStatus.replace(/_/g, ' ')}
@@ -296,9 +300,9 @@ export default function KilimoWeatherAdvisory() {
             </p>
           </div>
 
-          <div className="mt-3 pt-2.5 border-t border-blue-200/60 text-[11px] text-blue-800/80 font-medium flex items-center justify-between">
+          <div className="mt-3 pt-2.5 border-t border-blue-300/60 text-[11px] text-blue-900/90 font-medium flex items-center justify-between">
             <span>Cold-chain Need: <strong>{current.tempC > 26 ? 'HIGH (+22%)' : 'NORMAL'}</strong></span>
-            <span className="font-mono text-[10px]">Speed Limit: 80 km/h</span>
+            <span className="font-mono text-[10px] text-blue-800">Speed Limit: 80 km/h</span>
           </div>
         </div>
 
