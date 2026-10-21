@@ -48,7 +48,9 @@ import {
   WifiOff,
   Mic,
   Printer,
-  Tag
+  Tag,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -138,6 +140,16 @@ function MainApp({ onReplayIntro }) {
   // Marketplace Filters
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
+
+  // Expanded product cards – stores a Set of item IDs that are expanded
+  const [expandedCards, setExpandedCards] = useState(new Set());
+  const toggleCardExpand = (id) => {
+    setExpandedCards(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      return next;
+    });
+  };
 
   // Transporter Count & Notification Drawer State
   const [transporterCount, setTransporterCount] = useState(3);
@@ -1633,10 +1645,10 @@ function MainApp({ onReplayIntro }) {
               {listings.map((item) => (
                 <div 
                   key={item.id} 
-                  className="glass-card-product rounded-3xl overflow-hidden flex flex-col group relative"
+                  className="glass-card-product rounded-2xl overflow-hidden flex flex-col group relative"
                 >
                   {/* Card Visual Hero with Gradient Frost & Zoom */}
-                  <div className="h-48 bg-slate-900/10 relative overflow-hidden">
+                  <div className="h-44 bg-slate-100 relative overflow-hidden">
                     <img 
                       src={item.imageUrl} 
                       alt={item.cropName} 
@@ -1646,138 +1658,146 @@ function MainApp({ onReplayIntro }) {
                       }}
                     />
                     {/* Atmospheric Bottom Dark Gradient on image for smooth transition */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-black/20 pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 via-transparent to-black/20 pointer-events-none" />
 
                     {/* Frosted Glass Floating Badges */}
-                    <span className="absolute top-3 left-3 glass-pill-badge px-3 py-1 rounded-xl text-[11px] font-extrabold text-white flex items-center gap-1.5">
+                    <span className="absolute top-3 left-3 glass-pill-badge px-2.5 py-1 rounded-lg text-xs font-bold text-white flex items-center gap-1 shadow-sm">
                       <Tag className="w-3 h-3 text-emerald-400" />
                       {item.category}
                     </span>
-                    <span className="absolute top-3 right-3 glass-pill-emerald px-3 py-1 rounded-xl text-[11px] font-black text-white tracking-wide">
+                    <span className="absolute top-3 right-3 glass-pill-emerald px-2.5 py-1 rounded-lg text-xs font-bold text-white shadow-sm">
                       {(item.grade || 'GRADE_A').replace('_', ' ')}
                     </span>
                   </div>
 
                   {/* Card Body */}
-                  <div className="p-5 flex-1 flex flex-col justify-between relative">
+                  <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between relative">
                     <div>
-                      {/* Title & Frosted Price Tag */}
-                      <div className="flex justify-between items-start gap-3">
-                        <div className="min-w-0">
-                          <h3 className="font-extrabold text-base text-slate-900 group-hover:text-emerald-700 transition-colors truncate">
+                      {/* Title & Price Row - Full crop name visibility, no clipping */}
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-base text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
                             {item.cropName}
                           </h3>
-                          <span className="text-[11px] text-slate-500 font-medium flex items-center gap-1 mt-0.5">
-                            <MapPin className="w-3 h-3 text-emerald-600 shrink-0" />
-                            <span className="truncate">{item.location}</span>
-                          </span>
+                          <p className="text-xs text-slate-500 flex items-center gap-1 mt-1">
+                            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span>{item.location}</span>
+                          </p>
                         </div>
 
-                        {/* Glassmorphic Price Box */}
-                        <div className="text-right shrink-0 bg-emerald-500/10 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-emerald-500/25 shadow-2xs">
-                          <p className="text-base font-black text-emerald-700 leading-tight">
+                        {/* Price Display */}
+                        <div className="text-right shrink-0">
+                          <p className="text-base font-extrabold text-emerald-600 leading-tight">
                             {currency === 'KES' ? (
                               <>
                                 <span>KES {Math.round(item.unitPrice * 130).toLocaleString()}</span>
-                                <span className="text-[10px] text-slate-500 font-normal"> / {item.unit || 'kg'}</span>
+                                <span className="text-[10px] text-slate-400 font-normal"> / {item.unit || 'kg'}</span>
                               </>
                             ) : (
                               <>
                                 <span>${item.unitPrice.toFixed(2)}</span>
-                                <span className="text-[10px] text-slate-500 font-normal"> / {item.unit || 'kg'}</span>
+                                <span className="text-[10px] text-slate-400 font-normal"> / {item.unit || 'kg'}</span>
                               </>
                             )}
                           </p>
                           {currency === 'KES' && (
-                            <span className="text-[10px] text-slate-500 font-mono block">
+                            <span className="text-[10px] text-slate-400 block">
                               ${item.unitPrice.toFixed(2)} / {item.unit || 'kg'}
                             </span>
                           )}
                         </div>
                       </div>
 
-                      {/* Translucent Frosted Producer & Logistics Info Box */}
-                      <div className="mt-3.5 space-y-1.5 text-xs text-slate-700 bg-white/60 backdrop-blur-xs p-3 rounded-2xl border border-white/80 shadow-2xs">
-                        <p className="flex items-center gap-1.5">
-                          <Sprout className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                          <span>{t('producer')}: <strong className="text-slate-900">{item.farmer?.name}</strong></span>
-                        </p>
-                        <p className="flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span>{t('harvestDate')}: <strong className="text-slate-800">{new Date(item.harvestDate).toLocaleDateString()}</strong></span>
-                        </p>
-                        
-                        {/* Live Drivers Available indicator */}
-                        <div className="pt-1">
-                          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 bg-emerald-500/15 backdrop-blur-xs px-2.5 py-1 rounded-xl border border-emerald-400/40">
-                            <Truck className="w-3.5 h-3.5 text-emerald-600" />
-                            {transporterCount} {t('activeDriversReady')}
-                          </span>
+                      {/* ── COLLAPSIBLE DETAILS (hidden by default, revealed on "View Details") ── */}
+                      {expandedCards.has(item.id) && (
+                        <div className="mt-3 space-y-1 text-xs text-slate-600 bg-white/60 backdrop-blur-xs p-2.5 rounded-xl border border-white/80 shadow-2xs animate-fade-in">
+                          <p className="flex items-center gap-1.5">
+                            <Sprout className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span>{t('producer')}: <strong>{item.farmer?.name}</strong></span>
+                          </p>
+                          <p className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span>{t('harvestDate')}: {new Date(item.harvestDate).toLocaleDateString()}</span>
+                          </p>
+                          {/* Live Drivers Available indicator */}
+                          <div className="pt-1">
+                            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                              <Truck className="w-3.5 h-3.5 text-emerald-600" />
+                              {transporterCount} {t('activeDriversReady')}
+                            </span>
+                          </div>
+
+                          {/* Expanded-only tool buttons row */}
+                          <div className="flex items-center gap-1.5 pt-1.5 border-t border-slate-200/60 mt-1">
+                            <span className="text-[10px] text-slate-400 font-semibold uppercase mr-auto">Quick Tools</span>
+                            {/* Set Price Alert */}
+                            <button
+                              type="button"
+                              onClick={() => { setAlertsDefaultCrop(item.cropName); setShowAlertsModal(true); }}
+                              className="p-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-700 transition-colors"
+                              title={`Set alert for ${item.cropName}`}
+                            >
+                              <Bell className="w-3.5 h-3.5" />
+                            </button>
+                            {/* Freight Quote */}
+                            <button
+                              type="button"
+                              onClick={() => { setFreightOrigin(item.location || ''); setShowFreightCalculator(true); }}
+                              className="p-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 transition-colors"
+                              title="Calculate transport cost"
+                            >
+                              <Truck className="w-3.5 h-3.5" />
+                            </button>
+                            {/* Satellite Scan */}
+                            <button
+                              type="button"
+                              onClick={() => { setSatelliteCrop(item.cropName || 'Tomatoes'); setSatelliteLocation(item.location || 'Kinangop, Nyandarua County'); setShowSatelliteScanner(true); }}
+                              className="p-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-700 transition-colors"
+                              title="Verify Farm with Satellite"
+                            >
+                              <Radio className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
 
-                    {/* Bottom Action Footer */}
-                    <div className="mt-4 pt-3.5 border-t border-slate-200/70 flex items-center justify-between gap-2">
-                      <div>
-                        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">
-                          {t('availableVolume')}
-                        </span>
-                        <span className="text-sm font-black text-slate-900 font-mono">
-                          {item.availableQty.toLocaleString()} {item.unit || 'kg'}
-                        </span>
+                    {/* Bottom Action Section */}
+                    <div className="mt-3.5 pt-3 border-t border-slate-200/70">
+                      {/* Row 1: Available Volume + "View Details" toggle */}
+                      <div className="flex items-center justify-between gap-2 mb-2.5">
+                        <div>
+                          <span className="text-[10px] text-slate-400 block font-semibold uppercase">{t('availableVolume')}</span>
+                          <span className="text-xs font-bold text-slate-800 font-mono">
+                            {item.availableQty.toLocaleString()} {item.unit || 'kg'}
+                          </span>
+                        </div>
+
+                        {/* View Details Toggle Button */}
+                        <button
+                          type="button"
+                          onClick={() => toggleCardExpand(item.id)}
+                          className="flex items-center gap-1 text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1 rounded-lg transition-colors"
+                        >
+                          {expandedCards.has(item.id) ? (
+                            <><ChevronUp className="w-3.5 h-3.5" /> Hide Details</>
+                          ) : (
+                            <><ChevronDown className="w-3.5 h-3.5" /> View Details</>
+                          )}
+                        </button>
                       </div>
 
-                      <div className="flex items-center gap-1.5">
-                        {/* Set Price Alert Bell Button */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAlertsDefaultCrop(item.cropName);
-                            setShowAlertsModal(true);
-                          }}
-                          className="p-2.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/40 text-sky-800 transition-all backdrop-blur-xs shadow-2xs"
-                          title={`Set alert for ${item.cropName}`}
-                        >
-                          <Bell className="w-3.5 h-3.5" />
-                        </button>
-
-                        {/* Freight Quote Button */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setFreightOrigin(item.location || '');
-                            setShowFreightCalculator(true);
-                          }}
-                          className="p-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-800 transition-all backdrop-blur-xs shadow-2xs"
-                          title="Calculate transport cost for this produce"
-                        >
-                          <Truck className="w-3.5 h-3.5" />
-                        </button>
-
-                        {/* Satellite NDVI Crop Scan Button */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSatelliteCrop(item.cropName || 'Tomatoes');
-                            setSatelliteLocation(item.location || 'Kinangop, Nyandarua County');
-                            setShowSatelliteScanner(true);
-                          }}
-                          className="p-2.5 rounded-xl bg-teal-500/15 hover:bg-teal-500/25 border border-teal-400/40 text-teal-800 transition-all backdrop-blur-xs shadow-2xs"
-                          title="Verify Farm Canopy Vigor with Sentinel-2 Satellite"
-                        >
-                          <Radio className="w-3.5 h-3.5" />
-                        </button>
-
+                      {/* Row 2: 2-Column Primary Commerce Action Buttons */}
+                      <div className="grid grid-cols-2 gap-2">
                         {/* Make Offer Button */}
                         <button
                           type="button"
                           onClick={() => setNegotiatingListing(item)}
-                          className="flex items-center gap-1 px-3 py-2 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-400/40 text-indigo-900 text-xs font-extrabold transition-all backdrop-blur-xs shadow-2xs"
+                          className="flex items-center justify-center gap-1 py-2 px-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 text-xs font-bold transition-colors shadow-2xs"
                           title="Propose bulk wholesale discount to farmer"
                         >
-                          <Handshake className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline">{t('makeOffer')}</span>
+                          <Handshake className="w-3.5 h-3.5 shrink-0" />
+                          <span className="truncate">{t('makeOffer')}</span>
                         </button>
 
                         {/* Escrow Order Button */}
@@ -1792,10 +1812,10 @@ function MainApp({ onReplayIntro }) {
                               setPaymentPhone(user.phone);
                             }
                           }}
-                          className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white px-3.5 py-2.5 rounded-xl text-xs font-black shadow-md shadow-emerald-600/30 border border-emerald-400/40 transition-all active:scale-95 shrink-0"
+                          className="flex items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-2.5 rounded-xl text-xs font-bold shadow-sm transition-colors"
                         >
-                          <Lock className="w-3.5 h-3.5" />
-                          {t('orderWithEscrow')}
+                          <Lock className="w-3.5 h-3.5 shrink-0" />
+                          <span className="truncate">{t('orderWithEscrow')}</span>
                         </button>
                       </div>
                     </div>
