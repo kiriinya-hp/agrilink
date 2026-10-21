@@ -47,7 +47,8 @@ import {
   Wifi,
   WifiOff,
   Mic,
-  Printer
+  Printer,
+  Tag
 } from 'lucide-react';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
