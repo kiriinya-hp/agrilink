@@ -2727,6 +2727,7 @@ function MainApp({ onReplayIntro }) {
             token={token}
             apiBase={API_BASE}
             allUsers={allUsers}
+            onRefreshListings={loadRoleData}
           />
         )}
 

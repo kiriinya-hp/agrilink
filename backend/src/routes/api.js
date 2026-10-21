@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
@@ -1756,7 +1756,7 @@ router.get('/listings', async (req, res) => {
 
 router.post('/listings', async (req, res) => {
   try {
-    const { farmerId, cropName, category, availableQty, unitPrice, grade, harvestDate, location, imageUrl, unit } = req.body;
+    const { farmerId, cropName, category, availableQty, unitPrice, grade, harvestDate, location, imageUrl, unit, status } = req.body;
     
     if (!farmerId || !cropName || !availableQty || !unitPrice) {
       return res.status(400).json({ success: false, error: 'Missing required produce listing fields' });
@@ -1773,12 +1773,15 @@ router.post('/listings', async (req, res) => {
         grade: grade || 'GRADE_A',
         harvestDate: harvestDate ? new Date(harvestDate) : new Date(),
         location: location || 'Nairobi Region',
+        status: status || 'PENDING',
         imageUrl: imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop'
       }
     });
 
-    // Check active alerts and notify subscribed buyers
-    notifySubscribersOnNewListing(listing).catch(() => {});
+    // Check active alerts and notify subscribed buyers if active
+    if (listing.status === 'ACTIVE') {
+      notifySubscribersOnNewListing(listing).catch(() => {});
+    }
 
     res.status(201).json({ success: true, listing });
   } catch (error) {
@@ -5969,6 +5972,231 @@ router.delete('/demands/:id', async (req, res) => {
     res.json({ success: true, message: 'Tender removed successfully' });
   } catch (error) {
     console.error('Delete demand error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ==========================================
+// 10. REAL-TIME OPERATIONS & DEEP ANALYTICS ENDPOINTS
+// ==========================================
+
+// Get all listings for admin approval queue & produce moderation (PENDING, ACTIVE, REJECTED)
+router.get('/admin/listings/queue', requireAdmin, async (req, res) => {
+  try {
+    const listings = await prisma.produceListing.findMany({
+      include: {
+        farmer: {
+          select: { id: true, name: true, phone: true, location: true, kycStatus: true, businessName: true, email: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json({ success: true, listings });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Approve or reject a produce listing (updates status to ACTIVE or REJECTED)
+router.post('/admin/listings/:id/status', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body; // 'ACTIVE', 'REJECTED', 'PENDING'
+    if (!['ACTIVE', 'REJECTED', 'PENDING'].includes(status)) {
+      return res.status(400).json({ success: false, error: 'Invalid status' });
+    }
+
+    const listing = await prisma.produceListing.update({
+      where: { id },
+      data: { status },
+      include: {
+        farmer: {
+          select: { id: true, name: true, phone: true, email: true }
+        }
+      }
+    });
+
+    // Notify farmer about approval/rejection
+    await prisma.notification.create({
+      data: {
+        userId: listing.farmerId,
+        type: status === 'ACTIVE' ? 'LISTING_APPROVED' : 'LISTING_REJECTED',
+        title: status === 'ACTIVE' ? '✅ Harvest Listing Approved!' : '⚠️ Listing Requires Revision',
+        message: status === 'ACTIVE' 
+          ? `Your produce listing "${listing.cropName}" (${listing.availableQty} ${listing.unit || 'kg'}) has been approved by AgriShamba admins and is now LIVE on the marketplace!`
+          : `Your listing for "${listing.cropName}" was not approved. Please update details or contact admin support.`,
+        metadata: JSON.stringify({ listingId: listing.id, status })
+      }
+    }).catch(() => {});
+
+    // If newly active, also notify subscribed buyers
+    if (status === 'ACTIVE') {
+      notifySubscribersOnNewListing(listing).catch(() => {});
+    }
+
+    await autoSaveSnapshot();
+    res.json({ success: true, listing, message: `Listing marked as ${status}` });
+  } catch (error) {
+    console.error('Update listing status error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get real driver fleet from database
+router.get('/admin/drivers', requireAdmin, async (req, res) => {
+  try {
+    const transporters = await prisma.user.findMany({
+      where: { role: 'TRANSPORTER' },
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        email: true,
+        location: true,
+        businessName: true,
+        kycStatus: true,
+        walletBalance: true,
+        createdAt: true,
+        shipments: {
+          select: { id: true, status: true, pickupDate: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const drivers = transporters.map(t => {
+      const trips = t.shipments?.length || 0;
+      const completedTrips = t.shipments?.filter(s => s.status === 'DELIVERED').length || 0;
+      const isBusy = t.shipments?.some(s => s.status === 'IN_TRANSIT' || s.status === 'ACCEPTED');
+      return {
+        id: t.id,
+        name: t.name,
+        phone: t.phone,
+        email: t.email,
+        county: t.location || 'Nairobi',
+        vehicleType: t.businessName || 'Commercial Transport',
+        plate: t.businessName?.match(/[A-Z]{3}\s*\d{3}[A-Z]/i)?.[0] || 'KBA 100A',
+        trips,
+        completedTrips,
+        rating: 4.8,
+        status: isBusy ? 'BUSY' : (t.kycStatus === 'VERIFIED' ? 'AVAILABLE' : 'OFFLINE'),
+        earnings: Math.round((t.walletBalance || 0) * 130)
+      };
+    });
+
+    res.json({ success: true, drivers });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Comprehensive Real Deep Analytics dynamically calculated from real database orders, listings & users
+router.get('/admin/deep-analytics', requireAdmin, async (req, res) => {
+  try {
+    const [orders, listings, users] = await Promise.all([
+      prisma.order.findMany({
+        include: {
+          items: {
+            include: { listing: true }
+          },
+          escrowTransaction: true,
+          buyer: { select: { location: true, name: true } }
+        }
+      }),
+      prisma.produceListing.findMany({
+        include: {
+          farmer: { select: { location: true, name: true } }
+        }
+      }),
+      prisma.user.findMany({
+        select: { id: true, role: true, location: true, createdAt: true }
+      })
+    ]);
+
+    // 1. GMV & Commission
+    const gmvUsd = orders.reduce((sum, o) => sum + (o.grandTotal || 0), 0);
+    const gmvKes = Math.round(gmvUsd * 130);
+    const commissionUsd = orders.filter(o => o.status === 'COMPLETED').reduce((sum, o) => sum + (o.platformFee || 0), 0);
+    const commissionKes = Math.round(commissionUsd * 130);
+    const escrowHeldUsd = orders.filter(o => o.escrowTransaction?.status === 'HELD').reduce((sum, o) => sum + (o.escrowTransaction?.amountHeld || 0), 0);
+    const escrowHeldKes = Math.round(escrowHeldUsd * 130);
+
+    // 2. County Metrics dynamically computed from real users, listings and orders
+    const countyMap = {};
+    const ensureCounty = (cName) => {
+      const clean = (cName || 'Nairobi').split(',')[0].trim() || 'Nairobi';
+      if (!countyMap[clean]) {
+        countyMap[clean] = { county: clean, farmers: 0, buyers: 0, orders: 0, gmvKes: 0 };
+      }
+      return clean;
+    };
+
+    users.forEach(u => {
+      const c = ensureCounty(u.location);
+      if (u.role === 'FARMER') countyMap[c].farmers += 1;
+      if (u.role === 'BUYER') countyMap[c].buyers += 1;
+    });
+
+    orders.forEach(o => {
+      const c = ensureCounty(o.deliveryAddress || o.buyer?.location);
+      countyMap[c].orders += 1;
+      countyMap[c].gmvKes += Math.round((o.grandTotal || 0) * 130);
+    });
+
+    const countyData = Object.values(countyMap);
+
+    // 3. Real Crop Performance from actual listings & order items
+    const cropMap = {};
+    listings.forEach(l => {
+      const crop = l.cropName.trim();
+      if (!cropMap[crop]) {
+        cropMap[crop] = { name: crop, listingsCount: 0, totalQty: 0, unitPriceKes: Math.round(l.unitPrice * 130), gmvKes: 0, ordersCount: 0 };
+      }
+      cropMap[crop].listingsCount += 1;
+      cropMap[crop].totalQty += l.availableQty || 0;
+    });
+
+    orders.forEach(o => {
+      (o.items || []).forEach(item => {
+        const crop = item.cropName || item.listing?.cropName || 'Fresh Produce';
+        if (!cropMap[crop]) {
+          cropMap[crop] = { name: crop, listingsCount: 0, totalQty: 0, unitPriceKes: Math.round((item.unitPrice || 20) * 130), gmvKes: 0, ordersCount: 0 };
+        }
+        cropMap[crop].ordersCount += 1;
+        cropMap[crop].gmvKes += Math.round((item.totalPrice || (item.quantity * item.unitPrice)) * 130);
+      });
+    });
+
+    const cropTrends = Object.values(cropMap).sort((a, b) => b.gmvKes - a.gmvKes);
+
+    // 4. Role Counts & Ratios
+    const roleCounts = users.reduce((acc, u) => {
+      acc[u.role] = (acc[u.role] || 0) + 1;
+      return acc;
+    }, { FARMER: 0, BUYER: 0, TRANSPORTER: 0, ADMIN: 0 });
+
+    res.json({
+      success: true,
+      data: {
+        gmvKes,
+        gmvUsd,
+        commissionKes,
+        commissionUsd,
+        escrowHeldKes,
+        escrowHeldUsd,
+        totalOrders: orders.length,
+        completedOrders: orders.filter(o => o.status === 'COMPLETED').length,
+        disputedOrders: orders.filter(o => o.status === 'DISPUTED').length,
+        totalUsers: users.length,
+        roleCounts,
+        countyData,
+        cropTrends,
+        totalActiveListings: listings.filter(l => l.status === 'ACTIVE').length,
+        totalPendingListings: listings.filter(l => l.status === 'PENDING').length
+      }
+    });
+  } catch (error) {
+    console.error('Deep analytics error:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
