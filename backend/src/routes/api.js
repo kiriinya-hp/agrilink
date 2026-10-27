@@ -4119,9 +4119,16 @@ Or dial *384*50# free of charge.`;
 // 1. RURAL USSD GATEWAY (*384*50#)
 // Conforms to Safaricom & Africa's Talking API
 // ==========================================
-router.post('/ussd', async (req, res) => {
+router.all('/ussd', async (req, res) => {
   try {
-    const { sessionId = 'USSD_LOCAL_DEMO', serviceCode = '*384*50#', phoneNumber = '+254712345678', text = '' } = req.body;
+    const payload = { ...req.query, ...req.body };
+    const sessionId = payload.sessionId || payload.SESSIONID || payload.SessionId || 'USSD_LOCAL_DEMO';
+    const serviceCode = payload.serviceCode || payload.USSDCODE || payload.ServiceCode || '*384*50#';
+    const phoneNumber = payload.phoneNumber || payload.MSISDN || payload.msisdn || payload.PhoneNumber || '+254712345678';
+    const text = (payload.text ?? payload.INPUT ?? payload.input ?? payload.Text ?? '').toString().trim();
+
+    console.log(`[USSD Incoming] Session: ${sessionId} | Phone: ${phoneNumber} | Code: ${serviceCode} | Input: "${text}"`);
+
     const parts = text.split('*').filter(p => p !== '');
     let response = '';
 
