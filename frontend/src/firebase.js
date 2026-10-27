@@ -6,6 +6,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup
 } from 'firebase/auth';
+import { getStorage } from 'firebase/storage';
 
 // AgriShamba Firebase Web configuration (Firebase project ID is immutable and cannot be renamed)
 const firebaseConfig = {
@@ -18,9 +19,10 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-DNXYHMF1WS"
 };
 
-// Initialize Firebase App & Auth
+// Initialize Firebase App, Auth & Storage
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
 
 /**
