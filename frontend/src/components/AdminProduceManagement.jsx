@@ -4,6 +4,7 @@ import {
   CheckCircle2, MapPin, User, Calendar, Tag, DollarSign, Layers,
   ExternalLink, Eye, EyeOff, ShieldCheck, X
 } from 'lucide-react';
+import { resolveProduceImage } from '../utils/cropImageMap';
 
 export default function AdminProduceManagement({ token, apiBase, onProduceUpdated }) {
   const [listings, setListings] = useState([]);
@@ -269,7 +270,7 @@ export default function AdminProduceManagement({ token, apiBase, onProduceUpdate
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
                           <img
-                            src={item.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200'}
+                            src={resolveProduceImage(item.imageUrl, item.cropName, item.category)}
                             alt={item.cropName}
                             className="w-10 h-10 rounded-xl object-cover bg-slate-100 shrink-0 border border-slate-200"
                             onError={(e) => {
@@ -378,7 +379,7 @@ export default function AdminProduceManagement({ token, apiBase, onProduceUpdate
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs">
               <div className="flex items-center gap-2">
                 <img
-                  src={deleteModalListing.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200'}
+                  src={resolveProduceImage(deleteModalListing.imageUrl, deleteModalListing.cropName, deleteModalListing.category)}
                   alt=""
                   className="w-8 h-8 rounded-lg object-cover shrink-0"
                 />

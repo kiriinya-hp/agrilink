@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { resolveProduceImage } from './utils/cropImageMap';
 import { 
   Sprout, 
   ShoppingBag, 
@@ -1673,7 +1674,7 @@ function MainApp({ onReplayIntro }) {
                   {/* Card Visual Hero with Gradient Frost & Zoom */}
                   <div className="h-44 bg-slate-100 relative overflow-hidden">
                     <img 
-                      src={item.imageUrl} 
+                      src={resolveProduceImage(item.imageUrl, item.cropName, item.category)} 
                       alt={item.cropName} 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                       onError={(e) => {
@@ -2311,7 +2312,7 @@ function MainApp({ onReplayIntro }) {
                         farmerListings.map((l) => (
                           <tr key={l.id} className="hover:bg-slate-50/70 transition-colors">
                             <td className="py-2.5 px-3 font-semibold flex items-center gap-2">
-                              <img src={l.imageUrl} alt="" className="w-7 h-7 rounded-lg object-cover border border-slate-200" />
+                              <img src={resolveProduceImage(l.imageUrl, l.cropName, l.category)} alt="" className="w-7 h-7 rounded-lg object-cover border border-slate-200" />
                               <span className="font-bold text-slate-900">{l.cropName}</span>
                             </td>
                             <td className="py-2.5 px-3">
@@ -3268,6 +3269,7 @@ function MainApp({ onReplayIntro }) {
       {showImagePicker && (
         <ImagePickerModal
           currentUrl={newListing.imageUrl}
+          cropName={newListing.cropName || ''}
           onSelect={(url) => setNewListing({ ...newListing, imageUrl: url })}
           onClose={() => setShowImagePicker(false)}
         />
