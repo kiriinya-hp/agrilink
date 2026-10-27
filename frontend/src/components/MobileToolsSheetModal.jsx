@@ -53,7 +53,7 @@ export default function MobileToolsSheetModal({
       iconColor: 'text-teal-400',
       bgColor: 'bg-teal-950/40',
       borderColor: 'border-teal-500/40',
-      badge: '📷 New',
+      badge: 'AI Vision',
       badgeColor: 'bg-teal-600 text-white',
       onClick: onOpenKilimoVision
     }] : []),
@@ -66,7 +66,7 @@ export default function MobileToolsSheetModal({
       iconColor: 'text-amber-600',
       bgColor: 'bg-amber-50',
       borderColor: 'border-amber-200',
-      badge: '📶 Offline',
+      badge: 'Offline Sync',
       badgeColor: 'bg-amber-600 text-white',
       onClick: onOpenOfflineSync
     }] : []),
@@ -79,7 +79,7 @@ export default function MobileToolsSheetModal({
       iconColor: 'text-emerald-600',
       bgColor: 'bg-emerald-50',
       borderColor: 'border-emerald-200',
-      badge: 'ðŸŒ¿ Popular',
+      badge: 'Popular',
       badgeColor: 'bg-emerald-600 text-white',
       onClick: onOpenCropDoctor
     },
@@ -91,7 +91,7 @@ export default function MobileToolsSheetModal({
       iconColor: 'text-purple-600',
       bgColor: 'bg-purple-50',
       borderColor: 'border-purple-200',
-      badge: 'ðŸ¤– Auto',
+      badge: 'Smart Bot',
       badgeColor: 'bg-purple-600 text-white',
       onClick: onOpenAiNegotiation
     },
@@ -103,7 +103,7 @@ export default function MobileToolsSheetModal({
       iconColor: 'text-emerald-700',
       bgColor: 'bg-emerald-50',
       borderColor: 'border-emerald-200',
-      badge: 'ðŸ“ˆ AI',
+      badge: 'AI Model',
       badgeColor: 'bg-emerald-700 text-white',
       onClick: onOpenPricePredictor
     },
@@ -115,7 +115,7 @@ export default function MobileToolsSheetModal({
       iconColor: 'text-teal-600',
       bgColor: 'bg-teal-50',
       borderColor: 'border-teal-200',
-      badge: 'ðŸ›°ï¸ Radar',
+      badge: 'Radar Audit',
       badgeColor: 'bg-teal-600 text-white',
       onClick: onOpenSatelliteScanner
     },
@@ -127,7 +127,7 @@ export default function MobileToolsSheetModal({
       iconColor: 'text-amber-600',
       bgColor: 'bg-amber-50',
       borderColor: 'border-amber-200',
-      badge: 'ðŸš› Logistics',
+      badge: 'Logistics',
       badgeColor: 'bg-amber-600 text-white',
       onClick: onOpenFreightCalculator
     },
@@ -139,7 +139,7 @@ export default function MobileToolsSheetModal({
       iconColor: 'text-indigo-600',
       bgColor: 'bg-indigo-50',
       borderColor: 'border-indigo-200',
-      badge: 'ðŸ¤ Group',
+      badge: 'Group Pool',
       badgeColor: 'bg-indigo-600 text-white',
       onClick: onOpenChamaPool
     },
@@ -151,7 +151,7 @@ export default function MobileToolsSheetModal({
       iconColor: 'text-sky-600',
       bgColor: 'bg-sky-50',
       borderColor: 'border-sky-200',
-      badge: 'ðŸ”” Live',
+      badge: 'Live Feed',
       badgeColor: 'bg-sky-600 text-white',
       onClick: onOpenAlerts
     },
@@ -163,7 +163,7 @@ export default function MobileToolsSheetModal({
       iconColor: 'text-amber-700',
       bgColor: 'bg-amber-50',
       borderColor: 'border-amber-200',
-      badge: 'ðŸ“± Offline',
+      badge: 'Feature Phone',
       badgeColor: 'bg-amber-700 text-white',
       onClick: onOpenUssd
     },
@@ -175,7 +175,7 @@ export default function MobileToolsSheetModal({
       iconColor: 'text-rose-500',
       bgColor: 'bg-rose-50',
       borderColor: 'border-rose-200',
-      badge: 'ðŸŽ¬ Watch',
+      badge: 'Video Tour',
       badgeColor: 'bg-rose-500 text-white',
       onClick: onReplayIntro
     }] : [])
@@ -226,7 +226,7 @@ export default function MobileToolsSheetModal({
           <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200/80">
             <div className="text-[10px] font-extrabold tracking-wider text-slate-400 uppercase mb-2.5 flex items-center justify-between">
               <span>Quick Account Actions</span>
-              <span className="text-emerald-600 font-bold text-[9px]">ðŸ”’ Escrow Protected</span>
+              <span className="text-emerald-600 font-bold text-[9px]">🔒 Escrow Protected</span>
             </div>
 
             <div className="grid grid-cols-3 gap-2">

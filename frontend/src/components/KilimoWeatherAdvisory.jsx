@@ -28,6 +28,8 @@ export default function KilimoWeatherAdvisory() {
   const [userLocationWeather, setUserLocationWeather] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  const [gpsError, setGpsError] = useState('');
+
   useEffect(() => {
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
       setIsCollapsed(true);
@@ -54,8 +56,9 @@ export default function KilimoWeatherAdvisory() {
   };
 
   const handleUseLiveGPS = () => {
+    setGpsError('');
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser.');
+      setGpsError('Geolocation is not supported by your browser or device.');
       return;
     }
 
@@ -64,13 +67,17 @@ export default function KilimoWeatherAdvisory() {
       async (pos) => {
         const { latitude, longitude } = pos.coords;
         try {
-          const res = await fetch(`/api/weather/advisory?lat=${latitude}&lng=${longitude}&name=My Current Environment`);
+          const res = await fetch(`/api/weather/advisory?lat=${latitude}&lng=${longitude}`);
           const data = await res.json();
           if (data.success && data.userCustomLocation) {
             setUserLocationWeather(data.userCustomLocation);
+            setGpsError('');
+          } else {
+            setGpsError('Could not fetch climate for your exact coordinates. Please retry.');
           }
         } catch (err) {
           console.warn('Failed to fetch user live weather:', err);
+          setGpsError('Weather service unreachable. Please check network.');
         } finally {
           setLocatingUser(false);
         }
@@ -78,8 +85,17 @@ export default function KilimoWeatherAdvisory() {
       (err) => {
         console.warn('GPS location access denied:', err.message);
         setLocatingUser(false);
+        if (err.code === 1) {
+          setGpsError('Location permission denied. Please allow location access in your device settings.');
+        } else if (err.code === 2) {
+          setGpsError('Position unavailable. Ensure your GPS is enabled.');
+        } else if (err.code === 3) {
+          setGpsError('Location request timed out. Please try again.');
+        } else {
+          setGpsError('Could not obtain GPS location.');
+        }
       },
-      { timeout: 8000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
     );
   };
 
@@ -197,6 +213,23 @@ export default function KilimoWeatherAdvisory() {
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
+
+        {/* GPS Error Notification Banner */}
+        {gpsError && (
+          <div className="mt-2.5 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center justify-between">
+            <span className="flex items-center gap-1.5 font-medium">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+              {gpsError}
+            </span>
+            <button
+              type="button"
+              onClick={() => setGpsError('')}
+              className="text-amber-700 hover:text-amber-950 font-bold ml-2 text-[11px]"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
 
         {/* Main Real-Time Meteorological Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">

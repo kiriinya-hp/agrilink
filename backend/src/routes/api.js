@@ -2348,8 +2348,31 @@ router.get('/weather/advisory', async (req, res) => {
     // If custom GPS coordinates are provided by client (e.g. user current location)
     if (lat && lng) {
       try {
+        let detectedPlace = name || '';
+        // If no specific name was passed, reverse-geocode to get real place/county
+        if (!detectedPlace || detectedPlace === 'My Current Environment' || detectedPlace === 'Current Location') {
+          try {
+            const geoRes = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&format=json`,
+              {
+                headers: { 'User-Agent': 'AgriShamba-App/2.2 (support@agrishamba.co.ke)' },
+                signal: AbortSignal.timeout(3000)
+              }
+            );
+            if (geoRes.ok) {
+              const geoData = await geoRes.json();
+              const addr = geoData.address || {};
+              const locality = addr.suburb || addr.town || addr.village || addr.city || addr.county || addr.state;
+              const county = addr.county || addr.state || addr.country;
+              detectedPlace = locality ? `${locality}, ${county || 'Kenya'}` : (geoData.display_name?.split(',').slice(0, 2).join(',') || 'Your GPS Location');
+            }
+          } catch (geoErr) {
+            console.warn('Reverse geocode timeout/error:', geoErr.message);
+          }
+        }
+
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lng)}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m&timezone=Africa%2FNairobi`;
-        const resp = await fetch(url, { signal: AbortSignal.timeout(4000) });
+        const resp = await fetch(url, { signal: AbortSignal.timeout(6000) });
         if (resp.ok) {
           const liveData = await resp.json();
           const curr = liveData.current || {};
@@ -2360,11 +2383,11 @@ router.get('/weather/advisory', async (req, res) => {
             isLive: true,
             source: 'Open-Meteo Real-time Satellite Radar',
             userCustomLocation: {
-              region: name || 'Your Real-Time Location',
-              tempC: Math.round(curr.temperature_2m || 22),
-              humidity: `${curr.relative_humidity_2m || 55}%`,
-              windSpeedKmh: curr.wind_speed_10m || 10,
-              precipitationMm: curr.precipitation || 0,
+              region: detectedPlace || 'Your Local Shamba Environment',
+              tempC: Math.round(curr.temperature_2m ?? 22),
+              humidity: `${curr.relative_humidity_2m ?? 55}%`,
+              windSpeedKmh: Math.round(curr.wind_speed_10m ?? 10),
+              precipitationMm: curr.precipitation ?? 0,
               ...interpretation
             }
           });
