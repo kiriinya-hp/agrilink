@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "665449813551",
+    "project_id": "agrilink-a875f",
+    "storage_bucket": "agrilink-a875f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:665449813551:android:bf7a58eb459432488b18da",
+        "android_client_info": {
+          "package_name": "com.agrishamba.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "665449813551-pvq81pljfbq6fjb827d7fg1u3g8j5ch0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqYX_5Jbe4Vl2cvmWzZX8vqls_-IxB-a4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "665449813551-pvq81pljfbq6fjb827d7fg1u3g8j5ch0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
