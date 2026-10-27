@@ -7,6 +7,8 @@ import {
   signInWithPopup
 } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
+import { Capacitor } from '@capacitor/core';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
 // AgriShamba Firebase Web configuration (Firebase project ID is immutable and cannot be renamed)
 const firebaseConfig = {
@@ -26,16 +28,50 @@ export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
 
 /**
- * 1-Click Sign in with Google Popup
+ * 1-Click Sign in with Google
+ * Handles both Native Android (Capacitor Google Auth via Credential Manager)
+ * and Web Browsers (signInWithPopup fallback).
  */
 export async function signInWithGooglePopup() {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const result = await FirebaseAuthentication.signInWithGoogle();
+      const user = result.user;
+      if (!user) {
+        throw new Error('Google Sign-In was cancelled or failed.');
+      }
+      return {
+        email: user.email,
+        displayName: user.displayName || user.email?.split('@')[0] || 'Farmer',
+        photoURL: user.photoUrl,
+        uid: user.uid,
+        phoneNumber: user.phoneNumber
+      };
+    } catch (nativeErr) {
+      console.warn('[Native Google Sign-In Error]:', nativeErr);
+      // If user deliberately dismissed the sheet, rethrow cancellation
+      if (
+        nativeErr?.code === '12501' || 
+        nativeErr?.message?.toLowerCase().includes('cancel') ||
+        nativeErr?.message?.toLowerCase().includes('dismiss')
+      ) {
+        const cancelErr = new Error('Sign-In cancelled');
+        cancelErr.code = 'auth/popup-closed-by-user';
+        throw cancelErr;
+      }
+      throw nativeErr;
+    }
+  }
+
+  // Web Browser fallback
   const result = await signInWithPopup(auth, googleProvider);
   const user = result.user;
   return {
     email: user.email,
     displayName: user.displayName,
     photoURL: user.photoURL,
-    uid: user.uid
+    uid: user.uid,
+    phoneNumber: user.phoneNumber
   };
 }
 
