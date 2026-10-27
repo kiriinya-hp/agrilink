@@ -150,7 +150,7 @@ export default function ChamaAggregationModal({
               <div className="flex items-center gap-2">
                 <h3 className="font-extrabold text-base text-white tracking-tight">Produce Aggregation & Cooperative Pooling</h3>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 font-bold">
-                  CHAMA SELLING
+                  COOPERATIVE POOL
                 </span>
               </div>
               <p className="text-xs text-emerald-200/70 mt-0.5">Smallholders pool harvest volume into full truckloads to save 35% on transport and sell to bulk buyers</p>
@@ -177,7 +177,7 @@ export default function ChamaAggregationModal({
             }`}
           >
             <Package className="w-4 h-4" />
-            <span>Browse Active Chama Pools ({pools.length})</span>
+            <span>Browse Cooperative Pools ({pools.length})</span>
           </button>
 
           <button

@@ -47,7 +47,7 @@ export default function MobileToolsSheetModal({
   const tools = [
     ...(onOpenKilimoVision ? [{
       id: 'kilimo-vision',
-      title: 'Kilimo Vision AI',
+      title: 'AgriCrop Vision AI',
       desc: 'Multimodal Disease & Grade Scanner',
       icon: Camera,
       iconColor: 'text-teal-400',
@@ -133,7 +133,7 @@ export default function MobileToolsSheetModal({
     },
     {
       id: 'chama-pool',
-      title: 'Chama Cooperative',
+      title: 'Farmer Cooperative Pool',
       desc: 'Bulk harvest pooling',
       icon: Handshake,
       iconColor: 'text-indigo-600',
@@ -203,7 +203,7 @@ export default function MobileToolsSheetModal({
             </div>
             <div>
               <h3 className="font-extrabold text-sm text-slate-900 leading-tight">
-                AgriShamba Smart Hub
+                AgriShamba Tools & Hub
               </h3>
               <p className="text-[10px] text-slate-400 font-medium">
                 AI Engines & SCM Tools
