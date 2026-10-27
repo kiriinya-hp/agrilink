@@ -4134,7 +4134,7 @@ router.all('/ussd', async (req, res) => {
 
     if (parts.length === 0) {
       // Main Menu
-      response = `CON Karibu AgriShamba Kenya SCM (*384*50#)
+      response = `CON Karibu AgriShamba Kenya SCM (${serviceCode})
 1. Wholesale Market Prices
 2. Fast-List Farm Harvest
 3. Check M-Pesa Escrow Balance
