@@ -37,7 +37,7 @@ async function seedNow() {
         grade: 'GRADE_A',
         harvestDate: now,
         location: 'Nyeri Dairy Co-op, Nyeri County',
-        imageUrl: 'https://images.unsplash.com/photo-1527153857715-3908f2ae5e81?w=600&auto=format&fit=crop'
+        imageUrl: 'https://images.unsplash.com/photo-1528750997573-59b89d56f4f7?w=600&auto=format&fit=crop'
       },
       {
         farmerId: farmer.id,

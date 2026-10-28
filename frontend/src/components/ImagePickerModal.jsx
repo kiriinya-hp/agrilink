@@ -17,7 +17,7 @@ const PRESET_CROPS = [
   { name: 'Sweet Watermelons', category: 'HORTICULTURE', url: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop' },
   { name: 'Organic Carrots', category: 'TUBER', url: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=600&auto=format&fit=crop' },
   { name: 'Fresh Raw Cow Milk', category: 'DAIRY', url: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=600&auto=format&fit=crop' },
-  { name: 'Fresh Pasteurized Goat Milk', category: 'DAIRY', url: 'https://images.unsplash.com/photo-1527153857715-3908f2ae5e81?w=600&auto=format&fit=crop' },
+  { name: 'Fresh Pasteurized Goat Milk', category: 'DAIRY', url: 'https://images.unsplash.com/photo-1528750997573-59b89d56f4f7?w=600&auto=format&fit=crop' },
   { name: 'Cultured Mala & Yoghurt', category: 'DAIRY', url: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&auto=format&fit=crop' },
   { name: 'Friesian Dairy Cow (In-Calf)', category: 'LIVESTOCK', url: 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=600&auto=format&fit=crop' },
   { name: 'Ayrshire Breeding Heifer', category: 'LIVESTOCK', url: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=600&auto=format&fit=crop' },

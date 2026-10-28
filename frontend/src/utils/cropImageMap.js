@@ -75,7 +75,7 @@ const KEYWORD_IMAGE_MAP = [
     url: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=700&auto=format&fit=crop' },
 
   { keys: ['pea', 'minji', 'snow pea', 'snap pea'],
-    url: 'https://images.unsplash.com/photo-1587334207891-e5a42b6cd0a3?w=700&auto=format&fit=crop' },
+    url: 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=700&auto=format&fit=crop' },
 
   { keys: ['strawberry', 'tunda stroberi'],
     url: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=700&auto=format&fit=crop' },
@@ -114,7 +114,7 @@ const KEYWORD_IMAGE_MAP = [
     url: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=700&auto=format&fit=crop' },
 
   { keys: ['goat milk', 'maziwa ya mbuzi'],
-    url: 'https://images.unsplash.com/photo-1527153857715-3908f2ae5e81?w=700&auto=format&fit=crop' },
+    url: 'https://images.unsplash.com/photo-1528750997573-59b89d56f4f7?w=700&auto=format&fit=crop' },
 
   { keys: ['mala', 'yoghurt', 'yogurt', 'fermented milk', 'cultured'],
     url: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=700&auto=format&fit=crop' },
@@ -196,7 +196,7 @@ const KEYWORD_IMAGE_MAP = [
     url: 'https://images.unsplash.com/photo-1508061253366-f7da158b6d46?w=700&auto=format&fit=crop' },
 
   { keys: ['pyrethrum', 'flower', 'cut flower', 'rose', 'carnation', 'lily'],
-    url: 'https://images.unsplash.com/photo-1490750967868-88df5691cc5f?w=700&auto=format&fit=crop' },
+    url: 'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=700&auto=format&fit=crop' },
 ];
 
 // ─────────────────────────────────────────────────────────────────
