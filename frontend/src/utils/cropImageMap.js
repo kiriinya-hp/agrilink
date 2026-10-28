@@ -220,22 +220,21 @@ const GENERIC_FALLBACK = 'https://images.unsplash.com/photo-1542838132-92c533004
 /**
  * Returns the best image URL for a produce listing.
  *
- * @param {string} imageUrl  - The stored imageUrl from the DB
+ * @param {string} imageUrl  - The stored imageUrl from the DB / admin edit
  * @param {string} cropName  - The listing's crop name
  * @param {string} category  - The listing's category (e.g. 'LIVESTOCK')
  * @returns {string} - A fully-resolved image URL
  */
 export function resolveProduceImage(imageUrl = '', cropName = '', category = '') {
-  // 1. If farmer uploaded their own photo to Firebase Storage → honour it
-  if (
-    imageUrl &&
-    (imageUrl.includes('firebasestorage.app') ||
-      imageUrl.includes('firebasestorage.googleapis.com'))
-  ) {
-    return imageUrl;
+  // 1. If an image is explicitly provided (edited by admin, uploaded to Firebase, or set in DB) -> ALWAYS HONOUR IT!
+  if (imageUrl && typeof imageUrl === 'string') {
+    const trimmed = imageUrl.trim();
+    if (trimmed.length > 0 && !trimmed.includes('photo-1542838132-92c53300491e')) {
+      return trimmed;
+    }
   }
 
-  // 2. Keyword match on cropName
+  // 2. Keyword match on cropName as intelligent fallback when no custom image is set
   const nameLower = (cropName || '').toLowerCase();
   if (nameLower.length > 1) {
     for (const entry of KEYWORD_IMAGE_MAP) {

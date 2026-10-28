@@ -63,7 +63,7 @@ export default function AdminProduceManagement({ token, apiBase, onProduceUpdate
         setActionSuccess(`"${deleteModalListing.cropName}" was permanently removed from Harvest Marketplace.`);
         setListings(prev => prev.filter(l => l.id !== deleteModalListing.id));
         setDeleteModalListing(null);
-        if (onProduceUpdated) onProduceUpdated();
+        if (onProduceUpdated) onProduceUpdated(null, deleteModalListing.id);
         setTimeout(() => setActionSuccess(null), 4000);
       } else {
         alert(data.error || 'Failed to delete produce listing');
@@ -119,7 +119,7 @@ export default function AdminProduceManagement({ token, apiBase, onProduceUpdate
         setListings(prev => prev.map(l => l.id === editModalListing.id ? { ...l, ...data.listing } : l));
         setActionSuccess(`"${editFormData.cropName}" was updated successfully.`);
         setEditModalListing(null);
-        if (onProduceUpdated) onProduceUpdated();
+        if (onProduceUpdated) onProduceUpdated(data.listing);
         setTimeout(() => setActionSuccess(null), 4000);
       } else {
         alert(data.error || 'Failed to update produce listing');
@@ -145,7 +145,7 @@ export default function AdminProduceManagement({ token, apiBase, onProduceUpdate
       const data = await res.json();
       if (data.success) {
         setListings(prev => prev.map(l => l.id === listingId ? { ...l, status: newStatus } : l));
-        if (onProduceUpdated) onProduceUpdated();
+        if (onProduceUpdated) onProduceUpdated(data.listing || { id: listingId, status: newStatus });
       }
     } catch (err) {
       console.error('Status update error:', err);

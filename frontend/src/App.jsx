@@ -477,6 +477,17 @@ function MainApp({ onReplayIntro }) {
     }
   };
 
+  const handleAdminProduceUpdated = (updatedListing, deletedId) => {
+    if (deletedId) {
+      setListings(prev => prev.filter(l => l.id !== deletedId));
+      setFarmerListings(prev => prev.filter(l => l.id !== deletedId));
+    } else if (updatedListing && updatedListing.id) {
+      setListings(prev => prev.map(l => l.id === updatedListing.id ? { ...l, ...updatedListing } : l));
+      setFarmerListings(prev => prev.map(l => l.id === updatedListing.id ? { ...l, ...updatedListing } : l));
+    }
+    loadRoleData();
+  };
+
 
   const handleMarkAllNotificationsRead = async () => {
     try {
@@ -2718,7 +2729,7 @@ function MainApp({ onReplayIntro }) {
           <AdminProduceManagement 
             token={token} 
             apiBase={API_BASE} 
-            onProduceUpdated={loadRoleData} 
+            onProduceUpdated={handleAdminProduceUpdated} 
           />
         )}
 
