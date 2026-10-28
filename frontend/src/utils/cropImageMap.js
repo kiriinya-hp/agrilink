@@ -129,8 +129,8 @@ const KEYWORD_IMAGE_MAP = [
   { keys: ['ayrshire', 'heifer', 'ng\'ombe'],
     url: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=700&auto=format&fit=crop' },
 
-  { keys: ['boran', 'beef bull', 'beef cattle', 'zebu', 'bull'],
-    url: 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=700&auto=format&fit=crop' },
+  { keys: ['boran', 'boran beef', 'beef meet', 'beef meat', 'beef bull', 'beef cattle', 'zebu', 'bull'],
+    url: 'https://feedmix.co.zw/wp-content/uploads/FeedMix-Beef-12-1024x683.jpg' },
 
   { keys: ['goat', 'mbuzi', 'boer', 'galla', 'dairy goat', 'toggenb'],
     url: 'https://images.unsplash.com/photo-1524024973431-2ad916746881?w=700&auto=format&fit=crop' },

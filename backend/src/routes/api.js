@@ -1161,12 +1161,13 @@ router.delete('/admin/listings/:id', requireAdmin, async (req, res) => {
 router.put('/listings/:id', async (req, res) => {
   try {
     const listingId = req.params.id;
-    const { cropName, category, availableQty, unitPrice, grade, location, status, imageUrl } = req.body;
+    const { cropName, category, availableQty, unitPrice, unit, grade, location, status, imageUrl } = req.body;
     const dataToUpdate = {};
     if (cropName !== undefined) dataToUpdate.cropName = String(cropName).trim();
     if (category !== undefined) dataToUpdate.category = category;
     if (availableQty !== undefined) dataToUpdate.availableQty = parseFloat(availableQty);
     if (unitPrice !== undefined) dataToUpdate.unitPrice = parseFloat(unitPrice);
+    if (unit !== undefined) dataToUpdate.unit = String(unit).trim();
     if (grade !== undefined) dataToUpdate.grade = grade;
     if (location !== undefined) dataToUpdate.location = String(location).trim();
     if (status !== undefined) dataToUpdate.status = status;
@@ -1594,7 +1595,7 @@ async function ensureSeedAnimalListings() {
         unitPrice: 653.8, // ~KES 85,000/head
         grade: 'GRADE_A',
         location: 'Laikipia Nature Conservancy, Laikipia',
-        imageUrl: 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=600&auto=format&fit=crop'
+        imageUrl: 'https://feedmix.co.zw/wp-content/uploads/FeedMix-Beef-12-1024x683.jpg'
       },
       {
         farmerId: farmer.id,
