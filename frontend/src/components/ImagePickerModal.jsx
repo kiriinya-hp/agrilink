@@ -33,7 +33,7 @@ const PRESET_CROPS = [
   { name: 'Inoculated Maize Silage Bags', category: 'FODDER_FEEDS', url: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=600&auto=format&fit=crop' },
   { name: 'High-Yield Dairy Meal Bags', category: 'FODDER_FEEDS', url: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&auto=format&fit=crop' },
   { name: 'Pure Grass-Fed Traditional Ghee', category: 'DAIRY', url: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=600&auto=format&fit=crop' },
-  { name: 'Pure Boran Beef Bull', category: 'LIVESTOCK', url: 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=600&auto=format&fit=crop' },
+  { name: 'Pure Boran Beef Bull', category: 'LIVESTOCK', url: 'https://feedmix.co.zw/wp-content/uploads/FeedMix-Beef-12-1024x683.jpg' },
   { name: 'Red Maasai Sheep', category: 'LIVESTOCK', url: 'https://cdn.creatures.com/ac6/82f/13b/7a866.jpeg' },
   { name: 'Kuroiler Mature Chickens', category: 'POULTRY', url: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=600&auto=format&fit=crop' },
   { name: 'Pasture Seed & Cane Molasses', category: 'FODDER_FEEDS', url: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&auto=format&fit=crop' },
