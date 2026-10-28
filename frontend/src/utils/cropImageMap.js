@@ -135,7 +135,10 @@ const KEYWORD_IMAGE_MAP = [
   { keys: ['goat', 'mbuzi', 'boer', 'galla', 'dairy goat', 'toggenb'],
     url: 'https://images.unsplash.com/photo-1524024973431-2ad916746881?w=700&auto=format&fit=crop' },
 
-  { keys: ['sheep', 'kondoo', 'dorper', 'maasai sheep', 'red maasai', 'merino', 'blackhead'],
+  { keys: ['red maasai', 'maasai sheep', 'maasai meet', 'maasai meat', 'maasai'],
+    url: 'https://cdn.creatures.com/ac6/82f/13b/7a866.jpeg' },
+
+  { keys: ['sheep', 'kondoo', 'dorper', 'merino', 'blackhead'],
     url: 'https://images.unsplash.com/photo-1484557052118-f32bd25b45b5?w=700&auto=format&fit=crop' },
 
   { keys: ['pig', 'nguruwe', 'pork', 'large white', 'landrace', 'duroc'],

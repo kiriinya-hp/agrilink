@@ -1616,7 +1616,7 @@ async function ensureSeedAnimalListings() {
         unitPrice: 88.5, // ~KES 11,500/head
         grade: 'GRADE_A',
         location: 'Narok South Plains, Narok County',
-        imageUrl: 'https://images.unsplash.com/photo-1484557052118-f32bd25b45b5?w=600&auto=format&fit=crop'
+        imageUrl: 'https://cdn.creatures.com/ac6/82f/13b/7a866.jpeg'
       },
       {
         farmerId: farmer.id,
