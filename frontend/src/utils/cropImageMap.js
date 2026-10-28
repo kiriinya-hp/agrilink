@@ -45,7 +45,7 @@ const KEYWORD_IMAGE_MAP = [
     url: 'https://images.unsplash.com/photo-1550258987-190a2d41a8ba?w=700&auto=format&fit=crop' },
 
   { keys: ['passion fruit', 'passion', 'passionfruit', 'granadilla'],
-    url: 'https://images.unsplash.com/photo-1604495772376-9657f0035b0f?w=700&auto=format&fit=crop' },
+    url: 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=700&auto=format&fit=crop' },
 
   { keys: ['orange', 'chungwa', 'lemon', 'lime', 'citrus', 'naartjie', 'tangerin', 'grapefruit'],
     url: 'https://images.unsplash.com/photo-1547514701-42782101795e?w=700&auto=format&fit=crop' },
@@ -63,19 +63,19 @@ const KEYWORD_IMAGE_MAP = [
     url: 'https://images.unsplash.com/photo-1583663848850-46af132dc08e?w=700&auto=format&fit=crop' },
 
   { keys: ['eggplant', 'brinjal', 'aubergine', 'biringanya'],
-    url: 'https://images.unsplash.com/photo-1615485290353-c9d5ef6b4c15?w=700&auto=format&fit=crop' },
+    url: 'https://images.unsplash.com/photo-1628773822503-930a7eaecf80?w=700&auto=format&fit=crop' },
 
   { keys: ['cucumber', 'tango', 'matango'],
     url: 'https://images.unsplash.com/photo-1568584711075-3d021a7c3ca3?w=700&auto=format&fit=crop' },
 
   { keys: ['courgette', 'zucchini', 'marrow'],
-    url: 'https://images.unsplash.com/photo-1596046742534-9d0a1ce3d46e?w=700&auto=format&fit=crop' },
+    url: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=700&auto=format&fit=crop' },
 
   { keys: ['french bean', 'green bean', 'snap bean', 'runner bean', 'maharagwe'],
     url: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=700&auto=format&fit=crop' },
 
   { keys: ['pea', 'minji', 'snow pea', 'snap pea'],
-    url: 'https://images.unsplash.com/photo-1631208625521-c49e2d2e5f6a?w=700&auto=format&fit=crop' },
+    url: 'https://images.unsplash.com/photo-1587334207891-e5a42b6cd0a3?w=700&auto=format&fit=crop' },
 
   { keys: ['strawberry', 'tunda stroberi'],
     url: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=700&auto=format&fit=crop' },
@@ -92,16 +92,16 @@ const KEYWORD_IMAGE_MAP = [
     url: 'https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=700&auto=format&fit=crop' },
 
   { keys: ['wheat', 'ngano', 'barley'],
-    url: 'https://images.unsplash.com/photo-1535912559178-47f43aa88f5a?w=700&auto=format&fit=crop' },
+    url: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=700&auto=format&fit=crop' },
 
   { keys: ['rice', 'mchele', 'pishori', 'basmati'],
-    url: 'https://images.unsplash.com/photo-1536304993881-ff86e0c9ef2a?w=700&auto=format&fit=crop' },
+    url: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=700&auto=format&fit=crop' },
 
   { keys: ['sorghum', 'mtama', 'millet', 'wimbi', 'finger millet'],
     url: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=700&auto=format&fit=crop' },
 
   { keys: ['bean', 'maharagwe', 'rosecoco', 'kidney bean', 'mwitemania', 'omena', 'soybean', 'soya'],
-    url: 'https://images.unsplash.com/photo-1554497523-b8d40adef0d2?w=700&auto=format&fit=crop' },
+    url: 'https://images.unsplash.com/photo-1515543904379-3d757afe72e4?w=700&auto=format&fit=crop' },
 
   { keys: ['lentil', 'dengu', 'pigeon pea', 'mbaazi', 'chickpea', 'ndengu'],
     url: 'https://images.unsplash.com/photo-1506084868230-bb9d95c24759?w=700&auto=format&fit=crop' },
