@@ -479,10 +479,18 @@ function MainApp({ onReplayIntro }) {
 
   const handleAdminProduceUpdated = (updatedListing, deletedId) => {
     if (deletedId) {
-      setListings(prev => prev.filter(l => l.id !== deletedId));
+      setListings(prev => {
+        const next = prev.filter(l => l.id !== deletedId);
+        try { cacheListingsOffline(next); } catch (_) {}
+        return next;
+      });
       setFarmerListings(prev => prev.filter(l => l.id !== deletedId));
     } else if (updatedListing && updatedListing.id) {
-      setListings(prev => prev.map(l => l.id === updatedListing.id ? { ...l, ...updatedListing } : l));
+      setListings(prev => {
+        const next = prev.map(l => l.id === updatedListing.id ? { ...l, ...updatedListing } : l);
+        try { cacheListingsOffline(next); } catch (_) {}
+        return next;
+      });
       setFarmerListings(prev => prev.map(l => l.id === updatedListing.id ? { ...l, ...updatedListing } : l));
     }
     loadRoleData();

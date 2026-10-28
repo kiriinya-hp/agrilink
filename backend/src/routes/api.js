@@ -1295,6 +1295,11 @@ router.post('/admin/database/sync', requireAdmin, async (req, res) => {
 // Helper: Seed demo livestock and animal batches across all categories
 async function ensureSeedAnimalListings() {
   try {
+    // Only seed initial livestock batches if the database is completely empty (first run).
+    // If listings already exist, NEVER re-create items deleted by administrators!
+    const existingCount = await prisma.produceListing.count();
+    if (existingCount > 0) return;
+
     const farmer = await prisma.user.findFirst({ where: { role: 'FARMER' } }) ||
                    await prisma.user.findFirst();
     if (!farmer) return;
@@ -5589,6 +5594,9 @@ router.post('/admin/broadcast', requireAdmin, async (req, res) => {
 // Helper: Seed demo tenders if none exist
 async function ensureSeedDemands() {
   try {
+    const existingCount = await prisma.buyerDemandRequest.count();
+    if (existingCount > 0) return;
+
     const buyer = await prisma.user.findFirst({ where: { role: 'BUYER' } }) ||
                   await prisma.user.findFirst();
     if (!buyer) return;

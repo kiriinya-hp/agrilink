@@ -50,20 +50,30 @@ export default function AdminProduceManagement({ token, apiBase, onProduceUpdate
 
   const handleDeleteListing = async () => {
     if (!deleteModalListing) return;
+    const targetListing = deleteModalListing;
     setDeleting(true);
     try {
-      const res = await fetch(`${apiBase}/admin/listings/${deleteModalListing.id}`, {
+      let res = await fetch(`${apiBase}/admin/listings/${targetListing.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
+      // Fallback to standard delete endpoint if admin route returned error
+      if (!res.ok) {
+        res = await fetch(`${apiBase}/listings/${targetListing.id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      }
       const data = await res.json();
       if (data.success) {
-        setActionSuccess(`"${deleteModalListing.cropName}" was permanently removed from Harvest Marketplace.`);
-        setListings(prev => prev.filter(l => l.id !== deleteModalListing.id));
+        setActionSuccess(`"${targetListing.cropName}" was permanently removed from Harvest Marketplace.`);
+        setListings(prev => prev.filter(l => l.id !== targetListing.id));
         setDeleteModalListing(null);
-        if (onProduceUpdated) onProduceUpdated(null, deleteModalListing.id);
+        if (onProduceUpdated) onProduceUpdated(null, targetListing.id);
         setTimeout(() => setActionSuccess(null), 4000);
       } else {
         alert(data.error || 'Failed to delete produce listing');
