@@ -1487,74 +1487,6 @@ async function ensureSeedAnimalListings() {
         imageUrl: 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=600&auto=format&fit=crop'
       },
 
-      // 🌿 FODDER & FEEDS
-      {
-        farmerId: farmer.id,
-        cropName: 'Boma Rhodes Hay Bales (18kg)',
-        category: 'FODDER_FEEDS',
-        unit: 'bales',
-        availableQty: 500,
-        unitPrice: 2.46, // ~KES 320/bale
-        grade: 'GRADE_A',
-        location: 'Rumuruti, Laikipia County',
-        imageUrl: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'Lucerne / Alfalfa Hay Bales (High Protein 20%)',
-        category: 'FODDER_FEEDS',
-        unit: 'bales',
-        availableQty: 350,
-        unitPrice: 4.46, // ~KES 580/bale
-        grade: 'GRADE_A',
-        location: 'Naivasha Fodder Scheme, Nakuru',
-        imageUrl: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'Inoculated Maize Silage (50kg Sealed Bags)',
-        category: 'FODDER_FEEDS',
-        unit: 'bags',
-        availableQty: 400,
-        unitPrice: 5.76, // ~KES 750/bag
-        grade: 'GRADE_A',
-        location: 'Kitale Grain & Silage Hub, Trans Nzoia',
-        imageUrl: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'High-Yield Dairy Meal (16% CP, 70kg Bag)',
-        category: 'FODDER_FEEDS',
-        unit: 'bags',
-        availableQty: 200,
-        unitPrice: 21.92, // ~KES 2,850/bag
-        grade: 'GRADE_A',
-        location: 'Nakuru Feed Millers, Nakuru Town',
-        imageUrl: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'Wheat Pollard & Bran Blend (50kg Bag)',
-        category: 'FODDER_FEEDS',
-        unit: 'bags',
-        availableQty: 250,
-        unitPrice: 12.69, // ~KES 1,650/bag
-        grade: 'GRADE_A',
-        location: 'Thika Agro Millers, Kiambu',
-        imageUrl: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'Brachiaria Grass Splits & Desmodium Vines',
-        category: 'FODDER_FEEDS',
-        unit: 'bags',
-        availableQty: 150,
-        unitPrice: 3.46, // ~KES 450/bag
-        grade: 'GRADE_A',
-        location: 'Embu Pasture Research Farm, Embu',
-        imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&auto=format&fit=crop'
-      },
-
       // 🥛 DAIRY (Expanded Marketplace Products)
       {
         farmerId: farmer.id,
@@ -1671,40 +1603,6 @@ async function ensureSeedAnimalListings() {
         imageUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=600&auto=format&fit=crop'
       },
 
-      // 🌿 FODDER & FEEDS (Expanded Marketplace Products)
-      {
-        farmerId: farmer.id,
-        cropName: 'Certified Boma Rhodes Pasture Seed',
-        category: 'FODDER_FEEDS',
-        unit: 'kg',
-        availableQty: 300,
-        unitPrice: 9.23, // ~KES 1,200/kg
-        grade: 'GRADE_A',
-        location: 'Kitale Seed Center, Trans Nzoia',
-        imageUrl: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'Pure Cane Molasses Fodder Additive (20L Jerrycan)',
-        category: 'FODDER_FEEDS',
-        unit: 'litres',
-        availableQty: 150,
-        unitPrice: 13.85, // ~KES 1,800/20L
-        grade: 'GRADE_A',
-        location: 'Mumias Western Hub, Kakamega',
-        imageUrl: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'Cotton Seed Cake (High Protein Feed Meal, 50kg)',
-        category: 'FODDER_FEEDS',
-        unit: 'bags',
-        availableQty: 180,
-        unitPrice: 22.3, // ~KES 2,900/bag
-        grade: 'GRADE_A',
-        location: 'Kisumu Oil Mills, Kisumu County',
-        imageUrl: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&auto=format&fit=crop'
-      }
     ];
 
     for (const item of animalListings) {
@@ -5680,31 +5578,6 @@ async function ensureSeedDemands() {
         notes: 'Healthy 5-6 week live broilers averaging 1.8kg - 2.0kg live body weight. Direct off-take.'
       },
 
-      // 🌿 FODDER & FEEDS
-      {
-        buyerId: buyer.id,
-        cropName: 'Boma Rhodes Hay Bales',
-        category: 'FODDER_FEEDS',
-        unit: 'bales',
-        requiredQty: 600,
-        targetPrice: 2.46, // ~KES 320/bale
-        deliveryLocation: 'Kiambu Zero-Grazing Dairy Cluster Depot',
-        targetDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-        qualityGrade: 'GRADE_A',
-        notes: 'Tight 18kg bales, high leaf-to-stem ratio, zero mold, baled during optimal bloom.'
-      },
-      {
-        buyerId: buyer.id,
-        cropName: 'Inoculated Maize Silage (50kg Bags)',
-        category: 'FODDER_FEEDS',
-        unit: 'bags',
-        requiredQty: 300,
-        targetPrice: 5.76, // ~KES 750/bag
-        deliveryLocation: 'Nakuru Dairy Cooperative Collection Hub',
-        targetDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
-        qualityGrade: 'GRADE_A',
-        notes: 'Hermetically sealed 50kg bags, sweet ferment aroma, pH 3.8-4.2, grain content >30%.'
-      }
     ];
 
     for (const d of animalDemands) {

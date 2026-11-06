@@ -401,10 +401,7 @@ Every diagnosis includes exact chemical dosage per 20L knapsack sprayer, pre-har
   - Day 21: Gumboro 2nd dose (booster)
   - Day 28: Newcastle Lasota booster
   - Week 6–8: Fowl Pox (wing web puncture) & Fowl Typhoid
-• **Egg Shell Strength**: Provide coarse limestone grit / crushed oyster shells for continuous calcium supply.
-
-🌿 **Animal Feeds & Fodder Management**:
-• Test silage pH (ideal 3.8–4.2 with sweet fermentation aroma). Keep bales elevated on wooden pallets away from damp soil.`,
+• **Egg Shell Strength**: Provide coarse limestone grit / crushed oyster shells for continuous calcium supply.`,
         actions: [
           { label: 'Explore Dairy & Livestock Listings', action: 'navigate_main' },
           { label: 'Post Livestock on AgriShamba', action: 'navigate_farmer' }
@@ -427,7 +424,6 @@ Every diagnosis includes exact chemical dosage per 20L knapsack sprayer, pre-har
 • 🥚 **Kienyeji Eggs (30-Egg Tray)**: **KES 420 / Tray** at Wangige Poultry Hub (Kiambu)
 • 🐔 **Improved Kienyeji Chicken**: **KES 950 / Bird** at Kariokor Market (Nairobi)
 • 🐄 **In-Calf Friesian Heifer**: **KES 115,000 / Head** at Naivasha Livestock Yard
-• 🌿 **Boma Rhodes Hay (18kg Bale)**: **KES 320 / Bale** at Nakuru / Rumuruti
 
 *Benchmark updates reflect daily weighted clearinghouse transactions across verified markets.*`,
         actions: [

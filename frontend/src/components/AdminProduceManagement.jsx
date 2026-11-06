@@ -196,7 +196,6 @@ export default function AdminProduceManagement({ token, apiBase, onProduceUpdate
       case 'DAIRY': return '🥛';
       case 'LIVESTOCK': return '🐄';
       case 'POULTRY': return '🐔';
-      case 'FODDER_FEEDS': return '🌾';
       default: return '🌱';
     }
   };
@@ -334,6 +333,7 @@ export default function AdminProduceManagement({ token, apiBase, onProduceUpdate
                             alt={item.cropName}
                             className="w-11 h-11 rounded-xl object-cover bg-slate-100 shrink-0 border border-slate-200 shadow-2xs"
                             onError={(e) => {
+                              e.target.onerror = null;
                               e.target.src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200';
                             }}
                           />
@@ -469,6 +469,7 @@ export default function AdminProduceManagement({ token, apiBase, onProduceUpdate
                       alt="Product preview"
                       className="w-full h-full object-cover"
                       onError={(e) => {
+                        e.target.onerror = null;
                         e.target.src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300';
                       }}
                     />
@@ -530,7 +531,6 @@ export default function AdminProduceManagement({ token, apiBase, onProduceUpdate
                     <option value="DAIRY">🥛 DAIRY</option>
                     <option value="LIVESTOCK">🐄 LIVESTOCK</option>
                     <option value="POULTRY">🐔 POULTRY</option>
-                    <option value="FODDER_FEEDS">🌾 FODDER & FEEDS</option>
                   </select>
                 </div>
 

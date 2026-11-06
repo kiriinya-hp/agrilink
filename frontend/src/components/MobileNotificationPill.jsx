@@ -70,7 +70,6 @@ export default function MobileNotificationPill({ notification, onOpenDrawer, onD
   const isDairy      = text.includes('dairy') || text.includes('milk') || text.includes('yoghurt');
   const isLivestock  = text.includes('livestock') || text.includes('cattle') || text.includes('goat') || text.includes('sheep') || text.includes('pig');
   const isPoultry    = text.includes('poultry') || text.includes('chicken') || text.includes('egg') || text.includes('layer') || text.includes('broiler');
-  const isFodder     = text.includes('fodder') || text.includes('hay') || text.includes('silage') || text.includes('lucerne');
 
   // ── Theme map ────────────────────────────────────────────────────────────────
   const theme = isEscrow     ? { bg: 'bg-amber-500/20',   border: 'border-amber-500/40',   ring: 'bg-amber-500',  badge: 'bg-amber-600/40 text-amber-200',  Icon: ShieldCheck  }
@@ -78,7 +77,6 @@ export default function MobileNotificationPill({ notification, onOpenDrawer, onD
               : isDairy      ? { bg: 'bg-sky-500/20',     border: 'border-sky-500/40',     ring: 'bg-sky-400',    badge: 'bg-sky-600/40 text-sky-200',      Icon: Milk        }
               : isPoultry    ? { bg: 'bg-orange-500/20',  border: 'border-orange-500/40',  ring: 'bg-orange-400', badge: 'bg-orange-600/40 text-orange-200', Icon: Egg         }
               : isLivestock  ? { bg: 'bg-lime-500/20',    border: 'border-lime-500/40',    ring: 'bg-lime-400',   badge: 'bg-lime-600/40 text-lime-200',    Icon: Leaf        }
-              : isFodder     ? { bg: 'bg-teal-500/20',    border: 'border-teal-500/40',    ring: 'bg-teal-400',   badge: 'bg-teal-600/40 text-teal-200',    Icon: Leaf        }
               :                { bg: 'bg-indigo-500/20',  border: 'border-indigo-500/40',  ring: 'bg-indigo-400', badge: 'bg-indigo-600/40 text-indigo-200', Icon: Bell        };
 
   const { bg, border, ring, badge, Icon } = theme;

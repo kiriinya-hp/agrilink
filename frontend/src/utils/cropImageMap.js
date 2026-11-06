@@ -169,22 +169,6 @@ const KEYWORD_IMAGE_MAP = [
   { keys: ['turkey', 'bata mzinga', 'duck', 'bata', 'guinea fowl', 'kanga'],
     url: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=700&auto=format&fit=crop' },
 
-  // ── FODDER & FEEDS ───────────────────────────────────────────────
-  { keys: ['hay bale', 'hay', 'boma rhodes', 'rhodes grass', 'bermuda'],
-    url: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=700&auto=format&fit=crop' },
-
-  { keys: ['lucerne', 'alfalfa', 'clover'],
-    url: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=700&auto=format&fit=crop' },
-
-  { keys: ['silage', 'napier', 'maize silage', 'grass silage'],
-    url: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=700&auto=format&fit=crop' },
-
-  { keys: ['dairy meal', 'pig meal', 'poultry feed', 'layer mash', 'grower mash', 'starter', 'concentrate', 'feed bag'],
-    url: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=700&auto=format&fit=crop' },
-
-  { keys: ['molasses', 'cane molasses', 'pasture seed'],
-    url: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=700&auto=format&fit=crop' },
-
   // ── COFFEE, TEA & CASH CROPS ─────────────────────────────────────
   { keys: ['coffee', 'kahawa', 'arabica', 'robusta', 'green coffee', 'parchment'],
     url: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=700&auto=format&fit=crop' },
@@ -209,7 +193,6 @@ const CATEGORY_FALLBACKS = {
   DAIRY:         'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=700&auto=format&fit=crop',
   LIVESTOCK:     'https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=700&auto=format&fit=crop',
   POULTRY:       'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=700&auto=format&fit=crop',
-  FODDER_FEEDS:  'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=700&auto=format&fit=crop',
 };
 
 const GENERIC_FALLBACK = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=700&auto=format&fit=crop';
@@ -225,11 +208,19 @@ const GENERIC_FALLBACK = 'https://images.unsplash.com/photo-1542838132-92c533004
  * @param {string} category  - The listing's category (e.g. 'LIVESTOCK')
  * @returns {string} - A fully-resolved image URL
  */
+const BROKEN_UNSPLASH_IDS = [
+  'photo-1542838132-92c53300491e', // generic produce fallback (allow keyword match instead)
+  'photo-1527153857715',           // dead goat milk photo
+  'photo-1587334207891',           // dead peas photo
+  'photo-1490750967868',           // dead flower photo
+];
+
 export function resolveProduceImage(imageUrl = '', cropName = '', category = '') {
   // 1. If an image is explicitly provided (edited by admin, uploaded to Firebase, or set in DB) -> ALWAYS HONOUR IT!
   if (imageUrl && typeof imageUrl === 'string') {
     const trimmed = imageUrl.trim();
-    if (trimmed.length > 0 && !trimmed.includes('photo-1542838132-92c53300491e')) {
+    const isBroken = BROKEN_UNSPLASH_IDS.some((badId) => trimmed.includes(badId));
+    if (trimmed.length > 0 && !isBroken) {
       return trimmed;
     }
   }

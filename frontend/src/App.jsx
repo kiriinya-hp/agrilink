@@ -1662,8 +1662,7 @@ function MainApp({ onReplayIntro }) {
                   { key: 'TUBER', label: `🥔 ${t('tuber')}` },
                   { key: 'DAIRY', label: `🥛 ${t('dairy')}` },
                   { key: 'LIVESTOCK', label: `🐄 ${t('livestock')}` },
-                  { key: 'POULTRY', label: `🐔 ${t('poultry')}` },
-                  { key: 'FODDER_FEEDS', label: `🌿 ${t('fodderFeeds')}` }
+                  { key: 'POULTRY', label: `🐔 ${t('poultry')}` }
                 ].map((cat) => (
                   <button
                     key={cat.key}
@@ -1697,6 +1696,7 @@ function MainApp({ onReplayIntro }) {
                       alt={item.cropName} 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                       onError={(e) => {
+                        e.target.onerror = null;
                         e.target.src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop';
                       }}
                     />
@@ -2106,7 +2106,6 @@ function MainApp({ onReplayIntro }) {
                         if (cat === 'DAIRY') defUnit = 'litres';
                         else if (cat === 'LIVESTOCK') defUnit = 'heads';
                         else if (cat === 'POULTRY') defUnit = 'birds';
-                        else if (cat === 'FODDER_FEEDS') defUnit = 'bales';
                         else if (cat === 'CEREAL') defUnit = 'bags';
                         else defUnit = 'kg';
                         setNewListing({ ...newListing, category: cat, unit: defUnit });
@@ -2119,7 +2118,6 @@ function MainApp({ onReplayIntro }) {
                       <option value="DAIRY">🥛 {t('dairy')}</option>
                       <option value="LIVESTOCK">🐄 {t('livestock')}</option>
                       <option value="POULTRY">🐔 {t('poultry')}</option>
-                      <option value="FODDER_FEEDS">🌿 {t('fodderFeeds')}</option>
                     </select>
                   </div>
                   <div>

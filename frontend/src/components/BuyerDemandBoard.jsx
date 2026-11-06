@@ -54,13 +54,6 @@ export const COMMODITY_MARKET_BENCHMARKS = [
   { name: 'Day-Old Improved Kienyeji Chicks (Vaccinated)', category: 'POULTRY', unit: 'birds', priceKes: 110, priceUsd: 0.85 },
   { name: 'Fertile Rainbow Rooster Hatching Eggs (30-Egg Trays)', category: 'POULTRY', unit: 'trays', priceKes: 650, priceUsd: 5.0 },
 
-  // 🌿 FODDER & FEEDS
-  { name: 'Boma Rhodes Hay Bales (18kg)', category: 'FODDER_FEEDS', unit: 'bales', priceKes: 320, priceUsd: 2.46 },
-  { name: 'Lucerne / Alfalfa Hay Bales (High Protein 20%)', category: 'FODDER_FEEDS', unit: 'bales', priceKes: 580, priceUsd: 4.46 },
-  { name: 'Inoculated Maize Silage (50kg Sealed Bags)', category: 'FODDER_FEEDS', unit: 'bags', priceKes: 750, priceUsd: 5.76 },
-  { name: 'High-Yield Dairy Meal (16% CP, 70kg Bag)', category: 'FODDER_FEEDS', unit: 'bags', priceKes: 2850, priceUsd: 21.92 },
-  { name: 'Wheat Pollard & Bran Blend (50kg Bag)', category: 'FODDER_FEEDS', unit: 'bags', priceKes: 1650, priceUsd: 12.69 },
-
   // 🥬 HORTICULTURE, CEREALS & TUBERS
   { name: 'Roma Plum Tomatoes', category: 'HORTICULTURE', unit: 'kg', priceKes: 95, priceUsd: 0.73 },
   { name: 'Red Bulb Onions', category: 'HORTICULTURE', unit: 'kg', priceKes: 85, priceUsd: 0.65 },
@@ -466,7 +459,6 @@ export default function BuyerDemandBoard({ user, token, apiBase, formatMoney, cu
             { key: 'DAIRY', label: '🥛 Dairy' },
             { key: 'LIVESTOCK', label: '🐄 Livestock' },
             { key: 'POULTRY', label: '🐔 Poultry & Eggs' },
-            { key: 'FODDER_FEEDS', label: '🌿 Feeds & Fodder' },
             { key: 'HORTICULTURE', label: '🥬 Horticulture' },
             { key: 'CEREAL', label: '🌾 Cereals' },
             { key: 'TUBER', label: '🥔 Tubers' }
@@ -792,7 +784,6 @@ export default function BuyerDemandBoard({ user, token, apiBase, formatMoney, cu
                       if (cat === 'DAIRY') defUnit = 'litres';
                       else if (cat === 'LIVESTOCK') defUnit = 'heads';
                       else if (cat === 'POULTRY') defUnit = 'birds';
-                      else if (cat === 'FODDER_FEEDS') defUnit = 'bales';
                       else if (cat === 'CEREAL') defUnit = 'bags';
                       else defUnit = 'kg';
                       setCreateForm({ ...createForm, category: cat, unit: defUnit });
@@ -802,7 +793,6 @@ export default function BuyerDemandBoard({ user, token, apiBase, formatMoney, cu
                     <option value="DAIRY">🥛 Dairy Products (Fresh Milk, Cream, Ghee)</option>
                     <option value="LIVESTOCK">🐄 Live Livestock (Cattle, Goats, Sheep, Pigs)</option>
                     <option value="POULTRY">🐔 Poultry & Eggs (Kienyeji, Broilers, Trays)</option>
-                    <option value="FODDER_FEEDS">🌿 Feeds & Fodder (Hay, Lucerne, Silage)</option>
                     <option value="HORTICULTURE">🥬 Horticulture (Fruits & Veg)</option>
                     <option value="CEREAL">🌾 Cereal & Grains</option>
                     <option value="TUBER">🥔 Tubers & Roots</option>
@@ -821,7 +811,6 @@ export default function BuyerDemandBoard({ user, token, apiBase, formatMoney, cu
                     <option value="heads">Heads / Animals</option>
                     <option value="trays">Trays (30 pcs)</option>
                     <option value="birds">Birds / Chickens</option>
-                    <option value="bales">Bales (Hay/Fodder)</option>
                     <option value="bags">Bags (50kg / 90kg)</option>
                     <option value="kg">Kilogram (kg)</option>
                     <option value="tons">Tons</option>

@@ -272,67 +272,6 @@ async function seedNow() {
         imageUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=600&auto=format&fit=crop'
       },
 
-      // 🌿 FODDER & FEEDS
-      {
-        farmerId: farmer.id,
-        cropName: 'Boma Rhodes Hay Bales (18kg)',
-        category: 'FODDER_FEEDS',
-        unit: 'bales',
-        availableQty: 500,
-        unitPrice: 2.46, // ~KES 320/bale
-        grade: 'GRADE_A',
-        harvestDate: now,
-        location: 'Rumuruti, Laikipia County',
-        imageUrl: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'Lucerne / Alfalfa Hay Bales (High Protein 20%)',
-        category: 'FODDER_FEEDS',
-        unit: 'bales',
-        availableQty: 350,
-        unitPrice: 4.46, // ~KES 580/bale
-        grade: 'GRADE_A',
-        harvestDate: now,
-        location: 'Naivasha Fodder Scheme, Nakuru',
-        imageUrl: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'Inoculated Maize Silage (50kg Sealed Bags)',
-        category: 'FODDER_FEEDS',
-        unit: 'bags',
-        availableQty: 400,
-        unitPrice: 5.76, // ~KES 750/bag
-        grade: 'GRADE_A',
-        harvestDate: now,
-        location: 'Kitale Grain & Silage Hub, Trans Nzoia',
-        imageUrl: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'High-Yield Dairy Meal (16% CP, 70kg Bag)',
-        category: 'FODDER_FEEDS',
-        unit: 'bags',
-        availableQty: 200,
-        unitPrice: 21.92, // ~KES 2,850/bag
-        grade: 'GRADE_A',
-        harvestDate: now,
-        location: 'Nakuru Feed Millers, Nakuru Town',
-        imageUrl: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&auto=format&fit=crop'
-      },
-      {
-        farmerId: farmer.id,
-        cropName: 'Wheat Pollard & Bran Blend (50kg Bag)',
-        category: 'FODDER_FEEDS',
-        unit: 'bags',
-        availableQty: 250,
-        unitPrice: 12.69, // ~KES 1,650/bag
-        grade: 'GRADE_A',
-        harvestDate: now,
-        location: 'Thika Agro Millers, Kiambu',
-        imageUrl: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&auto=format&fit=crop'
-      }
     ];
 
     let inserted = 0;
