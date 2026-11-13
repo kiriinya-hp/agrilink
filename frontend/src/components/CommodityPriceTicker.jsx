@@ -107,6 +107,18 @@ export default function CommodityPriceTicker() {
   const [showFullModal, setShowFullModal] = useState(false);
   const [modalTab, setModalTab] = useState('ticker'); // 'ticker' | 'comparison'
   const [selectedCropIndex, setSelectedCropIndex] = useState(0);
+  const [calcVolume, setCalcVolume] = useState(50);
+  const [calcSource, setCalcSource] = useState(0);
+  const [calcDest, setCalcDest] = useState(1);
+
+  useEffect(() => {
+    const handleOpenComparison = () => {
+      setModalTab('comparison');
+      setShowFullModal(true);
+    };
+    window.addEventListener('open-price-comparison', handleOpenComparison);
+    return () => window.removeEventListener('open-price-comparison', handleOpenComparison);
+  }, []);
 
   const fetchPrices = async () => {
     try {
@@ -148,13 +160,26 @@ export default function CommodityPriceTicker() {
                 Kenya Wholesale Price Index
               </span>
             </div>
-            <button
-              onClick={() => setShowFullModal(true)}
-              className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/30 font-semibold transition-colors flex items-center gap-1"
-            >
-              <span>View All</span>
-              <BarChart2 className="w-3 h-3" />
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => { setModalTab('ticker'); setShowFullModal(true); }}
+                className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/30 font-semibold transition-colors flex items-center gap-1"
+                title="View complete produce wholesale price index"
+              >
+                <span>Index</span>
+                <BarChart2 className="w-3 h-3" />
+              </button>
+              <button
+                type="button"
+                onClick={() => { setModalTab('comparison'); setShowFullModal(true); }}
+                className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/30 font-semibold transition-colors flex items-center gap-1"
+                title="Compare wholesale prices across Kenyan counties"
+              >
+                <span>Compare</span>
+                <Layers className="w-3 h-3" />
+              </button>
+            </div>
           </div>
 
           {/* Scrolling Horizontal Feed */}
@@ -440,6 +465,98 @@ export default function CommodityPriceTicker() {
                           <span>Margin spread: KES {minPrice.toLocaleString()} → KES {maxPrice.toLocaleString()} (+{Math.round(((maxPrice - minPrice) / minPrice) * 100)}%)</span>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Interactive Arbitrage Net Profit Calculator */}
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 via-emerald-500/5 to-slate-100 border border-amber-300/80 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                          <Scale className="w-3.5 h-3.5 text-amber-600" />
+                          Interactive Arbitrage &amp; Net Profit Calculator
+                        </span>
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                          Live Freight Model
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
+                            Harvest Volume ({sel.unit})
+                          </label>
+                          <input
+                            type="number"
+                            min="1"
+                            value={calcVolume}
+                            onChange={(e) => setCalcVolume(Math.max(1, parseInt(e.target.value) || 1))}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 font-mono font-bold text-slate-900 bg-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
+                            From (Origin Market)
+                          </label>
+                          <select
+                            value={calcSource}
+                            onChange={(e) => setCalcSource(parseInt(e.target.value))}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 font-semibold text-slate-900 bg-white text-[11px]"
+                          >
+                            {sel.markets.map((m, idx) => (
+                              <option key={idx} value={idx}>{m.name} (KES {m.price})</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
+                            To (Destination Market)
+                          </label>
+                          <select
+                            value={calcDest}
+                            onChange={(e) => setCalcDest(parseInt(e.target.value))}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 font-semibold text-slate-900 bg-white text-[11px]"
+                          >
+                            {sel.markets.map((m, idx) => (
+                              <option key={idx} value={idx}>{m.name} (KES {m.price})</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Calculator Result Box */}
+                      {(() => {
+                        const srcM = sel.markets[calcSource] || sel.markets[0];
+                        const dstM = sel.markets[calcDest] || sel.markets[sel.markets.length - 1];
+                        const srcTotal = srcM.price * calcVolume;
+                        const dstTotal = dstM.price * calcVolume;
+                        const estFreightPerUnit = Math.max(30, Math.round(dstM.price * 0.1));
+                        const estTotalFreight = estFreightPerUnit * calcVolume;
+                        const netArbitrage = dstTotal - srcTotal - estTotalFreight;
+                        return (
+                          <div className="bg-white p-3 rounded-xl border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                            <div className="text-[11px] text-slate-600 space-y-0.5">
+                              <div>Farm-Gate Worth: <strong className="font-mono text-slate-800">KES {srcTotal.toLocaleString()}</strong></div>
+                              <div>Destination Revenue: <strong className="font-mono text-emerald-700">KES {dstTotal.toLocaleString()}</strong></div>
+                              <div>Est. Freight Fee: <strong className="font-mono text-slate-500">KES {estTotalFreight.toLocaleString()}</strong></div>
+                            </div>
+
+                            <div className="text-right sm:border-l sm:border-slate-100 sm:pl-4">
+                              <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                                Net Extra Take-Home Profit
+                              </span>
+                              <span className={`text-base font-black font-mono ${netArbitrage >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
+                                {netArbitrage >= 0 ? '+' : ''}KES {netArbitrage.toLocaleString()}
+                              </span>
+                              <span className="text-[10px] text-slate-500 block">
+                                {netArbitrage > 0 
+                                  ? `+${Math.round((netArbitrage / srcTotal) * 100)}% extra revenue` 
+                                  : 'Higher local margin (Stay local)'}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 );
