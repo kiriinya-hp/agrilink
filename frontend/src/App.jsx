@@ -102,6 +102,7 @@ import VoiceMessagingModal from './components/VoiceMessagingModal';
 import KilimoVisionScanner from './components/KilimoVisionScanner';
 import InvoiceModal from './components/InvoiceModal';
 import FarmerDashboardAnalytics from './components/FarmerDashboardAnalytics';
+import OrderTrackingPipeline from './components/OrderTrackingPipeline';
 import { initPushNotifications, scheduleNativeNotification } from './services/pushNotificationService';
 import { 
   cacheListingsOffline, 
@@ -1900,139 +1901,21 @@ function MainApp({ onReplayIntro }) {
             ) : (
               <div className="space-y-4">
                 {orders.map((order) => {
-                  const item = order.items?.[0];
-                  const isCompleted = order.status === 'COMPLETED';
                   const shipment = order.shipment;
-
                   return (
-                    <div key={order.id} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                      <div className="space-y-1.5">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100">{order.orderNumber}</span>
-                          <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
-                            isCompleted ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                          }`}>
-                            {order.status}
-                          </span>
-                        </div>
-                        <h4 className="font-bold text-sm text-slate-900">{item?.cropName} ({item?.quantity} kg)</h4>
-                        <p className="text-xs text-slate-500">Destination: {order.deliveryAddress}</p>
-                        <p className="text-xs text-emerald-700 font-bold flex items-center gap-1">
-                          <ShieldCheck className="w-3.5 h-3.5" /> {t('escrowDeposit')}: {formatMoney(order.grandTotal || 0)} ({order.escrowTransaction?.paymentGateway})
-                        </p>
-                      </div>
-
-                      {/* Delivery Verification Sign-off & Receipt Action */}
-                      <div className="w-full lg:w-80 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
-                        {isCompleted ? (
-                          <div className="space-y-2">
-                            <div className="text-emerald-800 font-bold flex items-center gap-1.5">
-                              <CheckCircle2 className="w-4 h-4 text-emerald-600" /> {t('deliveryConfirmed')}
-                            </div>
-                            <button
-                              onClick={() => setSelectedReceiptOrder(order)}
-                              className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 bg-white border border-emerald-300 rounded-lg text-emerald-800 font-bold hover:bg-emerald-50 transition-colors shadow-sm"
-                            >
-                              <FileText className="w-3.5 h-3.5 text-emerald-600" /> {t('viewSettlementReceipt')}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setInvoiceModalOrder(order)}
-                              className="w-full mt-1 flex items-center justify-center gap-1.5 py-1.5 px-3 bg-slate-900 text-white rounded-lg font-bold hover:bg-slate-800 transition-colors shadow-sm"
-                            >
-                              <Printer className="w-3.5 h-3.5 text-emerald-400" />
-                              <span>Print Tax Invoice & Waybill</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleSendWhatsAppAlert(order)}
-                              className="w-full mt-1 flex items-center justify-center gap-1.5 py-1.5 px-3 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700 transition-colors shadow-sm"
-                            >
-                              <span>📲 Send WhatsApp Receipt</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setProducePassportOrder(order)}
-                              className="w-full mt-1 flex items-center justify-center gap-1.5 py-1.5 px-3 bg-amber-50 border border-amber-300 rounded-lg text-amber-800 font-bold hover:bg-amber-100 transition-colors"
-                            >
-                              <span>🏷️ Produce Passport / QR</span>
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="space-y-2">
-                            <span className="font-bold text-slate-800 block">{t('confirmDeliveryPrompt')}</span>
-                            <div className="flex gap-2">
-                              <input
-                                type="text"
-                                maxLength="6"
-                                placeholder="6-digit OTP"
-                                value={otpInputs[shipment?.id] || ''}
-                                onChange={(e) => setOtpInputs({ ...otpInputs, [shipment?.id]: e.target.value })}
-                                className="w-28 px-2 py-1.5 bg-white border border-slate-300 rounded font-mono font-bold text-center text-xs tracking-wider"
-                              />
-                              <button
-                                onClick={() => handleVerifyDelivery(shipment?.id)}
-                                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded transition-colors"
-                              >
-                                {t('releaseEscrowButton')}
-                              </button>
-                            </div>
-                            <div className="flex items-center justify-between text-[10px] pt-1">
-                              <span className="text-slate-400 italic">Driver OTP: <strong>{shipment?.confirmationOtp}</strong></span>
-                              <button
-                                type="button"
-                                onClick={() => setDisputingOrder(order)}
-                                className="text-rose-600 hover:text-rose-700 font-bold flex items-center gap-0.5"
-                                title="Report damaged or substandard produce to hold escrow"
-                              >
-                                <ShieldAlert className="w-3 h-3" />
-                                <span>{t('reportQualityIssue')}</span>
-                              </button>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => setInvoiceModalOrder(order)}
-                              className="w-full mt-1.5 py-1.5 px-3 bg-slate-900 text-white rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
-                            >
-                              <Printer className="w-3.5 h-3.5 text-emerald-400" />
-                              <span>Print Tax Invoice & Waybill</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleSendWhatsAppAlert(order)}
-                              className="w-full mt-1.5 py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
-                            >
-                              <span>📲 WhatsApp OTP & Details</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setTrackingMapOrder(order)}
-                              className="w-full mt-1.5 py-1.5 px-3 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-lg text-emerald-800 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors"
-                            >
-                              <Truck className="w-3.5 h-3.5 text-emerald-600" />
-                              <span>Live GPS Tracking Map</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setProducePassportOrder(order)}
-                              className="w-full mt-1.5 py-1.5 px-3 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg text-amber-800 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors"
-                            >
-                              <span>🏷️ Produce Passport / QR Code</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setVoiceChatOrder(order)}
-                              className="w-full mt-1.5 py-1.5 px-3 bg-teal-50 hover:bg-teal-100 border border-teal-300 rounded-lg text-teal-800 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors"
-                              title="Send instant Swahili/English voice notes to trade partner"
-                            >
-                              <Mic className="w-3.5 h-3.5 text-teal-600" />
-                              <span>🎙️ Voice Chat Room (Swahili / Sheng)</span>
-                            </button>
-                          </div>
-                        )}
-
-                      </div>
-                    </div>
+                    <OrderTrackingPipeline
+                      key={order.id}
+                      order={order}
+                      isBuyer={user.role === 'BUYER'}
+                      otpValue={otpInputs[shipment?.id]}
+                      onOtpChange={(shipmentId, val) => setOtpInputs({ ...otpInputs, [shipmentId]: val })}
+                      onVerifyDelivery={handleVerifyDelivery}
+                      onReportDispute={setDisputingOrder}
+                      onOpenLiveMap={setTrackingMapOrder}
+                      onOpenProducePassport={setProducePassportOrder}
+                      onOpenInvoice={setInvoiceModalOrder}
+                      onSendWhatsApp={handleSendWhatsAppAlert}
+                    />
                   );
                 })}
               </div>
