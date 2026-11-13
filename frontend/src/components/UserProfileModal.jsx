@@ -15,7 +15,13 @@ import {
   X, 
   FileText,
   Sparkles,
-  Trash2
+  Trash2,
+  Gift,
+  Copy,
+  Share2,
+  Award,
+  Users,
+  CheckCircle2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from './CurrencyUnitContext';
@@ -42,6 +48,46 @@ export default function UserProfileModal({ isOpen, onClose, onProfileUpdated }) 
   const [successMsg, setSuccessMsg] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [referralStats, setReferralStats] = useState(null);
+  const [loadingReferrals, setLoadingReferrals] = useState(false);
+
+  const fetchReferralStats = async () => {
+    try {
+      setLoadingReferrals(true);
+      const token = localStorage.getItem('AgriShamba_token') || localStorage.getItem('agrishamba_token') || localStorage.getItem('agrilink_token');
+      if (!token) return;
+      const res = await fetch('/api/referrals/my-stats', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setReferralStats(data);
+      }
+    } catch (e) {
+      console.warn('Failed to fetch referral stats:', e);
+    } finally {
+      setLoadingReferrals(false);
+    }
+  };
+
+  const handleCopyReferral = () => {
+    const code = referralStats?.referralCode || user.referralCode || '';
+    if (code) {
+      navigator.clipboard.writeText(code);
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 2500);
+    }
+  };
+
+  const handleShareWhatsApp = () => {
+    const code = referralStats?.referralCode || user.referralCode || '';
+    const shareUrl = `${window.location.origin}/register?ref=${code}`;
+    const text = encodeURIComponent(
+      `Join me on AgriShamba to buy & sell fresh produce directly with zero middlemen! Use my referral code ${code} or sign up here: ${shareUrl} to get +25 bonus AgriPoints!`
+    );
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  };
 
   const handleDeleteAccount = async () => {
     setDeleteLoading(true);
@@ -78,6 +124,7 @@ export default function UserProfileModal({ isOpen, onClose, onProfileUpdated }) 
       });
       setError('');
       setSuccessMsg('');
+      fetchReferralStats();
     }
   }, [user, isOpen]);
 
@@ -149,10 +196,15 @@ export default function UserProfileModal({ isOpen, onClose, onProfileUpdated }) 
                 <Mail className="w-3.5 h-3.5 text-emerald-400" />
                 {user.email}
               </p>
-              <div className="flex items-center gap-3 mt-2 text-[11px] text-slate-300">
+              <div className="flex items-center gap-3 mt-2 text-[11px] text-slate-300 flex-wrap">
                 <span className="flex items-center gap-1">
                   <Wallet className="w-3 h-3 text-emerald-400" />
                   Wallet: <strong className="text-emerald-300 font-mono">{formatMoney(user.walletBalance || 0)}</strong>
+                </span>
+                <span className="text-slate-500">•</span>
+                <span className="flex items-center gap-1">
+                  <Gift className="w-3 h-3 text-amber-400" />
+                  AgriPoints: <strong className="text-amber-300 font-mono">{referralStats?.referralPoints ?? user.referralPoints ?? 0}</strong>
                 </span>
                 <span className="text-slate-500">•</span>
                 <span className="flex items-center gap-1">
@@ -188,6 +240,115 @@ export default function UserProfileModal({ isOpen, onClose, onProfileUpdated }) 
               <span>{successMsg}</span>
             </div>
           )}
+        </div>
+
+        {/* Farmer Trust & Verification Badge (Feature 11: No cash bonus) */}
+        {user.role === 'FARMER' && (
+          <div className="mx-6 mb-3 p-3.5 rounded-xl bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 border border-emerald-500/40 text-white flex items-center justify-between gap-3 shadow-md">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-black text-white">Trust &amp; Verification Standing</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                    Verified Farmer ✓
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-300 mt-0.5 leading-relaxed">
+                  Badged publicly on all your market produce listings to boost buyer trust and escrow priority. (Strictly reputation badge — no monetary bonus).
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Referral Hub: Invite & Earn AgriPoints (Feature 8) */}
+        <div className="mx-6 mb-4 p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 via-emerald-500/5 to-slate-900/5 border border-amber-500/30 shadow-sm">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-600">
+                <Gift className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                  Refer &amp; Earn AgriPoints
+                </h4>
+                <p className="text-[10px] text-slate-500 font-medium">
+                  Earn +50 points per active invite. New farmers get +25 welcome points!
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-sm font-black text-amber-600 font-mono block">
+                {referralStats?.referralPoints ?? user.referralPoints ?? 0}
+              </span>
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">AgriPoints</span>
+            </div>
+          </div>
+
+          {/* Referral Code Display & Copy & WhatsApp Share */}
+          <div className="bg-white rounded-xl p-2.5 border border-amber-200/80 flex items-center justify-between gap-2 mt-2">
+            <div className="min-w-0">
+              <span className="text-[10px] font-semibold text-slate-400 block uppercase tracking-wider">Your Referral Code</span>
+              <span className="text-xs font-black font-mono tracking-wider text-slate-900 truncate">
+                {referralStats?.referralCode || user.referralCode || 'AGRI-SHAMBA'}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={handleCopyReferral}
+                className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] flex items-center gap-1 transition-all"
+              >
+                {copiedCode ? (
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span className="text-emerald-700">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copy</span>
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={handleShareWhatsApp}
+                className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] flex items-center gap-1 shadow-sm transition-all"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span>WhatsApp</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Referral Stats Summary */}
+          <div className="grid grid-cols-3 gap-2 mt-2 pt-2 border-t border-amber-200/40 text-center">
+            <div className="bg-white/80 rounded-lg p-1.5 border border-slate-100">
+              <span className="text-[10px] text-slate-500 block">Invited</span>
+              <span className="text-xs font-black text-slate-800">
+                {referralStats?.totalReferred ?? 0}
+              </span>
+            </div>
+            <div className="bg-white/80 rounded-lg p-1.5 border border-slate-100">
+              <span className="text-[10px] text-slate-500 block">Per Invite</span>
+              <span className="text-xs font-black text-emerald-600">+50 pts</span>
+            </div>
+            <div className="bg-white/80 rounded-lg p-1.5 border border-slate-100">
+              <span className="text-[10px] text-slate-500 block">Reward Tier</span>
+              <span className="text-[10px] font-black text-amber-700">
+                {(referralStats?.referralPoints ?? user.referralPoints ?? 0) >= 300 
+                  ? '🥇 Gold' 
+                  : (referralStats?.referralPoints ?? user.referralPoints ?? 0) >= 100 
+                    ? '🥈 Silver' 
+                    : '🥉 Bronze'}
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Profile Edit Form */}

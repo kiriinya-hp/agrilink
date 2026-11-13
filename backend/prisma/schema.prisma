@@ -23,6 +23,9 @@ model User {
   businessName     String?
   idNumber         String?
   walletBalance    Float            @default(0.0)
+  referralCode     String?          @unique
+  referredBy       String?
+  referralPoints   Int              @default(0)
   createdAt        DateTime         @default(now())
 
   listings         ProduceListing[]

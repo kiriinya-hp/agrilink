@@ -9,14 +9,104 @@ import {
   RefreshCw, 
   Sparkles, 
   Info,
-  Scale
+  Scale,
+  ArrowRight,
+  ArrowUpRight,
+  Layers
 } from 'lucide-react';
+
+const MARKET_COMPARISON_DATA = [
+  {
+    crop: 'Irish Potatoes (Shangi)',
+    unit: '50kg Bag',
+    markets: [
+      { name: 'Nakuru Wholesale', price: 2800, type: 'FARM_GATE' },
+      { name: 'Nairobi (Wakulima)', price: 3900, type: 'TERMINAL' },
+      { name: 'Mombasa (Kongowea)', price: 4400, type: 'COAST_CONSUMER' },
+      { name: 'Eldoret Main', price: 2950, type: 'REGIONAL' },
+      { name: 'Kisumu (Kibuye)', price: 3800, type: 'LAKE_BASIN' }
+    ],
+    bestMarket: 'Mombasa (Kongowea)',
+    spread: '+KES 1,600 / bag (+57%)',
+    advice: 'High coast demand from hospitality and school canteens. Transport via SGR freight or 10-wheeler lorries yields peak margins.'
+  },
+  {
+    crop: 'Red Bulb Onions',
+    unit: '1 kg',
+    markets: [
+      { name: 'Oloitokitok / Kajiado', price: 85, type: 'FARM_GATE' },
+      { name: 'Nairobi (Wakulima)', price: 125, type: 'TERMINAL' },
+      { name: 'Mombasa (Kongowea)', price: 145, type: 'COAST_CONSUMER' },
+      { name: 'Nakuru Wholesale', price: 110, type: 'REGIONAL' },
+      { name: 'Kisumu (Kibuye)', price: 130, type: 'LAKE_BASIN' }
+    ],
+    bestMarket: 'Mombasa (Kongowea)',
+    spread: '+KES 60 / kg (+70%)',
+    advice: 'Cured red onions fetch maximum premium at coastal hotel suppliers. Field cure for 5 days before dispatch.'
+  },
+  {
+    crop: 'Roma Tomatoes (Grade A)',
+    unit: '64kg Crate',
+    markets: [
+      { name: 'Kirinyaga / Mwea', price: 3400, type: 'FARM_GATE' },
+      { name: 'Nairobi (Wakulima)', price: 5200, type: 'TERMINAL' },
+      { name: 'Mombasa (Kongowea)', price: 5800, type: 'COAST_CONSUMER' },
+      { name: 'Nakuru Wholesale', price: 4200, type: 'REGIONAL' },
+      { name: 'Eldoret Main', price: 4600, type: 'REGIONAL' }
+    ],
+    bestMarket: 'Mombasa (Kongowea)',
+    spread: '+KES 2,400 / crate (+70%)',
+    advice: 'Fast-moving perishable. Pack in ventilated plastic or wooden crates; dispatch overnight to arrive at trading floor by 4:00 AM.'
+  },
+  {
+    crop: 'Cabbages (Gloria F1)',
+    unit: 'Piece / Head',
+    markets: [
+      { name: 'Nyandarua / Kinangop', price: 25, type: 'FARM_GATE' },
+      { name: 'Nairobi (Wakulima)', price: 55, type: 'TERMINAL' },
+      { name: 'Mombasa (Kongowea)', price: 75, type: 'COAST_CONSUMER' },
+      { name: 'Kisumu (Kibuye)', price: 60, type: 'LAKE_BASIN' },
+      { name: 'Thika Madaraka', price: 45, type: 'REGIONAL' }
+    ],
+    bestMarket: 'Mombasa (Kongowea)',
+    spread: '+KES 50 / head (+200%)',
+    advice: 'Heavy tonnage required to offset freight fees. Consolidate shipments with local farmer groups for 15-tonne lorry dispatch.'
+  },
+  {
+    crop: 'Dry Maize (White Grain)',
+    unit: '90kg Bag',
+    markets: [
+      { name: 'Kitale / Trans-Nzoia', price: 3100, type: 'FARM_GATE' },
+      { name: 'Eldoret Main', price: 3300, type: 'REGIONAL' },
+      { name: 'Nairobi (NCPB / Millers)', price: 4100, type: 'TERMINAL' },
+      { name: 'Mombasa Millers', price: 4350, type: 'COAST_CONSUMER' },
+      { name: 'Kisumu Millers', price: 3950, type: 'LAKE_BASIN' }
+    ],
+    bestMarket: 'Mombasa Millers',
+    spread: '+KES 1,250 / bag (+40%)',
+    advice: 'Ensure grain moisture content is <= 13.5% to pass lab aflatoxin and moisture tests at commercial flour millers.'
+  },
+  {
+    crop: 'Hass Avocados (Export Quality)',
+    unit: '4kg Box',
+    markets: [
+      { name: 'Murang’a / Meru', price: 350, type: 'FARM_GATE' },
+      { name: 'Nairobi Packhouses', price: 650, type: 'TERMINAL' },
+      { name: 'Mombasa Freight Port', price: 720, type: 'COAST_CONSUMER' },
+      { name: 'Naivasha EPZ', price: 680, type: 'REGIONAL' }
+    ],
+    bestMarket: 'Mombasa Freight Port',
+    spread: '+KES 370 / box (+105%)',
+    advice: 'Requires cold-chain transport (5.5°C). Ensure GlobalGAP certification for direct export packhouse intake.'
+  }
+];
 
 export default function CommodityPriceTicker() {
   const [commodities, setCommodities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showFullModal, setShowFullModal] = useState(false);
-  const [selectedMarket, setSelectedMarket] = useState('ALL');
+  const [modalTab, setModalTab] = useState('ticker'); // 'ticker' | 'comparison'
+  const [selectedCropIndex, setSelectedCropIndex] = useState(0);
 
   const fetchPrices = async () => {
     try {
@@ -127,15 +217,42 @@ export default function CommodityPriceTicker() {
               </button>
             </div>
 
+            {/* Tab Switcher: Ticker vs County Comparison */}
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl my-3 text-xs font-bold self-start">
+              <button
+                type="button"
+                onClick={() => setModalTab('ticker')}
+                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+                  modalTab === 'ticker' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <Scale className="w-3.5 h-3.5" /> Price Index
+              </button>
+              <button
+                type="button"
+                onClick={() => setModalTab('comparison')}
+                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+                  modalTab === 'comparison' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" /> County Price Comparison
+              </button>
+            </div>
+
             {/* Information Callout */}
-            <div className="my-4 p-3 bg-emerald-50 border border-emerald-200/80 rounded-2xl text-xs text-emerald-900 flex items-center gap-2.5">
+            <div className="mb-3 p-3 bg-emerald-50 border border-emerald-200/80 rounded-2xl text-xs text-emerald-900 flex items-center gap-2.5">
               <Info className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>
-                <strong>Fair Pricing Transparency:</strong> Use these verified wholesale rates to evaluate fair producer prices, negotiate bulk orders, or price your harvests without middlemen price slashing.
+                {modalTab === 'ticker' ? (
+                  <><strong>Fair Pricing Transparency:</strong> Use these verified wholesale rates to evaluate fair producer prices, negotiate bulk orders, or price your harvests without middlemen price slashing.</>
+                ) : (
+                  <><strong>Market Arbitrage Intelligence:</strong> Compare farm-gate, wholesale, and consumer prices across Kenyan counties to find the <strong>best market to sell</strong> your produce for maximum profit.</>
+                )}
               </span>
             </div>
 
-            {/* Table of Commodities */}
+            {/* TICKER TAB: Table of Commodities */}
+            {modalTab === 'ticker' && (
             <div className="flex-1 overflow-y-auto pr-1">
               <div className="overflow-x-auto rounded-2xl border border-slate-200">
                 <table className="w-full text-left text-xs">
@@ -217,6 +334,118 @@ export default function CommodityPriceTicker() {
                 </table>
               </div>
             </div>
+            )}
+
+            {/* COMPARISON TAB: County Price Comparison & Arbitrage */}
+            {modalTab === 'comparison' && (
+            <div className="flex-1 overflow-y-auto pr-1 space-y-4">
+              {/* Crop Selector Pills */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                {MARKET_COMPARISON_DATA.map((item, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setSelectedCropIndex(idx)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap border ${
+                      selectedCropIndex === idx
+                        ? 'bg-slate-900 text-white border-slate-700 shadow-sm'
+                        : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
+                    }`}
+                  >
+                    {item.crop.split('(')[0].trim()}
+                  </button>
+                ))}
+              </div>
+
+              {/* Selected Crop Comparison Card */}
+              {(() => {
+                const sel = MARKET_COMPARISON_DATA[selectedCropIndex];
+                const sortedMarkets = [...sel.markets].sort((a, b) => b.price - a.price);
+                const maxPrice = sortedMarkets[0].price;
+                const minPrice = sortedMarkets[sortedMarkets.length - 1].price;
+                return (
+                  <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div>
+                        <h4 className="font-black text-base text-slate-900">{sel.crop}</h4>
+                        <p className="text-xs text-slate-500 mt-0.5">Unit: <strong>{sel.unit}</strong></p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase block">Best Market</span>
+                        <span className="text-sm font-black text-emerald-700 flex items-center gap-1">
+                          <ArrowUpRight className="w-4 h-4 text-emerald-500" />
+                          {sel.bestMarket}
+                        </span>
+                        <span className="text-[11px] font-bold text-emerald-600">{sel.spread}</span>
+                      </div>
+                    </div>
+
+                    {/* Horizontal Bar Chart: Markets by price */}
+                    <div className="space-y-2.5">
+                      {sortedMarkets.map((m, idx) => {
+                        const widthPct = Math.max(25, Math.round((m.price / maxPrice) * 100));
+                        const isBest = idx === 0;
+                        const isLowest = idx === sortedMarkets.length - 1;
+                        return (
+                          <div key={m.name} className="flex items-center gap-3">
+                            <div className="w-36 sm:w-44 text-right shrink-0">
+                              <span className={`text-[11px] font-bold ${isBest ? 'text-emerald-800' : 'text-slate-700'} flex items-center justify-end gap-1`}>
+                                <MapPin className="w-3 h-3 text-slate-400" />
+                                {m.name}
+                              </span>
+                              <span className="text-[9px] text-slate-400 uppercase font-semibold">
+                                {m.type.replace(/_/g, ' ')}
+                              </span>
+                            </div>
+                            <div className="flex-1 flex items-center gap-2">
+                              <div className="flex-1 h-6 bg-slate-200/60 rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full transition-all flex items-center justify-end pr-2 ${
+                                    isBest
+                                      ? 'bg-gradient-to-r from-emerald-400 to-emerald-600 shadow-sm'
+                                      : isLowest
+                                      ? 'bg-gradient-to-r from-amber-300 to-amber-500'
+                                      : 'bg-gradient-to-r from-slate-300 to-slate-400'
+                                  }`}
+                                  style={{ width: `${widthPct}%` }}
+                                >
+                                  <span className="text-[10px] font-mono font-black text-white whitespace-nowrap">
+                                    KES {m.price.toLocaleString()}
+                                  </span>
+                                </div>
+                              </div>
+                              {isBest && (
+                                <span className="text-[9px] font-black text-emerald-700 bg-emerald-100 border border-emerald-300 px-1.5 py-0.5 rounded-md shrink-0">
+                                  BEST
+                                </span>
+                              )}
+                              {isLowest && (
+                                <span className="text-[9px] font-black text-amber-700 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded-md shrink-0">
+                                  GATE
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Arbitrage Insight */}
+                    <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-start gap-2">
+                      <Sparkles className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                      <div>
+                        <strong>Arbitrage Advisory:</strong> {sel.advice}
+                        <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-emerald-700 font-bold">
+                          <ArrowRight className="w-3 h-3" />
+                          <span>Margin spread: KES {minPrice.toLocaleString()} → KES {maxPrice.toLocaleString()} (+{Math.round(((maxPrice - minPrice) / minPrice) * 100)}%)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+            )}
 
             {/* Modal Footer */}
             <div className="pt-4 border-t border-slate-100 flex justify-between items-center text-xs">

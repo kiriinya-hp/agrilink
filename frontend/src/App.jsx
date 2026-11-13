@@ -101,6 +101,7 @@ import OfflineSyncModal from './components/OfflineSyncModal';
 import VoiceMessagingModal from './components/VoiceMessagingModal';
 import KilimoVisionScanner from './components/KilimoVisionScanner';
 import InvoiceModal from './components/InvoiceModal';
+import FarmerDashboardAnalytics from './components/FarmerDashboardAnalytics';
 import { initPushNotifications, scheduleNativeNotification } from './services/pushNotificationService';
 import { 
   cacheListingsOffline, 
@@ -1725,6 +1726,11 @@ function MainApp({ onReplayIntro }) {
                           <p className="text-xs text-slate-500 flex items-center gap-1 mt-1">
                             <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                             <span>{item.location}</span>
+                            {(item.farmer?.kycStatus === 'VERIFIED' || item.farmer?.isEmailVerified) && (
+                              <span className="inline-flex items-center gap-0.5 text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300 ml-1 shrink-0">
+                                ✓ Verified Farmer
+                              </span>
+                            )}
                           </p>
                         </div>
 
@@ -1757,6 +1763,11 @@ function MainApp({ onReplayIntro }) {
                           <p className="flex items-center gap-1.5">
                             <Sprout className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                             <span>{t('producer')}: <strong>{item.farmer?.name}</strong></span>
+                            {(item.farmer?.kycStatus === 'VERIFIED' || item.farmer?.isEmailVerified) && (
+                              <span className="inline-flex items-center gap-0.5 text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300 ml-1">
+                                ✓ Verified
+                              </span>
+                            )}
                           </p>
                           <p className="flex items-center gap-1.5">
                             <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -2035,6 +2046,14 @@ function MainApp({ onReplayIntro }) {
             {/* Live Commodity Wholesale Index & Agro-Climate Advisory */}
             <CommodityPriceTicker />
             <KilimoWeatherAdvisory />
+
+            {/* Farmer Performance & Sales Analytics Dashboard (Feature 5) */}
+            <FarmerDashboardAnalytics
+              orders={orders}
+              listings={farmerListings}
+              walletBalance={user.walletBalance || 0}
+              user={user}
+            />
 
             {/* AI Crop Doctor & Agronomy Diagnostic Hub Banner */}
             <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 rounded-2xl p-4 sm:p-5 text-white shadow-lg border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">

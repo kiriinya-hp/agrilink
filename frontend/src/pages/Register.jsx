@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Sprout, 
   ShoppingBag, 
@@ -16,7 +16,8 @@ import {
   RefreshCw,
   ArrowLeft,
   KeyRound,
-  Smartphone
+  Smartphone,
+  Gift
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import AuthAnimatedBackground from '../components/AuthAnimatedBackground';
@@ -35,7 +36,7 @@ export default function Register({ onNavigateLogin }) {
     setGoogleLoading(true);
     try {
       const googleUser = await signInWithGooglePopup();
-      await loginWithGoogle(googleUser, role);
+      await loginWithGoogle(googleUser, role, referralCodeInput.trim().toUpperCase() || null);
     } catch (err) {
       console.error(err);
       if (err.code !== 'auth/popup-closed-by-user') {
@@ -61,6 +62,56 @@ export default function Register({ onNavigateLogin }) {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [previewCode, setPreviewCode] = useState('');
+  const [referralCodeInput, setReferralCodeInput] = useState('');
+  const [referralChecking, setReferralChecking] = useState(false);
+  const [referralFeedback, setReferralFeedback] = useState(null);
+
+  const validateReferralCode = async (code) => {
+    if (!code || code.trim().length < 4) {
+      setReferralFeedback(null);
+      return;
+    }
+    setReferralChecking(true);
+    try {
+      const res = await fetch('/api/referrals/validate-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: code.trim().toUpperCase() })
+      });
+      const data = await res.json();
+      if (data.success && data.valid) {
+        setReferralFeedback({ valid: true, message: data.message });
+      } else {
+        setReferralFeedback({ valid: false, message: data.error || 'Referral code not found' });
+      }
+    } catch {
+      setReferralFeedback(null);
+    } finally {
+      setReferralChecking(false);
+    }
+  };
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get('ref') || params.get('referral');
+      if (ref) {
+        const cleanRef = ref.trim().toUpperCase();
+        setReferralCodeInput(cleanRef);
+        validateReferralCode(cleanRef);
+      }
+    } catch {}
+  }, []);
+
+  const handleReferralChange = (e) => {
+    const val = e.target.value.toUpperCase();
+    setReferralCodeInput(val);
+    if (val.trim().length >= 6) {
+      validateReferralCode(val);
+    } else {
+      setReferralFeedback(null);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -104,7 +155,8 @@ export default function Register({ onNavigateLogin }) {
         password: formData.password,
         role,
         location: formData.location,
-        businessName: formData.businessName
+        businessName: formData.businessName,
+        referralCode: referralCodeInput.trim().toUpperCase() || undefined
       });
 
       if (data?.previewCode) {
@@ -417,6 +469,46 @@ export default function Register({ onNavigateLogin }) {
                       />
                     </div>
                   </div>
+                </div>
+
+                {/* Referral Code (Earn +25 Bonus AgriPoints) */}
+                <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-3">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                      <Gift className="w-3.5 h-3.5 text-amber-400" />
+                      Referral Code <span className="text-slate-500 font-normal lowercase">(optional)</span>
+                    </label>
+                    <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                      +25 AgriPoints Welcome
+                    </span>
+                  </div>
+                  <div className="relative">
+                    <Gift className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
+                    <input
+                      type="text"
+                      name="referralCode"
+                      placeholder="e.g. AGRI-JOH3961"
+                      value={referralCodeInput}
+                      onChange={(e) => handleReferralChange(e.target.value)}
+                      className="w-full pl-9 pr-10 py-2 bg-slate-900/80 border border-slate-700 uppercase tracking-widest rounded-lg text-xs text-white placeholder-slate-500 font-mono focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                    <div className="absolute right-3 top-2.5">
+                      {referralChecking && <RefreshCw className="w-4 h-4 text-slate-400 animate-spin" />}
+                      {!referralChecking && referralFeedback?.valid && (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      )}
+                      {!referralChecking && referralFeedback && !referralFeedback.valid && (
+                        <AlertCircle className="w-4 h-4 text-rose-400" />
+                      )}
+                    </div>
+                  </div>
+                  {referralFeedback && (
+                    <p className={`text-[11px] mt-1.5 font-medium flex items-center gap-1 ${
+                      referralFeedback.valid ? 'text-emerald-400' : 'text-rose-400'
+                    }`}>
+                      {referralFeedback.message}
+                    </p>
+                  )}
                 </div>
 
                 <button

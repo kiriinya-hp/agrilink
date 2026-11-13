@@ -300,6 +300,31 @@ router.post('/auth/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
+    // Generate unique personal referral code for new user
+    const cleanPrefix = (name.trim().replace(/[^a-zA-Z]/g, '').slice(0, 3).toUpperCase()) || 'AGR';
+    let personalReferralCode = `AGRI-${cleanPrefix}${Math.floor(1000 + Math.random() * 9000)}`;
+    let codeCollides = await prisma.user.findUnique({ where: { referralCode: personalReferralCode } });
+    while (codeCollides) {
+      personalReferralCode = `AGRI-${cleanPrefix}${Math.floor(1000 + Math.random() * 9000)}`;
+      codeCollides = await prisma.user.findUnique({ where: { referralCode: personalReferralCode } });
+    }
+
+    // Check if user was referred by someone with a valid referral code
+    let referrerUser = null;
+    let startingPoints = 0;
+    let referredByCode = null;
+
+    if (req.body.referralCode && typeof req.body.referralCode === 'string') {
+      const codeToLook = req.body.referralCode.trim().toUpperCase();
+      referrerUser = await prisma.user.findUnique({
+        where: { referralCode: codeToLook }
+      });
+      if (referrerUser) {
+        referredByCode = referrerUser.referralCode;
+        startingPoints = 25; // 25 Welcome AgriPoints for joining via referral
+      }
+    }
+
     const newUser = await prisma.user.create({
       data: {
         name: name.trim(),
@@ -313,9 +338,34 @@ router.post('/auth/register', async (req, res) => {
         kycStatus: 'VERIFIED',
         isEmailVerified: false,
         verificationCode,
-        walletBalance: 0.0
+        walletBalance: 0.0,
+        referralCode: personalReferralCode,
+        referredBy: referredByCode,
+        referralPoints: startingPoints
       }
     });
+
+    // If referred, award +50 points to referrer and dispatch notification
+    if (referrerUser) {
+      try {
+        await prisma.user.update({
+          where: { id: referrerUser.id },
+          data: { referralPoints: { increment: 50 } }
+        });
+
+        await prisma.notification.create({
+          data: {
+            userId: referrerUser.id,
+            type: 'SYSTEM',
+            title: '🎉 +50 AgriPoints Earned!',
+            message: `Congratulations! ${name.trim()} joined AgriShamba using your referral code (${referrerUser.referralCode}). You earned +50 AgriPoints!`,
+            metadata: JSON.stringify({ event: 'REFERRAL_REWARD', points: 50, friend: name.trim() })
+          }
+        });
+      } catch (refErr) {
+        console.warn('Referral bonus credit warning:', refErr.message);
+      }
+    }
 
     // Send verification code via email & SMS
     let emailSent = false;
@@ -504,6 +554,28 @@ router.post('/auth/google-login', async (req, res) => {
         userPhone = `+254000${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 100)}`;
       }
 
+      // Generate unique personal referral code for Google user
+      const cleanPrefix = ((name || 'Google User').trim().replace(/[^a-zA-Z]/g, '').slice(0, 3).toUpperCase()) || 'AGR';
+      let personalReferralCode = `AGRI-${cleanPrefix}${Math.floor(1000 + Math.random() * 9000)}`;
+      let codeCollides = await prisma.user.findUnique({ where: { referralCode: personalReferralCode } });
+      while (codeCollides) {
+        personalReferralCode = `AGRI-${cleanPrefix}${Math.floor(1000 + Math.random() * 9000)}`;
+        codeCollides = await prisma.user.findUnique({ where: { referralCode: personalReferralCode } });
+      }
+
+      // Check referral code
+      let referrerUser = null;
+      let startingPoints = 0;
+      let referredByCode = null;
+      if (req.body.referralCode && typeof req.body.referralCode === 'string') {
+        const codeToLook = req.body.referralCode.trim().toUpperCase();
+        referrerUser = await prisma.user.findUnique({ where: { referralCode: codeToLook } });
+        if (referrerUser) {
+          referredByCode = referrerUser.referralCode;
+          startingPoints = 25;
+        }
+      }
+
       user = await prisma.user.create({
         data: {
           email: email.toLowerCase().trim(),
@@ -513,9 +585,32 @@ router.post('/auth/google-login', async (req, res) => {
           location: req.body.location || 'Kenya',
           role: role,
           isEmailVerified: true,
-          kycStatus: 'VERIFIED'
+          kycStatus: 'VERIFIED',
+          referralCode: personalReferralCode,
+          referredBy: referredByCode,
+          referralPoints: startingPoints
         }
       });
+
+      if (referrerUser) {
+        try {
+          await prisma.user.update({
+            where: { id: referrerUser.id },
+            data: { referralPoints: { increment: 50 } }
+          });
+          await prisma.notification.create({
+            data: {
+              userId: referrerUser.id,
+              type: 'SYSTEM',
+              title: '🎉 +50 AgriPoints Earned!',
+              message: `${user.name} joined AgriShamba via Google using your referral code (${referrerUser.referralCode}). You earned +50 AgriPoints!`,
+              metadata: JSON.stringify({ event: 'REFERRAL_REWARD', points: 50, friend: user.name })
+            }
+          });
+        } catch (refErr) {
+          console.warn('Google referral reward warning:', refErr.message);
+        }
+      }
 
       await prisma.notification.create({
         data: {
@@ -884,6 +979,96 @@ router.put('/auth/profile', async (req, res) => {
     });
   } catch (error) {
     console.error('Update profile error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ==========================================
+// REFERRAL & AGRIPOINTS SYSTEM
+// ==========================================
+
+// Validate a referral code in real-time (used during registration)
+router.post('/referrals/validate-code', async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code || typeof code !== 'string') {
+      return res.status(400).json({ success: false, error: 'Referral code is required' });
+    }
+    const cleanCode = code.trim().toUpperCase();
+    const referrer = await prisma.user.findUnique({
+      where: { referralCode: cleanCode },
+      select: { id: true, name: true, role: true, referralCode: true }
+    });
+    if (!referrer) {
+      return res.status(404).json({ success: false, valid: false, error: 'Referral code not found' });
+    }
+    return res.json({
+      success: true,
+      valid: true,
+      code: referrer.referralCode,
+      referrerName: referrer.name,
+      welcomeBonus: 25,
+      message: `Valid invitation from ${referrer.name}! You will receive +25 Welcome AgriPoints upon registration.`
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get user's referral summary, points balance, and referred peers
+router.get('/referrals/my-stats', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'No authorization token provided' });
+    }
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: { id: true, name: true, referralCode: true, referralPoints: true, createdAt: true, role: true }
+    });
+
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    let myCode = user.referralCode;
+    if (!myCode) {
+      const cleanPrefix = (user.name || 'AGR').replace(/[^a-zA-Z]/g, '').slice(0, 3).toUpperCase() || 'AGR';
+      myCode = `AGRI-${cleanPrefix}${user.id.slice(-4).toUpperCase()}`;
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { referralCode: myCode, referralPoints: user.referralPoints || 0 }
+      });
+    }
+
+    const referredUsers = await prisma.user.findMany({
+      where: { referredBy: myCode },
+      select: {
+        id: true,
+        name: true,
+        role: true,
+        location: true,
+        createdAt: true,
+        isEmailVerified: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    res.json({
+      success: true,
+      referralCode: myCode,
+      referralPoints: user.referralPoints || 0,
+      totalReferred: referredUsers.length,
+      referredUsers: referredUsers.map(u => ({
+        name: u.name,
+        role: u.role,
+        location: u.location,
+        joinedAt: u.createdAt,
+        pointsEarned: 50
+      }))
+    });
+  } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 });

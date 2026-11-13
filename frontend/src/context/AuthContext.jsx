@@ -124,7 +124,7 @@ export function AuthProvider({ children }) {
     return data.user;
   };
 
-  const loginWithGoogle = async (googleUser, selectedRole = 'FARMER') => {
+  const loginWithGoogle = async (googleUser, selectedRole = 'FARMER', referralCode = null) => {
     const res = await fetch('/api/auth/google-login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -132,7 +132,8 @@ export function AuthProvider({ children }) {
         email: googleUser.email,
         name: googleUser.displayName,
         phoneNumber: googleUser.phoneNumber || null,
-        role: selectedRole
+        role: selectedRole,
+        referralCode: referralCode || undefined
       })
     });
     const data = await res.json();
