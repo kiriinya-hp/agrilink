@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { auth, getRedirectResult } from '../firebase';
 
 const AuthContext = createContext(null);
 
@@ -25,53 +26,83 @@ export function AuthProvider({ children }) {
   });
   const [loading, setLoading] = useState(true);
 
-  // Validate session on app launch
+  // Validate session and process Google Redirect Result on app launch
   useEffect(() => {
-    async function checkAuth() {
-      if (token) {
+    let isMounted = true;
+
+    async function initAuth() {
+      // 1. Process Google OAuth redirect result if returning from accounts.google.com
+      if (typeof window !== 'undefined' && auth) {
+        try {
+          const result = await getRedirectResult(auth);
+          if (result && result.user && isMounted) {
+            console.log('[Auth] Google Redirect successful for:', result.user.email);
+            const gUser = {
+              email: result.user.email,
+              displayName: result.user.displayName,
+              photoURL: result.user.photoURL,
+              uid: result.user.uid,
+              phoneNumber: result.user.phoneNumber
+            };
+            const savedRole = sessionStorage.getItem('AgriShamba_google_role') || 'FARMER';
+            const savedRef = sessionStorage.getItem('AgriShamba_google_ref') || null;
+
+            const res = await fetch('/api/auth/google-login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: gUser.email,
+                name: gUser.displayName,
+                phoneNumber: gUser.phoneNumber || null,
+                role: savedRole,
+                referralCode: savedRef || undefined
+              })
+            });
+            const data = await res.json();
+            if (data.success && isMounted) {
+              setToken(data.token);
+              setUser(data.user);
+              localStorage.setItem('AgriShamba_token', data.token);
+              localStorage.setItem('AgriShamba_user', JSON.stringify(data.user));
+              sessionStorage.removeItem('AgriShamba_google_role');
+              sessionStorage.removeItem('AgriShamba_google_ref');
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (redirectErr) {
+          console.warn('[Google Redirect Auth Result]:', redirectErr.message);
+        }
+      }
+
+      // 2. Validate existing token session
+      if (token && isMounted) {
         try {
           const res = await fetch('/api/auth/me', {
             headers: { Authorization: `Bearer ${token}` }
           });
           const data = await res.json();
-          if (data.success) {
+          if (data.success && isMounted) {
             setUser(data.user);
             localStorage.setItem('AgriShamba_user', JSON.stringify(data.user));
-          } else {
+          } else if (isMounted) {
             logout();
           }
         } catch {
           // Keep offline cached user if server is restarting
         }
       }
-      setLoading(false);
-    }
-    checkAuth();
-  }, [token]);
 
-  // Handle Google OAuth Redirect Result (for mobile web browsers where popups are blocked)
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    import('../firebase').then(({ auth, getRedirectResult }) => {
-      getRedirectResult(auth).then(async (result) => {
-        if (result && result.user) {
-          const gUser = {
-            email: result.user.email,
-            displayName: result.user.displayName,
-            photoURL: result.user.photoURL,
-            uid: result.user.uid,
-            phoneNumber: result.user.phoneNumber
-          };
-          const savedRole = sessionStorage.getItem('AgriShamba_google_role') || 'FARMER';
-          const savedRef = sessionStorage.getItem('AgriShamba_google_ref') || null;
-          await loginWithGoogle(gUser, savedRole, savedRef);
-          sessionStorage.removeItem('AgriShamba_google_role');
-          sessionStorage.removeItem('AgriShamba_google_ref');
-        }
-      }).catch((err) => {
-        console.warn('[Google Redirect Auth Result]:', err.message);
-      });
-    }).catch(() => {});
+      if (isMounted) {
+        setLoading(false);
+      }
+    }
+
+    initAuth();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const login = async (identifier, password) => {
