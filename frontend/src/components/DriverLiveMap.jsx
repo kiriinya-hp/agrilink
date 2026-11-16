@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { 
   Navigation, 
   MapPin, 
@@ -105,6 +106,7 @@ export default function DriverLiveMap({
   const currentPreviewShipment = !currentActiveOrder 
     ? (availableShipments.find(s => s.id === selectedPreviewShipmentId) || availableShipments[0]) 
     : null;
+  const currentShipment = currentActiveOrder?.shipment || currentPreviewShipment;
 
   // Resolve Real Origin & Destination
   const realPickupLocation = currentActiveOrder 
@@ -235,19 +237,36 @@ export default function DriverLiveMap({
 
       L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-      // Force Leaflet to recalculate container size (fixes blank-tile bug in modals)
-      setTimeout(() => {
-        if (map) map.invalidateSize();
-      }, 150);
-
+      // Multi-layer support: Carto Voyager street map (ultra-reliable, crisp roads & labels) or Topo
       const tileUrl = mapStyle === 'topo'
         ? 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
-        : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
 
-      L.tileLayer(tileUrl, {
+      const tileLayer = L.tileLayer(tileUrl, {
+        subdomains: 'abcd',
         maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(map);
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+      });
+
+      // Graceful fallback to standard OpenStreetMap if primary tile server is unreachable
+      tileLayer.on('tileerror', (error, tile) => {
+        if (!tile._fallbackAttempted && error?.coords) {
+          tile._fallbackAttempted = true;
+          const coords = error.coords;
+          tile.src = `https://tile.openstreetmap.org/${coords.z}/${coords.x}/${coords.y}.png`;
+        }
+      });
+
+      tileLayer.addTo(map);
+
+      // Multi-phase invalidateSize to handle modal animation and DOM paint delays (fixes blank map in popups)
+      [60, 150, 300, 600, 1000].forEach(delay => {
+        setTimeout(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize();
+          }
+        }, delay);
+      });
 
     // Custom Map Markers
     const farmIcon = L.divIcon({
@@ -368,7 +387,9 @@ export default function DriverLiveMap({
     }
 
     mapInstanceRef.current = map;
-    map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+    if (polyline && polyline.getBounds().isValid()) {
+      map.fitBounds(polyline.getBounds(), { padding: [50, 50], maxZoom: 14 });
+    }
   }; // end initMap
 
   // Defer init until after the modal/container paints (fixes blank map in popups)
@@ -384,11 +405,34 @@ export default function DriverLiveMap({
       mapInstanceRef.current = null;
     }
   };
-}, [mapStyle, selectedOrderId, selectedPreviewShipmentId, transitStatus, deviceGps]);
+}, [mapStyle, selectedOrderId, selectedPreviewShipmentId, transitStatus]);
+
+  // Update device GPS marker smoothly without destroying the map canvas
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    if (deviceGps) {
+      if (userGpsMarkerRef.current) {
+        userGpsMarkerRef.current.setLatLng([deviceGps.lat, deviceGps.lng]);
+      } else {
+        const gpsIcon = L.divIcon({
+          className: 'custom-device-gps-marker',
+          html: `
+            <div style="background-color: #3b82f6; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(59,130,246,0.8);"></div>
+          `,
+          iconSize: [20, 20],
+          iconAnchor: [10, 10]
+        });
+        const marker = L.marker([deviceGps.lat, deviceGps.lng], { icon: gpsIcon })
+          .addTo(mapInstanceRef.current)
+          .bindPopup(`<b>Your Device Location</b><br>Accuracy: ±${Math.round(deviceGps.accuracy)}m`);
+        userGpsMarkerRef.current = marker;
+      }
+    }
+  }, [deviceGps]);
 
   const recenterRoute = () => {
     if (mapInstanceRef.current && routePolylineRef.current) {
-      mapInstanceRef.current.fitBounds(routePolylineRef.current.getBounds(), { padding: [40, 40] });
+      mapInstanceRef.current.fitBounds(routePolylineRef.current.getBounds(), { padding: [40, 40], maxZoom: 14 });
     }
   };
 
