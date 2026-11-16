@@ -2022,21 +2022,29 @@ router.post('/listings', requireAuth, async (req, res) => {
 // ==========================================
 // 3. ORDER MANAGEMENT & LIVE ESCROW
 // ==========================================
-router.get('/orders', async (req, res) => {
+router.get('/orders', requireAuth, async (req, res) => {
   try {
     const { userId, role } = req.query;
+
+    // Security Guard: Non-admins can only fetch their own orders
+    if (userId && req.authUser.role !== 'ADMIN' && req.authUser.id !== userId) {
+      return res.status(403).json({ success: false, error: 'Security Violation: You can only view your own orders.' });
+    }
+
+    // Admins with no userId filter get all orders; authenticated users default to their own
+    const effectiveUserId = userId || req.authUser.id;
     const where = {};
 
-    if (role === 'BUYER' && userId) {
-      where.buyerId = userId;
-    } else if (role === 'FARMER' && userId) {
+    if (role === 'BUYER') {
+      where.buyerId = effectiveUserId;
+    } else if (role === 'FARMER') {
       where.items = {
         some: {
-          listing: { farmerId: userId }
+          listing: { farmerId: effectiveUserId }
         }
       };
-    } else if (role === 'TRANSPORTER' && userId) {
-      where.shipment = { transporterId: userId };
+    } else if (role === 'TRANSPORTER') {
+      where.shipment = { transporterId: effectiveUserId };
     }
 
     const orders = await prisma.order.findMany({
@@ -3286,7 +3294,7 @@ router.post('/wallet/topup/confirm', requireAuth, async (req, res) => {
 // ==========================================
 // 4. LOGISTICS & SHIPMENTS
 // ==========================================
-router.get('/shipments/available', async (req, res) => {
+router.get('/shipments/available', requireAuth, async (req, res) => {
   try {
     const shipments = await prisma.shipment.findMany({
       where: { transitStatus: 'PENDING_ASSIGNMENT' },
@@ -3721,10 +3729,10 @@ router.get('/transporters/count', async (req, res) => {
 // ==========================================
 // 6. NOTIFICATION CENTER
 // ==========================================
-router.get('/notifications', async (req, res) => {
+router.get('/notifications', requireAuth, async (req, res) => {
   try {
-    const { userId } = req.query;
-    if (!userId) return res.status(400).json({ success: false, error: 'userId parameter required' });
+    // Security Guard: Lock notifications to the authenticated user's own feed
+    const userId = req.authUser.id;
 
     const notifications = await prisma.notification.findMany({
       where: { userId },

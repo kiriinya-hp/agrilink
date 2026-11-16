@@ -178,7 +178,7 @@ function MainApp({ onReplayIntro }) {
   const fetchNotifications = React.useCallback(async (userId) => {
     if (!userId) return;
     try {
-      const res  = await fetch(`${API_BASE}/notifications?userId=${userId}`);
+      const res  = await fetch(`${API_BASE}/notifications`, { headers: { 'Authorization': `Bearer ${token}` } });
       const data = await res.json();
       if (!data.success) return;
 
@@ -419,7 +419,7 @@ function MainApp({ onReplayIntro }) {
       }
 
       if (user.role === 'BUYER') {
-        const oRes = await fetch(`${API_BASE}/orders?userId=${user.id}&role=BUYER`);
+        const oRes = await fetch(`${API_BASE}/orders?role=BUYER`, { headers: { 'Authorization': `Bearer ${token}` } });
         const oData = await oRes.json();
         if (oData.success) {
           setOrders(oData.orders);
@@ -428,7 +428,7 @@ function MainApp({ onReplayIntro }) {
       } 
       
       if (user.role === 'FARMER') {
-        const oRes = await fetch(`${API_BASE}/orders?userId=${user.id}&role=FARMER`);
+        const oRes = await fetch(`${API_BASE}/orders?role=FARMER`, { headers: { 'Authorization': `Bearer ${token}` } });
         const oData = await oRes.json();
         if (oData.success) {
           setOrders(oData.orders);
@@ -437,11 +437,11 @@ function MainApp({ onReplayIntro }) {
       } 
       
       if (user.role === 'TRANSPORTER') {
-        const sRes = await fetch(`${API_BASE}/shipments/available`);
+        const sRes = await fetch(`${API_BASE}/shipments/available`, { headers: { 'Authorization': `Bearer ${token}` } });
         const sData = await sRes.json();
         if (sData.success) setAvailableShipments(sData.shipments);
 
-        const oRes = await fetch(`${API_BASE}/orders?userId=${user.id}&role=TRANSPORTER`);
+        const oRes = await fetch(`${API_BASE}/orders?role=TRANSPORTER`, { headers: { 'Authorization': `Bearer ${token}` } });
         const oData = await oRes.json();
         if (oData.success) {
           setOrders(oData.orders);
