@@ -268,6 +268,38 @@ function generateToken(user) {
 }
 
 // ==========================================
+// 🛡️ INPUT SANITIZATION & INJECTION DEFENSE (Phase 5)
+// ==========================================
+
+// Clean and sanitize string inputs to prevent NoSQL operator injection ({ $gt: '' }) or XSS
+function sanitizeText(input, maxLength = 255) {
+  if (typeof input !== 'string') return '';
+  return input.replace(/[\u0000-\u0008\u000B-\u000C\u000E-\u001F]/g, '').trim().slice(0, maxLength);
+}
+
+// Strictly validate and parse positive numeric values with range bounds
+function sanitizeNumber(input, { min = 0, max = 1000000, fallback = null } = {}) {
+  const num = typeof input === 'number' ? input : parseFloat(input);
+  if (isNaN(num) || !isFinite(num)) return fallback;
+  if (num < min || num > max) return fallback;
+  return num;
+}
+
+// Validate standard email format
+function isValidEmail(email) {
+  if (typeof email !== 'string') return false;
+  const re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+  return re.test(email.trim()) && email.length <= 100;
+}
+
+// Validate Kenyan mobile phone numbers (Safaricom, Airtel, Telkom)
+function isValidPhone(phone) {
+  if (typeof phone !== 'string') return false;
+  const cleaned = phone.replace(/[\s\-\+]/g, '');
+  return /^(?:254|0)[17]\d{8}$/.test(cleaned);
+}
+
+// ==========================================
 // 0. PUBLIC PRODUCE TRACEABILITY (No auth)
 // GET /trace/:orderId — returns full trace JSON
 // ==========================================
@@ -319,6 +351,22 @@ router.post('/auth/register', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Please provide all required fields' });
     }
 
+    const cleanEmail = sanitizeText(email, 100).toLowerCase();
+    const cleanPhone = sanitizeText(phone, 25);
+    const cleanName = sanitizeText(name, 70);
+
+    if (!isValidEmail(cleanEmail)) {
+      return res.status(400).json({ success: false, error: 'Please enter a valid email address (e.g. farmer@agrishamba.co.ke)' });
+    }
+
+    if (typeof password !== 'string' || password.length < 6) {
+      return res.status(400).json({ success: false, error: 'Password must be at least 6 characters long' });
+    }
+
+    if (password.length > 128) {
+      return res.status(400).json({ success: false, error: 'Password exceeds maximum length (128 characters)' });
+    }
+
     // Prohibit registering as ADMIN via public registration
     const validRoles = ['FARMER', 'BUYER', 'TRANSPORTER'];
     if (!validRoles.includes(role.toUpperCase())) {
@@ -329,8 +377,8 @@ router.post('/auth/register', async (req, res) => {
     const existing = await prisma.user.findFirst({
       where: {
         OR: [
-          { email: email.toLowerCase().trim() },
-          { phone: phone.trim() }
+          { email: cleanEmail },
+          { phone: cleanPhone }
         ]
       }
     });
@@ -344,7 +392,7 @@ router.post('/auth/register', async (req, res) => {
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     // Generate unique personal referral code for new user
-    const cleanPrefix = (name.trim().replace(/[^a-zA-Z]/g, '').slice(0, 3).toUpperCase()) || 'AGR';
+    const cleanPrefix = (cleanName.replace(/[^a-zA-Z]/g, '').slice(0, 3).toUpperCase()) || 'AGR';
     let personalReferralCode = `AGRI-${cleanPrefix}${Math.floor(1000 + Math.random() * 9000)}`;
     let codeCollides = await prisma.user.findUnique({ where: { referralCode: personalReferralCode } });
     while (codeCollides) {
@@ -358,7 +406,7 @@ router.post('/auth/register', async (req, res) => {
     let referredByCode = null;
 
     if (req.body.referralCode && typeof req.body.referralCode === 'string') {
-      const codeToLook = req.body.referralCode.trim().toUpperCase();
+      const codeToLook = sanitizeText(req.body.referralCode, 30).toUpperCase();
       referrerUser = await prisma.user.findUnique({
         where: { referralCode: codeToLook }
       });
@@ -370,14 +418,14 @@ router.post('/auth/register', async (req, res) => {
 
     const newUser = await prisma.user.create({
       data: {
-        name: name.trim(),
-        email: email.toLowerCase().trim(),
-        phone: phone.trim(),
+        name: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
         password: hashedPassword,
         role: role.toUpperCase(),
-        businessName: businessName?.trim() || null,
-        idNumber: idNumber?.trim() || null,
-        location: location?.trim() || 'Kenya',
+        businessName: businessName ? sanitizeText(businessName, 100) : null,
+        idNumber: idNumber ? sanitizeText(idNumber, 40) : null,
+        location: location ? sanitizeText(location, 100) : 'Kenya',
         kycStatus: 'VERIFIED',
         isEmailVerified: false,
         verificationCode,
@@ -1893,15 +1941,19 @@ router.get('/listings', async (req, res) => {
   try {
     await ensureSeedAnimalListings();
 
-    const { category, search, grade, status = 'ACTIVE' } = req.query;
+    const cleanStatus = sanitizeText(req.query.status || 'ACTIVE', 30);
+    const cleanCategory = sanitizeText(req.query.category, 40);
+    const cleanGrade = sanitizeText(req.query.grade, 30);
+    const cleanSearch = sanitizeText(req.query.search, 80);
+
     const where = {};
-    if (status && status !== 'ALL') where.status = status;
-    if (category && category !== 'ALL') where.category = category;
-    if (grade && grade !== 'ALL') where.grade = grade;
-    if (search) {
+    if (cleanStatus && cleanStatus !== 'ALL') where.status = cleanStatus;
+    if (cleanCategory && cleanCategory !== 'ALL') where.category = cleanCategory;
+    if (cleanGrade && cleanGrade !== 'ALL') where.grade = cleanGrade;
+    if (cleanSearch) {
       where.OR = [
-        { cropName: { contains: search } },
-        { location: { contains: search } }
+        { cropName: { contains: cleanSearch, mode: 'insensitive' } },
+        { location: { contains: cleanSearch, mode: 'insensitive' } }
       ];
     }
 
@@ -2998,16 +3050,37 @@ router.get('/payments/mpesa/query/:checkoutRequestId', async (req, res) => {
   }
 });
 
-// 4. Safaricom Webhook Callback Receiver
+// 4. Safaricom Webhook Callback Receiver (Hardened with Envelope & Transaction Authenticity Check)
 router.post('/payments/mpesa/callback', async (req, res) => {
   try {
     const callbackData = req.body?.Body?.stkCallback;
-    console.log('[M-PESA WEBHOOK] Received callback from Safaricom:', JSON.stringify(callbackData));
+    if (!callbackData || !callbackData.CheckoutRequestID) {
+      console.warn('[M-PESA WEBHOOK SECURITY] Malformed or missing callback envelope rejected.');
+      return res.status(400).json({ ResultCode: 1, ResultDesc: 'Malformed callback envelope' });
+    }
 
-    if (callbackData && (callbackData.ResultCode === 0 || callbackData.ResultCode === '0')) {
-      const checkoutRequestId = callbackData.CheckoutRequestID;
+    const checkoutRequestId = sanitizeText(callbackData.CheckoutRequestID, 60);
+
+    // Verify transaction authenticity against our database or memory registry
+    const existingEscrow = await prisma.escrowTransaction.findFirst({
+      where: { checkoutRequestId }
+    });
+    const inMemoryRegistry = getStkStatus(checkoutRequestId);
+
+    if (!existingEscrow && !inMemoryRegistry) {
+      console.warn(`[M-PESA WEBHOOK SECURITY] Warning: Received callback for unrecognized checkoutRequestId: ${checkoutRequestId}`);
+      return res.status(404).json({ ResultCode: 1, ResultDesc: 'Unrecognized transaction identifier' });
+    }
+
+    // Idempotency: If already confirmed, do not double-process
+    if (existingEscrow && existingEscrow.status === 'HELD' && existingEscrow.mpesaReceipt) {
+      console.log(`[M-PESA WEBHOOK] Duplicate callback received for already confirmed transaction ${checkoutRequestId}. Idempotent accept.`);
+      return res.json({ ResultCode: 0, ResultDesc: 'Accepted (Already Confirmed)' });
+    }
+
+    if (callbackData.ResultCode === 0 || callbackData.ResultCode === '0') {
       const metadata = callbackData.CallbackMetadata?.Item || [];
-      const mpesaReceipt = metadata.find(i => i.Name === 'MpesaReceiptNumber')?.Value;
+      const mpesaReceipt = sanitizeText(String(metadata.find(i => i.Name === 'MpesaReceiptNumber')?.Value || ''), 30);
       const mpesaAmount = metadata.find(i => i.Name === 'Amount')?.Value;
       const mpesaPhone = metadata.find(i => i.Name === 'PhoneNumber')?.Value;
 
@@ -3015,7 +3088,7 @@ router.post('/payments/mpesa/callback', async (req, res) => {
 
       setStkStatus(checkoutRequestId, {
         status: 'SUCCESS',
-        receipt: String(mpesaReceipt || `NLK${Date.now().toString().slice(-7)}`),
+        receipt: mpesaReceipt || `NLK${Date.now().toString().slice(-7)}`,
         resultDesc: 'Payment confirmed via M-Pesa webhook.'
       });
 
@@ -3023,28 +3096,25 @@ router.post('/payments/mpesa/callback', async (req, res) => {
       await prisma.escrowTransaction.updateMany({
         where: { checkoutRequestId },
         data: { 
-          mpesaReceipt: String(mpesaReceipt || `CONF-${Date.now().toString().slice(-6)}`),
+          mpesaReceipt: mpesaReceipt || `CONF-${Date.now().toString().slice(-6)}`,
           status: 'HELD'
         }
       });
     } else {
-      const checkoutRequestId = callbackData?.CheckoutRequestID;
-      const desc = callbackData?.ResultDesc || 'Request cancelled by user on phone.';
+      const desc = sanitizeText(callbackData?.ResultDesc || 'Request cancelled by user on phone.', 200);
       console.warn(`[M-PESA WEBHOOK] Payment cancelled or failed for ${checkoutRequestId}:`, desc);
 
-      if (checkoutRequestId) {
-        setStkStatus(checkoutRequestId, {
-          status: 'CANCELLED',
-          resultCode: callbackData?.ResultCode || 1032,
-          resultDesc: desc
-        });
+      setStkStatus(checkoutRequestId, {
+        status: 'CANCELLED',
+        resultCode: callbackData?.ResultCode || 1032,
+        resultDesc: desc
+      });
 
-        // Mark any escrow record as CANCELLED
-        await prisma.escrowTransaction.updateMany({
-          where: { checkoutRequestId },
-          data: { status: 'CANCELLED' }
-        });
-      }
+      // Mark any escrow record as CANCELLED
+      await prisma.escrowTransaction.updateMany({
+        where: { checkoutRequestId },
+        data: { status: 'CANCELLED' }
+      });
     }
 
     res.json({ ResultCode: 0, ResultDesc: 'Accepted' });

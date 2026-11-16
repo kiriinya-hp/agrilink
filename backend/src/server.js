@@ -19,10 +19,30 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false
 }));
 
+// Security: Strict CORS Whitelist (Phase 4 Hardening)
+const ALLOWED_ORIGINS = [
+  'https://agrilink-pyrv.onrender.com',
+  'capacitor://localhost',
+  'http://localhost',
+  'https://localhost',
+  'http://localhost:5173',
+  'http://localhost:5000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5000'
+];
+
 app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: (origin, callback) => {
+    // Allow non-browser requests (mobile Capacitor app, native cURL, Safaricom Daraja webhooks) or whitelisted web origins
+    if (!origin || ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.onrender.com')) {
+      return callback(null, true);
+    }
+    console.warn(`[CORS Blocked] Unauthorized cross-origin request from: ${origin}`);
+    return callback(new Error(`CORS Security Violation: Origin '${origin}' is not permitted.`));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
 
 // Security: General API Rate Limiting (Protects against DDoS / scraper floods)
