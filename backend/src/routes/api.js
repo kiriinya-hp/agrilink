@@ -181,6 +181,49 @@ export async function autoRestoreSnapshotIfAvailable() {
 }
 
 // ==========================================
+// 🛡️ SECURITY & AUTHORIZATION MIDDLEWARES
+// ==========================================
+
+// Middleware: Strict Authenticated User Guard
+// Rejects unauthenticated callers immediately with 401
+function requireAuth(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required. Please log in to perform this action.'
+      });
+    }
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({
+      success: false,
+      error: 'Invalid or expired authentication session. Please log in again.'
+    });
+  }
+}
+
+// Middleware: Role-Based Access Control (RBAC)
+function requireRole(...allowedRoles) {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ success: false, error: 'Authentication required.' });
+    }
+    if (req.user.role === 'ADMIN' || allowedRoles.includes(req.user.role)) {
+      return next();
+    }
+    return res.status(403).json({
+      success: false,
+      error: `Access denied. This action requires one of the following roles: ${allowedRoles.join(', ')}.`
+    });
+  };
+}
+
+// ==========================================
 // ADMIN PROTECTION MIDDLEWARE
 // Verifies Bearer JWT AND enforces role = ADMIN.
 // All routes using requireAdmin will return 401/403
@@ -1306,14 +1349,23 @@ router.delete('/admin/users/:id', requireAdmin, async (req, res) => {
   }
 });
 
-// Admin / Farmer: Delete produce listing
-router.delete('/listings/:id', async (req, res) => {
+// Admin / Farmer: Delete produce listing (Protected against BOLA / IDOR)
+router.delete('/listings/:id', requireAuth, async (req, res) => {
   try {
     const listingId = req.params.id;
     const existing = await prisma.produceListing.findUnique({ where: { id: listingId } });
     if (!existing) {
       return res.status(404).json({ success: false, error: 'Produce listing not found.' });
     }
+
+    // Security Guard: Only the listing owner farmer or an Admin can delete
+    if (req.user.role !== 'ADMIN' && existing.farmerId !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: You are only authorized to delete your own produce listings.'
+      });
+    }
+
     // Delete any orderItems pointing to this listing
     await prisma.orderItem.deleteMany({ where: { listingId } }).catch(() => {});
     await prisma.produceListing.delete({ where: { id: listingId } });
@@ -1342,16 +1394,41 @@ router.delete('/admin/listings/:id', requireAdmin, async (req, res) => {
   }
 });
 
-// Admin / Farmer: Update produce listing
-router.put('/listings/:id', async (req, res) => {
+// Admin / Farmer: Update produce listing (Protected against BOLA / IDOR)
+router.put('/listings/:id', requireAuth, async (req, res) => {
   try {
     const listingId = req.params.id;
+    const existing = await prisma.produceListing.findUnique({ where: { id: listingId } });
+    if (!existing) {
+      return res.status(404).json({ success: false, error: 'Produce listing not found.' });
+    }
+
+    // Security Guard: Only the listing owner farmer or an Admin can update
+    if (req.user.role !== 'ADMIN' && existing.farmerId !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: You are only authorized to update your own produce listings.'
+      });
+    }
+
     const { cropName, category, availableQty, unitPrice, unit, grade, location, status, imageUrl } = req.body;
     const dataToUpdate = {};
     if (cropName !== undefined) dataToUpdate.cropName = String(cropName).trim();
     if (category !== undefined) dataToUpdate.category = category;
-    if (availableQty !== undefined) dataToUpdate.availableQty = parseFloat(availableQty);
-    if (unitPrice !== undefined) dataToUpdate.unitPrice = parseFloat(unitPrice);
+    if (availableQty !== undefined) {
+      const qtyNum = parseFloat(availableQty);
+      if (isNaN(qtyNum) || qtyNum < 0) {
+        return res.status(400).json({ success: false, error: 'Invalid available quantity: must be a positive number.' });
+      }
+      dataToUpdate.availableQty = qtyNum;
+    }
+    if (unitPrice !== undefined) {
+      const priceNum = parseFloat(unitPrice);
+      if (isNaN(priceNum) || priceNum <= 0) {
+        return res.status(400).json({ success: false, error: 'Invalid unit price: must be greater than zero.' });
+      }
+      dataToUpdate.unitPrice = priceNum;
+    }
     if (unit !== undefined) dataToUpdate.unit = String(unit).trim();
     if (grade !== undefined) dataToUpdate.grade = grade;
     if (location !== undefined) dataToUpdate.location = String(location).trim();
@@ -1843,25 +1920,37 @@ router.get('/listings', async (req, res) => {
   }
 });
 
-router.post('/listings', async (req, res) => {
+router.post('/listings', requireAuth, async (req, res) => {
   try {
     const { farmerId, cropName, category, availableQty, unitPrice, grade, harvestDate, location, imageUrl, unit, status } = req.body;
     
-    if (!farmerId || !cropName || !availableQty || !unitPrice) {
-      return res.status(400).json({ success: false, error: 'Missing required produce listing fields' });
+    if (!cropName || !availableQty || !unitPrice) {
+      return res.status(400).json({ success: false, error: 'Missing required produce listing fields (cropName, availableQty, unitPrice)' });
     }
+
+    const qtyNum = parseFloat(availableQty);
+    const priceNum = parseFloat(unitPrice);
+    if (isNaN(qtyNum) || qtyNum <= 0) {
+      return res.status(400).json({ success: false, error: 'Available quantity must be a positive number' });
+    }
+    if (isNaN(priceNum) || priceNum <= 0) {
+      return res.status(400).json({ success: false, error: 'Unit price must be a positive number' });
+    }
+
+    // Security: Only Admin can create listings on behalf of other accounts; regular farmers are locked to their own ID
+    const actualFarmerId = req.user.role === 'ADMIN' ? (farmerId || req.user.id) : req.user.id;
 
     const listing = await prisma.produceListing.create({
       data: {
-        farmerId,
-        cropName,
+        farmerId: actualFarmerId,
+        cropName: String(cropName).trim(),
         category: category || 'HORTICULTURE',
         unit: unit || 'kg',
-        availableQty: parseFloat(availableQty),
-        unitPrice: parseFloat(unitPrice),
+        availableQty: qtyNum,
+        unitPrice: priceNum,
         grade: grade || 'GRADE_A',
         harvestDate: harvestDate ? new Date(harvestDate) : new Date(),
-        location: location || 'Nairobi Region',
+        location: location ? String(location).trim() : 'Nairobi Region',
         status: status || 'PENDING',
         imageUrl: imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop'
       }
@@ -1927,20 +2016,30 @@ router.get('/orders', async (req, res) => {
   }
 });
 
-// Create Order & Initiate Escrow
-router.post('/orders', async (req, res) => {
+// Create Order & Initiate Escrow (Protected against BOLA / IDOR)
+router.post('/orders', requireAuth, async (req, res) => {
   try {
     const { buyerId, listingId, quantity, deliveryAddress, notes } = req.body;
     const qty = parseFloat(quantity);
+    if (isNaN(qty) || qty <= 0) {
+      return res.status(400).json({ success: false, error: 'Order quantity must be a positive number greater than zero.' });
+    }
 
     const listing = await prisma.produceListing.findUnique({
       where: { id: listingId },
       include: { farmer: true }
     });
 
-    if (!listing) return res.status(404).json({ success: false, error: 'Listing not found' });
+    if (!listing) return res.status(404).json({ success: false, error: 'Produce listing not found.' });
     if (listing.availableQty < qty) {
-      return res.status(400).json({ success: false, error: `Only ${listing.availableQty} kg available in stock` });
+      return res.status(400).json({ success: false, error: `Only ${listing.availableQty} ${listing.unit || 'kg'} available in stock.` });
+    }
+
+    // Security: Enforce that buyers can only create orders for themselves; Admins can act on behalf of buyers
+    const actualBuyerId = req.user.role === 'ADMIN' ? (buyerId || req.user.id) : req.user.id;
+
+    if (listing.farmerId === actualBuyerId) {
+      return res.status(400).json({ success: false, error: 'Fraud Prevention: You cannot purchase your own produce listing.' });
     }
 
     const totalAmount = qty * listing.unitPrice;
@@ -1953,7 +2052,7 @@ router.post('/orders', async (req, res) => {
     const order = await prisma.order.create({
       data: {
         orderNumber,
-        buyerId,
+        buyerId: actualBuyerId,
         totalAmount,
         transportFee,
         platformFee,
@@ -2001,7 +2100,13 @@ router.post('/escrow/deposit', async (req, res) => {
 
     // Point 4: Strict Authorization & IDOR Check
     const authUser = getAuthenticatedUser(req);
-    if (authUser && authUser.role !== 'ADMIN' && authUser.id !== order.buyerId) {
+    if (!authUser) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required. Please log in to fund escrow.'
+      });
+    }
+    if (authUser.role !== 'ADMIN' && authUser.id !== order.buyerId) {
       return res.status(403).json({
         success: false,
         error: 'Security Violation: You are not authorized to fund escrow for another user\'s order.'
@@ -2167,7 +2272,10 @@ router.post('/wallet/topup', async (req, res) => {
     
     // Point 4: Enforce Identity & IDOR Protection
     const authUser = getAuthenticatedUser(req);
-    const targetUserId = (authUser && authUser.role !== 'ADMIN') ? authUser.id : (userId || authUser?.id);
+    if (!authUser) {
+      return res.status(401).json({ success: false, error: 'Authentication required to top up wallet balance.' });
+    }
+    const targetUserId = (authUser.role === 'ADMIN' && userId) ? userId : authUser.id;
 
     if (!targetUserId || isNaN(addAmt) || addAmt <= 0) {
       return res.status(400).json({ success: false, error: 'Valid user ID and positive top-up amount required' });
@@ -2237,7 +2345,10 @@ router.post('/wallet/withdraw', async (req, res) => {
 
     // Point 4: Enforce Identity & IDOR Protection
     const authUser = getAuthenticatedUser(req);
-    const targetUserId = (authUser && authUser.role !== 'ADMIN') ? authUser.id : (userId || authUser?.id);
+    if (!authUser) {
+      return res.status(401).json({ success: false, error: 'Authentication required to top up wallet balance.' });
+    }
+    const targetUserId = (authUser.role === 'ADMIN' && userId) ? userId : authUser.id;
 
     if (!targetUserId || isNaN(withdrawAmt) || withdrawAmt <= 0) {
       return res.status(400).json({ success: false, error: 'Valid user ID and positive withdrawal amount required' });
@@ -2705,11 +2816,11 @@ router.post('/market/rfq', async (req, res) => {
   }
 });
 
-// Escrow Quality Inspection & Dispute Resolution
-router.post('/orders/:id/dispute', async (req, res) => {
+// Escrow Quality Inspection & Dispute Resolution (Protected against BOLA / IDOR)
+router.post('/orders/:id/dispute', requireAuth, async (req, res) => {
   try {
     const orderId = req.params.id;
-    const { userId, reason, issueCategory, description, requestedAdjustment } = req.body;
+    const { reason, issueCategory, description, requestedAdjustment } = req.body;
 
     const order = await prisma.order.findUnique({
       where: { id: orderId },
@@ -2718,6 +2829,19 @@ router.post('/orders/:id/dispute', async (req, res) => {
 
     if (!order) return res.status(404).json({ success: false, error: 'Order not found' });
 
+    // Authorization: Only the buyer, seller farmer, assigned transporter, or admin can raise a dispute
+    const isBuyer = req.user.id === order.buyerId;
+    const isFarmer = order.items.some(i => i.listing?.farmer?.id === req.user.id);
+    const isTransporter = order.shipment?.transporterId === req.user.id;
+
+    if (req.user.role !== 'ADMIN' && !isBuyer && !isFarmer && !isTransporter) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: You are not authorized to raise a dispute for an order you do not belong to.'
+      });
+    }
+
+    const userId = req.user.id;
     const disputeTicket = `DSP-${Math.floor(100000 + Math.random() * 900000)}`;
     const buyerDisputeMsg = `Your inspection claim regarding Order #${order.orderNumber} has been logged. Escrow auto-settlement is paused pending verification. Category: ${issueCategory || reason}. Ticket: #${disputeTicket}`;
 
@@ -2995,26 +3119,67 @@ router.post('/wallet/topup/stk', async (req, res) => {
   }
 });
 
-// 6. Confirm Wallet Top-Up after PIN entry
-router.post('/wallet/topup/confirm', async (req, res) => {
+// 6. Confirm Wallet Top-Up after PIN entry (Protected against BOLA & Replay Attacks)
+router.post('/wallet/topup/confirm', requireAuth, async (req, res) => {
   try {
     const { userId, amount, checkoutRequestId, receipt } = req.body;
     const addAmt = parseFloat(amount);
-    if (!userId || isNaN(addAmt) || addAmt <= 0) {
-      return res.status(400).json({ success: false, error: 'Valid user ID and amount required' });
+    if (isNaN(addAmt) || addAmt <= 0 || addAmt > 50000) {
+      return res.status(400).json({ success: false, error: 'Invalid top-up amount. Must be between $0.01 and $50,000.' });
+    }
+
+    // Security: Only Admins can credit other accounts; regular users are locked to their own ID
+    const targetUserId = req.user.role === 'ADMIN' && userId ? userId : req.user.id;
+
+    // Security: If checkoutRequestId is provided, check if Safaricom cancelled it
+    if (checkoutRequestId) {
+      const recorded = getStkStatus(checkoutRequestId);
+      if (recorded && recorded.status === 'CANCELLED') {
+        return res.status(400).json({ success: false, error: 'Payment was cancelled on M-Pesa. Wallet cannot be credited.' });
+      }
+    }
+
+    const userBefore = await prisma.user.findUnique({ where: { id: targetUserId } });
+    if (!userBefore) {
+      return res.status(404).json({ success: false, error: 'Target user account not found.' });
     }
 
     const mpesaReceipt = receipt || `QJK${Date.now().toString().slice(-7)}`;
+    const reference = `TOP-${mpesaReceipt}`;
+
+    // Anti-replay check: prevent crediting the exact same reference twice
+    const alreadyProcessed = await prisma.notification.findFirst({
+      where: {
+        userId: targetUserId,
+        type: 'WALLET_LEDGER',
+        message: { contains: reference }
+      }
+    });
+    if (alreadyProcessed) {
+      return res.status(409).json({ success: false, error: 'Transaction already credited to your wallet (replay blocked).' });
+    }
 
     const updatedUser = await prisma.user.update({
-      where: { id: userId },
+      where: { id: targetUserId },
       data: { walletBalance: { increment: addAmt } }
+    });
+
+    // Double-entry ledger audit
+    await recordWalletLedgerEntry(prisma, {
+      userId: targetUserId,
+      entryType: 'CREDIT',
+      category: 'WALLET_TOPUP',
+      amount: addAmt,
+      balanceBefore: userBefore.walletBalance,
+      balanceAfter: updatedUser.walletBalance,
+      reference,
+      notes: `M-Pesa deposit confirmed #${mpesaReceipt}`
     });
 
     const mpesaTopupMsg = `M-Pesa deposit of $${addAmt.toFixed(2)} (approx. KES ${Math.round(addAmt * 130).toLocaleString()}) — Receipt #${mpesaReceipt} — has been credited to your escrow wallet. New balance: $${updatedUser.walletBalance.toFixed(2)}.`;
     await prisma.notification.create({
       data: {
-        userId,
+        userId: targetUserId,
         type: 'WALLET_TOPUP',
         title: 'M-Pesa Top-Up Confirmed',
         message: mpesaTopupMsg
@@ -3071,10 +3236,15 @@ router.get('/shipments/available', async (req, res) => {
   }
 });
 
-router.post('/shipments/:id/accept', async (req, res) => {
+// Transporter: Accept dispatch (Protected against BOLA / IDOR)
+router.post('/shipments/:id/accept', requireAuth, async (req, res) => {
   try {
     const { transporterId, vehicleReg } = req.body;
     const shipmentId = req.params.id;
+
+    if (req.user.role !== 'TRANSPORTER' && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ success: false, error: 'Access denied: Only registered transporters or administrators can claim dispatch freight.' });
+    }
 
     const shipment = await prisma.shipment.findUnique({
       where: { id: shipmentId },
@@ -3084,11 +3254,14 @@ router.post('/shipments/:id/accept', async (req, res) => {
     if (!shipment) return res.status(404).json({ success: false, error: 'Shipment not found' });
     if (shipment.transporterId) return res.status(400).json({ success: false, error: 'Job already claimed' });
 
+    // Enforce transporter identity: non-admins cannot claim for other transporters
+    const actualTransporterId = req.user.role === 'ADMIN' ? (transporterId || req.user.id) : req.user.id;
+
     const updatedShipment = await prisma.$transaction(async (tx) => {
       const s = await tx.shipment.update({
         where: { id: shipmentId },
         data: {
-          transporterId,
+          transporterId: actualTransporterId,
           vehicleReg: vehicleReg || 'KBZ 100A (Fleet Truck)',
           transitStatus: 'ASSIGNED',
           dispatchedAt: new Date()
@@ -3109,7 +3282,8 @@ router.post('/shipments/:id/accept', async (req, res) => {
   }
 });
 
-router.post('/shipments/:id/status', async (req, res) => {
+// Transporter: Update status (Protected against BOLA / IDOR)
+router.post('/shipments/:id/status', requireAuth, async (req, res) => {
   try {
     const { status } = req.body;
     const shipmentId = req.params.id;
@@ -3120,6 +3294,14 @@ router.post('/shipments/:id/status', async (req, res) => {
     });
 
     if (!shipment) return res.status(404).json({ success: false, error: 'Shipment not found' });
+
+    // Authorization: Only assigned transporter or Admin can update status
+    if (req.user.role !== 'ADMIN' && shipment.transporterId !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: You are not the assigned transporter for this shipment.'
+      });
+    }
 
     const updated = await prisma.$transaction(async (tx) => {
       const s = await tx.shipment.update({
@@ -3231,7 +3413,13 @@ router.post('/shipments/:id/verify-delivery', async (req, res) => {
 
     // Point 4: Identity & IDOR Authorization Check
     const authUser = getAuthenticatedUser(req);
-    if (authUser && authUser.role !== 'ADMIN') {
+    if (!authUser) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required. Please log in to verify delivery and release escrow.'
+      });
+    }
+    if (authUser.role !== 'ADMIN') {
       const isBuyer = authUser.id === order.buyerId;
       const isTransporter = shipment.transporterId && authUser.id === shipment.transporterId;
       if (!isBuyer && !isTransporter) {

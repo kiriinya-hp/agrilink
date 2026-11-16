@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import apiRoutes, { autoRestoreSnapshotIfAvailable, autoSaveSnapshot } from './routes/api.js';
 
@@ -8,14 +10,59 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Security: Hide server technology header
+app.disable('x-powered-by');
+
+// Security: Enforce HTTP security headers (Anti-Clickjacking, HSTS, X-Content-Type-Options)
+app.use(helmet({
+  contentSecurityPolicy: false, // Allows cross-origin Leaflet map tiles, Unsplash imagery & fonts
+  crossOriginEmbedderPolicy: false
+}));
+
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Security: General API Rate Limiting (Protects against DDoS / scraper floods)
+const generalApiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 600, // 600 requests per 15 minutes per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Too many requests. Please slow down and try again later.' }
+});
+
+// Security: Strict Rate Limiting for Authentication (Protects against Credential Stuffing & Brute Force)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // 20 login attempts per 15 min per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Too many login attempts. For security, please wait 15 minutes before trying again.' }
+});
+
+// Security: Strict Rate Limiting for Financial & Push Triggers (Prevents SMS/STK Bombing & SMTP exhaustion)
+const sensitiveLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 10, // 10 requests per 10 minutes per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Too many requests. For financial and notification security, please try again in 10 minutes.' }
+});
+
+app.use('/api/', generalApiLimiter);
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/admin-login', authLimiter);
+app.use('/api/auth/forgot-password', sensitiveLimiter);
+app.use('/api/auth/send-verification', sensitiveLimiter);
+app.use('/api/payments/mpesa/stkpush', sensitiveLimiter);
+app.use('/api/wallet/topup/stk', sensitiveLimiter);
+
+// Payload size limit to prevent body-bomb denial-of-service
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Request logging middleware
 app.use((req, res, next) => {

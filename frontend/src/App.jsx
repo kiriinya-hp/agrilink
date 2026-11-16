@@ -503,7 +503,10 @@ function MainApp({ onReplayIntro }) {
     try {
       await fetch(`${API_BASE}/notifications/read-all`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({ userId: user.id })
       });
       setUnreadNotifCount(0);
@@ -545,7 +548,10 @@ function MainApp({ onReplayIntro }) {
       // 1. Create Purchase Order
       const resOrder = await fetch(`${API_BASE}/orders`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           buyerId: user.id,
           listingId: orderModalListing.id,
@@ -642,7 +648,10 @@ function MainApp({ onReplayIntro }) {
         try {
           const res = await fetch(`${API_BASE}/listings`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            },
             body: JSON.stringify({
               ...item.payload,
               farmerId: user?.id || item.payload.farmerId
@@ -703,7 +712,10 @@ function MainApp({ onReplayIntro }) {
     try {
       const res = await fetch(`${API_BASE}/listings`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           ...newListing,
           farmerId: user.id
@@ -744,7 +756,10 @@ function MainApp({ onReplayIntro }) {
     try {
       const res = await fetch(`${API_BASE}/shipments/${shipmentId}/accept`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           transporterId: user.id,
           vehicleReg: user.businessName || 'KBZ 500M (Commercial Freight)'
@@ -767,7 +782,10 @@ function MainApp({ onReplayIntro }) {
     try {
       const res = await fetch(`${API_BASE}/shipments/${shipmentId}/status`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({ status })
       });
       const data = await res.json();
