@@ -76,7 +76,9 @@ app.use('/api/', generalApiLimiter);
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/admin-login', authLimiter);
 app.use('/api/auth/forgot-password', sensitiveLimiter);
+app.use('/api/auth/reset-password', sensitiveLimiter);
 app.use('/api/auth/send-verification', sensitiveLimiter);
+app.use('/api/auth/verify-email', sensitiveLimiter);
 app.use('/api/payments/mpesa/stkpush', sensitiveLimiter);
 app.use('/api/wallet/topup/stk', sensitiveLimiter);
 
@@ -415,10 +417,15 @@ if (fs.existsSync(frontendDist)) {
   });
 }
 
-// Global Error Handler
+// Global Error Handler (Production Safe - No Internal Stack Leaks)
 app.use((err, req, res, next) => {
-  console.error('Unhandled server error:', err);
-  res.status(500).json({ success: false, error: 'Internal Server Error', details: err.message });
+  console.error('[SERVER EXCEPTION]', err);
+  const isProd = process.env.NODE_ENV === 'production';
+  res.status(err.statusCode || 500).json({ 
+    success: false, 
+    error: 'Internal Server Error', 
+    details: isProd ? 'An unexpected error occurred. Please contact AgriShamba support.' : err.message 
+  });
 });
 
 app.listen(PORT, async () => {

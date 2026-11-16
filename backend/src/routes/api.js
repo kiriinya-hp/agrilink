@@ -54,6 +54,10 @@ function assertValidOrderTransition(currentStatus, targetStatus) {
 // Map<shipmentId, { attempts: number, lockedUntil: number, lastAttemptAt: Date }>
 const deliveryOtpAttemptTracker = new Map();
 
+// Security: In-Memory Lockout Tracker for Password Reset Code Brute Force Defense
+// Map<userId, { attempts: number, lockedUntil: number, lastAttemptAt: Date }>
+const resetCodeAttemptTracker = new Map();
+
 // Point 4: Helper to extract authenticated user from Bearer JWT
 function getAuthenticatedUser(req) {
   try {
@@ -198,6 +202,7 @@ function requireAuth(req, res, next) {
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
+    req.authUser = decoded;
     next();
   } catch (err) {
     return res.status(401).json({
@@ -249,6 +254,7 @@ function requireAdmin(req, res, next) {
     }
     req.admin = decoded;
     req.user = decoded;
+    req.authUser = decoded;
     next();
   } catch (err) {
     return res.status(401).json({
@@ -271,10 +277,14 @@ function generateToken(user) {
 // 🛡️ INPUT SANITIZATION & INJECTION DEFENSE (Phase 5)
 // ==========================================
 
-// Clean and sanitize string inputs to prevent NoSQL operator injection ({ $gt: '' }) or XSS
+// Clean and sanitize string inputs to prevent NoSQL operator injection, stored XSS (<script>), and control chars
 function sanitizeText(input, maxLength = 255) {
   if (typeof input !== 'string') return '';
-  return input.replace(/[\u0000-\u0008\u000B-\u000C\u000E-\u001F]/g, '').trim().slice(0, maxLength);
+  return input
+    .replace(/<[^>]*>/g, '') // Strip HTML tags against stored XSS
+    .replace(/[\u0000-\u0008\u000B-\u000C\u000E-\u001F]/g, '')
+    .trim()
+    .slice(0, maxLength);
 }
 
 // Strictly validate and parse positive numeric values with range bounds
@@ -843,9 +853,37 @@ router.post('/auth/reset-password', async (req, res) => {
 
     if (!user) return res.status(404).json({ success: false, error: 'Account not found' });
 
-    if (!user.resetCode || user.resetCode.trim() !== code.trim()) {
-      return res.status(400).json({ success: false, error: 'Invalid or expired 6-digit reset code' });
+    // Security Guard: Check if account password reset is currently locked out
+    const lockInfo = resetCodeAttemptTracker.get(user.id);
+    if (lockInfo && lockInfo.lockedUntil && Date.now() < lockInfo.lockedUntil) {
+      const waitMinutes = Math.ceil((lockInfo.lockedUntil - Date.now()) / (60 * 1000));
+      return res.status(429).json({
+        success: false,
+        error: `Password reset is temporarily locked due to too many failed attempts. Please retry in ${waitMinutes} minute(s).`
+      });
     }
+
+    if (!user.resetCode || user.resetCode.trim() !== code.trim()) {
+      const current = resetCodeAttemptTracker.get(user.id) || { attempts: 0 };
+      current.attempts += 1;
+      current.lastAttemptAt = new Date();
+      if (current.attempts >= 5) {
+        current.lockedUntil = Date.now() + 15 * 60 * 1000; // 15-minute security lockout
+        resetCodeAttemptTracker.set(user.id, current);
+        return res.status(429).json({
+          success: false,
+          error: 'Security Lockout: 5 consecutive invalid reset codes. Password reset is locked for 15 minutes.'
+        });
+      }
+      resetCodeAttemptTracker.set(user.id, current);
+      return res.status(400).json({ 
+        success: false, 
+        error: `Invalid or expired 6-digit reset code. ${5 - current.attempts} attempt(s) remaining before security lockout.` 
+      });
+    }
+
+    // Clear failed attempts upon successful code verification
+    resetCodeAttemptTracker.delete(user.id);
 
     if (user.resetCodeExpires && new Date() > user.resetCodeExpires) {
       return res.status(400).json({ success: false, error: 'Password reset code has expired. Please request a new code.' });
@@ -1461,7 +1499,7 @@ router.put('/listings/:id', requireAuth, async (req, res) => {
 
     const { cropName, category, availableQty, unitPrice, unit, grade, location, status, imageUrl } = req.body;
     const dataToUpdate = {};
-    if (cropName !== undefined) dataToUpdate.cropName = String(cropName).trim();
+    if (cropName !== undefined) dataToUpdate.cropName = sanitizeText(cropName, 80);
     if (category !== undefined) dataToUpdate.category = category;
     if (availableQty !== undefined) {
       const qtyNum = parseFloat(availableQty);
@@ -1477,9 +1515,9 @@ router.put('/listings/:id', requireAuth, async (req, res) => {
       }
       dataToUpdate.unitPrice = priceNum;
     }
-    if (unit !== undefined) dataToUpdate.unit = String(unit).trim();
+    if (unit !== undefined) dataToUpdate.unit = sanitizeText(unit, 20);
     if (grade !== undefined) dataToUpdate.grade = grade;
-    if (location !== undefined) dataToUpdate.location = String(location).trim();
+    if (location !== undefined) dataToUpdate.location = sanitizeText(location, 120);
     if (status !== undefined) dataToUpdate.status = status;
     if (imageUrl !== undefined) dataToUpdate.imageUrl = imageUrl;
 
@@ -1995,14 +2033,14 @@ router.post('/listings', requireAuth, async (req, res) => {
     const listing = await prisma.produceListing.create({
       data: {
         farmerId: actualFarmerId,
-        cropName: String(cropName).trim(),
+        cropName: sanitizeText(cropName, 80),
         category: category || 'HORTICULTURE',
-        unit: unit || 'kg',
+        unit: sanitizeText(unit || 'kg', 20),
         availableQty: qtyNum,
         unitPrice: priceNum,
         grade: grade || 'GRADE_A',
         harvestDate: harvestDate ? new Date(harvestDate) : new Date(),
-        location: location ? String(location).trim() : 'Nairobi Region',
+        location: location ? sanitizeText(location, 120) : 'Nairobi Region',
         status: status || 'PENDING',
         imageUrl: imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop'
       }
