@@ -39,7 +39,11 @@ export default function Register({ onNavigateLogin }) {
       await loginWithGoogle(googleUser, role, referralCodeInput.trim().toUpperCase() || null);
     } catch (err) {
       console.error(err);
-      if (err.code !== 'auth/popup-closed-by-user') {
+      if (err.code === 'auth/popup-closed-by-user') {
+        setError('Google Sign-In popup was closed or blocked. If you are on a phone browser, please allow popups or use standard registration.');
+      } else if (err.code === 'auth/unauthorized-domain') {
+        setError('Domain not authorized in Firebase Console. Please add agrilink-pyrv.onrender.com under Authentication -> Settings -> Authorized Domains.');
+      } else {
         setError(err.message || 'Google registration failed');
       }
     } finally {

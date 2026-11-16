@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "665449813551-7cr5b9etd0r3o0jpks2gdkqft0dsti5j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.agrishamba.app",
+            "certificate_hash": "6e662e60f1cbd84a89b1b996b47467b8efecfcb2"
+          }
+        },
+        {
           "client_id": "665449813551-pvq81pljfbq6fjb827d7fg1u3g8j5ch0.apps.googleusercontent.com",
           "client_type": 3
         }
