@@ -49,6 +49,31 @@ export function AuthProvider({ children }) {
     checkAuth();
   }, [token]);
 
+  // Handle Google OAuth Redirect Result (for mobile web browsers where popups are blocked)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    import('../firebase').then(({ auth, getRedirectResult }) => {
+      getRedirectResult(auth).then(async (result) => {
+        if (result && result.user) {
+          const gUser = {
+            email: result.user.email,
+            displayName: result.user.displayName,
+            photoURL: result.user.photoURL,
+            uid: result.user.uid,
+            phoneNumber: result.user.phoneNumber
+          };
+          const savedRole = sessionStorage.getItem('AgriShamba_google_role') || 'FARMER';
+          const savedRef = sessionStorage.getItem('AgriShamba_google_ref') || null;
+          await loginWithGoogle(gUser, savedRole, savedRef);
+          sessionStorage.removeItem('AgriShamba_google_role');
+          sessionStorage.removeItem('AgriShamba_google_ref');
+        }
+      }).catch((err) => {
+        console.warn('[Google Redirect Auth Result]:', err.message);
+      });
+    }).catch(() => {});
+  }, []);
+
   const login = async (identifier, password) => {
     const res = await fetch('/api/auth/login', {
       method: 'POST',

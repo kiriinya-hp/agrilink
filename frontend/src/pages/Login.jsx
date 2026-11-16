@@ -18,17 +18,18 @@ export default function Login({ onNavigateRegister, onNavigateAdmin, onNavigateF
     setGoogleLoading(true);
     try {
       const googleUser = await signInWithGooglePopup();
-      await loginWithGoogle(googleUser);
+      if (googleUser) {
+        await loginWithGoogle(googleUser);
+        setGoogleLoading(false);
+      }
+      // If googleUser is null, browser is smoothly navigating to Google account picker
     } catch (err) {
       console.error(err);
-      if (err.code === 'auth/popup-closed-by-user') {
-        setError('Google Sign-In popup was closed or blocked. If you are on a phone browser, please allow popups or use standard login.');
-      } else if (err.code === 'auth/unauthorized-domain') {
+      if (err.code === 'auth/unauthorized-domain') {
         setError('Domain not authorized in Firebase Console. Please add agrilink-pyrv.onrender.com under Authentication -> Settings -> Authorized Domains.');
       } else {
         setError(err.message || 'Google Sign-In failed');
       }
-    } finally {
       setGoogleLoading(false);
     }
   };

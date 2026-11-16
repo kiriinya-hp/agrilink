@@ -4,7 +4,9 @@ import {
   RecaptchaVerifier, 
   signInWithPhoneNumber,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult
 } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 import { Capacitor } from '@capacitor/core';
@@ -30,10 +32,12 @@ googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 /**
  * 1-Click Sign in with Google
- * Handles both Native Android (Capacitor Google Auth via Credential Manager)
- * and Web Browsers (signInWithPopup fallback).
+ * Handles:
+ * 1. Native Android (Capacitor Google Auth via Credential Manager)
+ * 2. Mobile Web Browsers (signInWithRedirect - immune to popup blockers)
+ * 3. Desktop Web Browsers (signInWithPopup with seamless redirect fallback)
  */
-export async function signInWithGooglePopup() {
+export async function signInWithGooglePopup(role = 'FARMER', referralCode = null) {
   if (Capacitor.isNativePlatform()) {
     try {
       const result = await FirebaseAuthentication.signInWithGoogle();
@@ -50,7 +54,6 @@ export async function signInWithGooglePopup() {
       };
     } catch (nativeErr) {
       console.warn('[Native Google Sign-In Error]:', nativeErr);
-      // If user deliberately dismissed the sheet, rethrow cancellation
       if (
         nativeErr?.code === '12501' || 
         nativeErr?.message?.toLowerCase().includes('cancel') ||
@@ -64,17 +67,50 @@ export async function signInWithGooglePopup() {
     }
   }
 
-  // Web Browser fallback
-  const result = await signInWithPopup(auth, googleProvider);
-  const user = result.user;
-  return {
-    email: user.email,
-    displayName: user.displayName,
-    photoURL: user.photoURL,
-    uid: user.uid,
-    phoneNumber: user.phoneNumber
-  };
+  // Web Browser: If on mobile browser, popups are almost always blocked by Chrome/Safari.
+  // Use seamless redirect flow on mobile, or fallback to redirect on popup failure!
+  const isMobileBrowser = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  if (isMobileBrowser) {
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem('AgriShamba_google_role', role);
+      if (referralCode) sessionStorage.setItem('AgriShamba_google_ref', referralCode);
+    }
+    await signInWithRedirect(auth, googleProvider);
+    return null; // Browser is navigating to accounts.google.com
+  }
+
+  // Desktop browser: Try popup first
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+    return {
+      email: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      uid: user.uid,
+      phoneNumber: user.phoneNumber
+    };
+  } catch (popupErr) {
+    // If popup was blocked or closed, fallback seamlessly to redirect!
+    if (
+      popupErr.code === 'auth/popup-closed-by-user' || 
+      popupErr.code === 'auth/popup-blocked' ||
+      popupErr.code === 'auth/cancelled-popup-request'
+    ) {
+      console.log('[Auth] Popup blocked or closed, falling back to seamless redirect...');
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem('AgriShamba_google_role', role);
+        if (referralCode) sessionStorage.setItem('AgriShamba_google_ref', referralCode);
+      }
+      await signInWithRedirect(auth, googleProvider);
+      return null;
+    }
+    throw popupErr;
+  }
 }
+
+export { getRedirectResult };
 
 // Check if real Firebase keys are configured
 export const isFirebaseConfigured = () => {
