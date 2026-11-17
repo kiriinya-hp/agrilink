@@ -176,9 +176,13 @@ function MainApp({ onReplayIntro }) {
    * unread notification has arrived since the last poll.
    */
   const fetchNotifications = React.useCallback(async (userId) => {
-    if (!userId) return;
+    const currentToken = token || localStorage.getItem('AgriShamba_token') || localStorage.getItem('agrilink_token');
+    if (!userId || !currentToken) return;
     try {
-      const res  = await fetch(`${API_BASE}/notifications`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const res  = await fetch(`${API_BASE}/notifications`, { 
+        headers: { 'Authorization': `Bearer ${currentToken}` } 
+      });
+      if (res.status === 401) return;
       const data = await res.json();
       if (!data.success) return;
 
@@ -208,7 +212,7 @@ function MainApp({ onReplayIntro }) {
 
       prevUnreadCountRef.current = newCount;
     } catch {}
-  }, []);
+  }, [token]);
 
   // Modals
   const [orderModalListing, setOrderModalListing] = useState(null);
