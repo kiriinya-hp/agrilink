@@ -638,6 +638,9 @@ export default function Register({ onNavigateLogin }) {
                   onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, ''))}
                   className="w-full px-4 py-3.5 bg-slate-900 border-2 border-emerald-500/60 rounded-xl font-mono text-center text-3xl font-extrabold tracking-widest text-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-500/20"
                 />
+                <p className="mt-2 text-center text-[11px] text-slate-400 leading-normal">
+                  💡 Tip: You can enter the 6 digits above or simply tap the <strong className="text-emerald-400">verification link</strong> sent directly to your inbox.
+                </p>
               </div>
 
               <div className="flex justify-between items-center text-xs text-slate-400">

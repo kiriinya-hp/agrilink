@@ -493,7 +493,7 @@ router.post('/auth/register', async (req, res) => {
       emailSent,
       previewCode: !emailSent ? verificationCode : undefined,
       message: emailSent
-        ? 'A 6-digit verification code has been dispatched to your email.'
+        ? 'A 6-digit verification code and instant verification link have been dispatched to your email.'
         : 'Account created. Use the verification code displayed on screen or in server logs.'
     });
   } catch (error) {
@@ -502,7 +502,7 @@ router.post('/auth/register', async (req, res) => {
   }
 });
 
-// Send / Resend Email Verification Code
+// Send / Resend Email Verification Code & Link
 router.post('/auth/send-verification', async (req, res) => {
   try {
     const { email } = req.body;
@@ -539,11 +539,63 @@ router.post('/auth/send-verification', async (req, res) => {
       emailSent,
       previewCode: !emailSent ? code : undefined,
       message: emailSent
-        ? `Verification code sent to ${user.email}`
+        ? `Verification code and instant link sent to ${user.email}`
         : `New verification code generated for ${user.email}.`
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Verify 6-digit Email Code via 1-Click Link (GET request directly from Email)
+router.get('/auth/verify-email-link', async (req, res) => {
+  try {
+    const { email, code } = req.query;
+    const clientBaseUrl = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || process.env.FRONTEND_URL || 'https://agrilink-pyrv.onrender.com';
+    const baseUrl = clientBaseUrl.replace(/\/+$/, '');
+
+    if (!email || !code) {
+      return res.redirect(`${baseUrl}/?verify_status=error&message=${encodeURIComponent('Missing email address or verification token in link.')}`);
+    }
+
+    const user = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
+    if (!user) {
+      return res.redirect(`${baseUrl}/?verify_status=error&message=${encodeURIComponent('AgriShamba user account not found.')}`);
+    }
+
+    if (user.isEmailVerified) {
+      const token = generateToken(user);
+      return res.redirect(`${baseUrl}/?verify_status=already_verified&token=${encodeURIComponent(token)}&email=${encodeURIComponent(user.email)}`);
+    }
+
+    if (!user.verificationCode || user.verificationCode.trim() !== String(code).trim()) {
+      return res.redirect(`${baseUrl}/?verify_status=error&message=${encodeURIComponent('Verification link has expired or is invalid. Please request a new code.')}`);
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: { isEmailVerified: true, verificationCode: null }
+    });
+
+    try {
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          type: 'EMAIL',
+          title: 'Email Verified Successfully',
+          message: 'Your email address has been verified. You now enjoy priority B2B trade matching on AgriShamba.'
+        }
+      });
+    } catch (notifErr) {
+      console.warn('Notification creation warning on link verify:', notifErr.message);
+    }
+
+    const token = generateToken(updatedUser);
+    return res.redirect(`${baseUrl}/?verify_status=success&token=${encodeURIComponent(token)}&email=${encodeURIComponent(user.email)}`);
+  } catch (error) {
+    console.error('Verify email link error:', error);
+    const clientBaseUrl = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || 'https://agrilink-pyrv.onrender.com';
+    return res.redirect(`${clientBaseUrl.replace(/\/+$/, '')}/?verify_status=error&message=${encodeURIComponent('Verification failed due to a server error.')}`);
   }
 });
 
@@ -557,6 +609,18 @@ router.post('/auth/verify-email', async (req, res) => {
 
     const user = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    // If user was already verified (e.g. they clicked the 1-click link in their email)
+    if (user.isEmailVerified) {
+      const token = generateToken(user);
+      const { password: _, ...userWithoutPassword } = user;
+      return res.json({
+        success: true,
+        message: 'Email is already verified! Welcome to AgriShamba.',
+        token,
+        user: userWithoutPassword
+      });
+    }
 
     if (!user.verificationCode || user.verificationCode.trim() !== code.trim()) {
       return res.status(400).json({ success: false, error: 'Invalid or expired verification code' });

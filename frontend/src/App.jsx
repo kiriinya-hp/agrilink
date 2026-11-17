@@ -386,6 +386,29 @@ function MainApp({ onReplayIntro }) {
     setTimeout(() => setNotification(null), 6000);
   };
 
+  // Handle Email Verification Banner or Error notifications from URL query / session
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const verifyStatus = params.get('verify_status');
+    const verifyMsg = params.get('message');
+    if (verifyStatus === 'error') {
+      showNotification(verifyMsg || 'Verification link is invalid or expired. Please request a new code.', 'error');
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+
+    const sessionBanner = sessionStorage.getItem('AgriShamba_email_verified_banner');
+    if (sessionBanner) {
+      sessionStorage.removeItem('AgriShamba_email_verified_banner');
+      if (sessionBanner === 'success') {
+        showNotification('🎉 Email verified successfully! Your AgriShamba account is now fully active.', 'success');
+      } else if (sessionBanner === 'already_verified') {
+        showNotification('✅ Your email was already verified. Welcome back!', 'success');
+      }
+    }
+  }, []);
+
   const loadRoleData = async () => {
     if (!token) return;
     setLoading(true);

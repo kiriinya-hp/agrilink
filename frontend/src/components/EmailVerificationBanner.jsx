@@ -24,7 +24,7 @@ export default function EmailVerificationBanner() {
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
 
-      setMessage({ type: 'success', text: `6-digit verification code sent to ${user.email}!` });
+      setMessage({ type: 'success', text: `Verification code and 1-click link sent to ${user.email}!` });
       setShowModal(true);
       setCountdown(60);
 
@@ -141,6 +141,9 @@ export default function EmailVerificationBanner() {
                   onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ''))}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl font-mono text-center text-2xl font-bold tracking-widest text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
+                <p className="mt-1.5 text-center text-[11px] text-slate-500">
+                  💡 You can enter the 6-digit code above, or click the direct verification link in your email.
+                </p>
               </div>
 
               <div className="flex justify-between items-center text-xs">

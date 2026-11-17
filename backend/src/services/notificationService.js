@@ -368,11 +368,14 @@ export async function sendWhatsAppNotification(phone, message, { title = 'AgriSh
 }
 
 /**
- * Send 6-digit Email Verification OTP
+ * Send 6-digit Email Verification OTP & 1-Click Verification Link
  */
 export async function sendVerificationEmail(email, code, userName = 'Valued Partner') {
+  const baseUrl = (process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || process.env.FRONTEND_URL || 'https://agrilink-pyrv.onrender.com').replace(/\/+$/, '');
+  const verificationLink = `${baseUrl}/api/auth/verify-email-link?email=${encodeURIComponent(email)}&code=${encodeURIComponent(code)}`;
+
   const subject = `🔐 AgriShamba Security: ${code} is your Account Verification Code`;
-  const text = `AgriShamba Security Verification Code: ${code}\n\nHello ${userName},\n\nUse this 6-digit code to verify your AgriShamba account: ${code}\nThis code expires in 15 minutes. Never share this code with anyone.\n\n© 2026 AgriShamba Agribusiness SCM Platform`;
+  const text = `AgriShamba Security Verification Code: ${code}\n\nHello ${userName},\n\nUse this 6-digit code to verify your AgriShamba account: ${code}\n\nOR click the link below to verify your email instantly:\n${verificationLink}\n\nThis code and link expire in 15 minutes. Never share this code with anyone.\n\n© 2026 AgriShamba Agribusiness SCM Platform`;
   
   const html = `
     <!DOCTYPE html>
@@ -405,20 +408,37 @@ export async function sendVerificationEmail(email, code, userName = 'Valued Part
               Hello <strong style="color: #0f172a;">${userName}</strong>,
             </p>
             <p style="margin: 0 0 24px; font-size: 14px; line-height: 1.6; color: #475569;">
-              Thank you for registering on AgriShamba. To finalize your account setup and activate your verified badge, enter this 6-digit one-time authorization code:
+              Thank you for registering on AgriShamba. To finalize your account setup and activate your verified badge, enter this 6-digit one-time authorization code, or click the instant verification button below:
             </p>
 
             <!-- OTP Code Display Card -->
-            <div style="margin: 28px 0; padding: 24px; background: #f0fdf4; border: 2px dashed #10b981; border-radius: 14px; text-align: center;">
+            <div style="margin: 24px 0; padding: 24px; background: #f0fdf4; border: 2px dashed #10b981; border-radius: 14px; text-align: center;">
               <span style="display: block; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: #065f46; margin-bottom: 8px;">
                 Your One-Time Passcode (OTP)
               </span>
-              <div style="font-family: 'SF Mono', Monaco, 'Courier New', Courier, monospace; font-size: 36px; font-weight: 900; letter-spacing: 10px; color: #047857; padding: 4px 0;">
+              <div style="font-family: 'SF Mono', Monaco, 'Courier New', Courier, monospace; font-size: 38px; font-weight: 900; letter-spacing: 10px; color: #047857; padding: 4px 0;">
                 ${code}
               </div>
               <span style="display: block; font-size: 11px; color: #059669; margin-top: 8px; font-weight: 600;">
                 ⏱ Valid for 15 minutes • Single-use only
               </span>
+            </div>
+
+            <!-- Instant 1-Click Verification Button -->
+            <div style="margin: 28px 0 20px; text-align: center;">
+              <div style="position: relative; margin-bottom: 20px;">
+                <div style="border-top: 1px solid #e2e8f0; position: absolute; top: 50%; left: 0; right: 0;"></div>
+                <span style="position: relative; background: #ffffff; padding: 0 16px; font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #94a3b8; text-transform: uppercase;">
+                  Or Verify with 1 Click
+                </span>
+              </div>
+              <a href="${verificationLink}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 700; padding: 14px 34px; border-radius: 12px; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35); letter-spacing: 0.3px;">
+                ✅ Click Here to Verify Email Instantly
+              </a>
+              <p style="margin: 16px 0 0; font-size: 12px; line-height: 1.5; color: #64748b; word-break: break-all;">
+                If the button above does not open, copy & paste this direct link into your browser:<br>
+                <a href="${verificationLink}" style="color: #059669; text-decoration: underline; word-break: break-all; font-weight: 600;">${verificationLink}</a>
+              </p>
             </div>
 
             <!-- Security Advisory Strip -->
@@ -451,9 +471,10 @@ export async function sendVerificationEmail(email, code, userName = 'Valued Part
   `;
 
   console.log(`\n======================================================`);
-  console.log(`📬 [GMAIL APP MAILER] 6-Digit Verification Code`);
+  console.log(`📬 [GMAIL APP MAILER] 6-Digit Verification Code & Link`);
   console.log(`📧 Recipient: ${email}`);
   console.log(`🔑 Verification OTP: ${code}`);
+  console.log(`🔗 Verification Link: ${verificationLink}`);
   console.log(`======================================================\n`);
 
   const dispatchRes = await sendEmailMessage({
@@ -466,7 +487,8 @@ export async function sendVerificationEmail(email, code, userName = 'Valued Part
 
   return {
     ...dispatchRes,
-    code
+    code,
+    verificationLink
   };
 }
 

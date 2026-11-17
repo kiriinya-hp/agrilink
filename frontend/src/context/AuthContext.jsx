@@ -26,11 +26,64 @@ export function AuthProvider({ children }) {
   });
   const [loading, setLoading] = useState(true);
 
-  // Validate session and process Google Redirect Result on app launch
+  // Validate session and process Google Redirect Result or Email Verification on app launch
   useEffect(() => {
     let isMounted = true;
 
     async function initAuth() {
+      // 0. Process Email Verification Link Redirect / URL query params
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const verifyStatus = urlParams.get('verify_status');
+        const urlToken = urlParams.get('token');
+        const verifyEmail = urlParams.get('verify_email');
+        const verifyCode = urlParams.get('code');
+
+        if (urlToken && (verifyStatus === 'success' || verifyStatus === 'already_verified')) {
+          try {
+            const res = await fetch('/api/auth/me', {
+              headers: { Authorization: `Bearer ${urlToken}` }
+            });
+            const data = await res.json();
+            if (data.success && isMounted) {
+              setToken(urlToken);
+              setUser(data.user);
+              localStorage.setItem('AgriShamba_token', urlToken);
+              localStorage.setItem('AgriShamba_user', JSON.stringify(data.user));
+              sessionStorage.setItem('AgriShamba_email_verified_banner', verifyStatus);
+              const cleanUrl = window.location.pathname;
+              window.history.replaceState({}, document.title, cleanUrl);
+              setLoading(false);
+              return;
+            }
+          } catch (e) {
+            console.warn('[Auth] Verification token restore error:', e);
+          }
+        } else if (verifyEmail && verifyCode) {
+          try {
+            const res = await fetch('/api/auth/verify-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: verifyEmail, code: verifyCode })
+            });
+            const data = await res.json();
+            if (data.success && isMounted) {
+              setToken(data.token);
+              setUser(data.user);
+              localStorage.setItem('AgriShamba_token', data.token);
+              localStorage.setItem('AgriShamba_user', JSON.stringify(data.user));
+              sessionStorage.setItem('AgriShamba_email_verified_banner', 'success');
+              const cleanUrl = window.location.pathname;
+              window.history.replaceState({}, document.title, cleanUrl);
+              setLoading(false);
+              return;
+            }
+          } catch (e) {
+            console.warn('[Auth] Direct query verification error:', e);
+          }
+        }
+      }
+
       // 1. Process Google OAuth redirect result if returning from accounts.google.com
       if (typeof window !== 'undefined' && auth) {
         try {
