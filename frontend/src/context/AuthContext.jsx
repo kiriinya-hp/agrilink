@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth, getRedirectResult } from '../firebase';
+import { auth, getRedirectResult, onAuthStateChanged } from '../firebase';
 
 const AuthContext = createContext(null);
 
@@ -156,6 +156,47 @@ export function AuthProvider({ children }) {
     return () => {
       isMounted = false;
     };
+  }, []);
+
+  // Continuous Firebase Auth Listener: Catches completed Google OAuth popups and redirects automatically
+  useEffect(() => {
+    if (typeof window === 'undefined' || !auth) return;
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      const existingToken = localStorage.getItem('AgriShamba_token') || localStorage.getItem('agrilink_token');
+      if (fbUser && !existingToken) {
+        try {
+          console.log('[Auth] Detected signed-in Google user via onAuthStateChanged:', fbUser.email);
+          const savedRole = sessionStorage.getItem('AgriShamba_google_role') || 'FARMER';
+          const savedRef = sessionStorage.getItem('AgriShamba_google_ref') || null;
+
+          const res = await fetch('/api/auth/google-login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: fbUser.email,
+              name: fbUser.displayName,
+              phoneNumber: fbUser.phoneNumber || null,
+              role: savedRole,
+              referralCode: savedRef || undefined
+            })
+          });
+          const data = await res.json();
+          if (data.success) {
+            setToken(data.token);
+            setUser(data.user);
+            localStorage.setItem('AgriShamba_token', data.token);
+            localStorage.setItem('AgriShamba_user', JSON.stringify(data.user));
+            sessionStorage.removeItem('AgriShamba_google_role');
+            sessionStorage.removeItem('AgriShamba_google_ref');
+            setLoading(false);
+          }
+        } catch (err) {
+          console.warn('[onAuthStateChanged] Google sync warning:', err);
+        }
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const login = async (identifier, password) => {

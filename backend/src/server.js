@@ -14,9 +14,11 @@ const PORT = process.env.PORT || 5000;
 app.disable('x-powered-by');
 
 // Security: Enforce HTTP security headers (Anti-Clickjacking, HSTS, X-Content-Type-Options)
+// Note: crossOriginOpenerPolicy MUST be 'same-origin-allow-popups' so that Google/Firebase OAuth popups can postMessage back to window.opener
 app.use(helmet({
   contentSecurityPolicy: false, // Allows cross-origin Leaflet map tiles, Unsplash imagery & fonts
-  crossOriginEmbedderPolicy: false
+  crossOriginEmbedderPolicy: false,
+  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' }
 }));
 
 // Security: Strict CORS Whitelist (Phase 4 Hardening)

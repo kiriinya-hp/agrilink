@@ -6,7 +6,8 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithRedirect,
-  getRedirectResult
+  getRedirectResult,
+  onAuthStateChanged
 } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 import { Capacitor } from '@capacitor/core';
@@ -110,7 +111,7 @@ export async function signInWithGooglePopup(role = 'FARMER', referralCode = null
   }
 }
 
-export { getRedirectResult };
+export { getRedirectResult, onAuthStateChanged };
 
 // Check if real Firebase keys are configured
 export const isFirebaseConfigured = () => {
