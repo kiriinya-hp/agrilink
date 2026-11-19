@@ -29,7 +29,7 @@ const CHANNELS = [
     id: 'agrishamba_orders',
     name: 'AgriShamba Orders & Delivery',
     description: 'Delivery OTP codes, shipment status updates, and cargo pickups',
-    importance: 4,
+    importance: 5,
     visibility: 1,
     vibration: true,
     sound: 'default',
@@ -39,7 +39,7 @@ const CHANNELS = [
     id: 'agrishamba_livestock',
     name: 'AgriShamba Livestock & Animal Farming',
     description: 'Dairy, livestock, and poultry alerts',
-    importance: 4,
+    importance: 5,
     visibility: 1,
     vibration: true,
     sound: 'default',
@@ -49,13 +49,57 @@ const CHANNELS = [
     id: 'agrishamba_system',
     name: 'AgriShamba System & Market Alerts',
     description: 'Weather advisories, price changes, and broadcast messages',
-    importance: 3,
+    importance: 4,
     visibility: 1,
-    vibration: false,
+    vibration: true,
     sound: 'default',
     lightColor: '#6366F1',
   },
 ];
+
+/**
+ * Play a high-tech synthesized notification chime using Web Audio API
+ * Works 100% offline with zero external audio assets
+ */
+export function playNotificationChime(type = 'success') {
+  try {
+    if (typeof window === 'undefined') return;
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    if (type === 'error' || type === 'ALERT') {
+      // Alert/Warning tone (330Hz -> 261Hz)
+      osc.frequency.setValueAtTime(349.23, now); // F4
+      osc.frequency.setValueAtTime(261.63, now + 0.12); // C4
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.35);
+    } else {
+      // Cheerful trade & escrow chime (A5 880Hz -> C#6 1108Hz)
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.setValueAtTime(1108.73, now + 0.08);
+      gain.gain.setValueAtTime(0.22, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.45);
+    }
+  } catch (e) {
+    // Audio context might be restricted before user gesture
+  }
+}
 
 /* ─── Detect which channel a notification belongs to ─────────────────────── */
 function resolveChannel(title = '', body = '') {
@@ -78,17 +122,17 @@ function resolveChannel(title = '', body = '') {
 
 /* ─── Initialise permissions and channels ────────────────────────────────── */
 export async function initPushNotifications() {
-  if (isInitialized) return true;
-
   try {
     if (Capacitor.isNativePlatform()) {
-      const perm = await LocalNotifications.requestPermissions();
-      if (perm.display === 'granted') {
-        // Register all 4 channels in parallel
-        await Promise.all(CHANNELS.map(ch => LocalNotifications.createChannel(ch).catch(() => {})));
-        isInitialized = true;
-        return true;
+      const check = await LocalNotifications.checkPermissions();
+      if (check.display !== 'granted') {
+        const req = await LocalNotifications.requestPermissions();
+        if (req.display !== 'granted') return false;
       }
+      // Register all 4 channels with max heads-up priority
+      await Promise.all(CHANNELS.map(ch => LocalNotifications.createChannel(ch).catch(() => {})));
+      isInitialized = true;
+      return true;
     } else if (typeof window !== 'undefined' && 'Notification' in window) {
       if (Notification.permission === 'default') {
         const perm = await Notification.requestPermission();
@@ -110,31 +154,54 @@ export async function scheduleNativeNotification({ title, body, id = Date.now() 
   const safeBody  = body  || 'You have a new trade update on AgriShamba.';
   const channelId = resolveChannel(safeTitle, safeBody);
 
+  // Play audio chime and haptic vibration
+  playNotificationChime(extra?.type || (safeTitle.toLowerCase().includes('alert') ? 'error' : 'success'));
+  try {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([80, 40, 80]);
+    }
+  } catch {}
+
   try {
     if (Capacitor.isNativePlatform()) {
+      // Ensure permission before scheduling
+      try {
+        const status = await LocalNotifications.checkPermissions();
+        if (status.display !== 'granted') {
+          await LocalNotifications.requestPermissions();
+        }
+      } catch {}
+
       await LocalNotifications.schedule({
         notifications: [{
           title:    safeTitle,
           body:     safeBody,
           id:       Number(id),
           channelId,
-          schedule: { at: new Date(Date.now() + 250) },
-          smallIcon: 'ic_stat_agrishamba',   // set in Android res/
+          schedule: { at: new Date(Date.now() + 100) },
+          smallIcon: 'ic_launcher',
+          iconColor: '#10B981',
+          sound: 'default',
           extra,
         }],
       });
       return true;
     }
 
-    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-      new Notification(safeTitle, {
-        body:   safeBody,
-        icon:   '/favicon.ico',
-        badge:  '/favicon.ico',
-        tag:    channelId,
-        renotify: true,
-      });
-      return true;
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        await Notification.requestPermission();
+      }
+      if (Notification.permission === 'granted') {
+        new Notification(safeTitle, {
+          body: safeBody,
+          icon: '/AgriShamba-logo.png',
+          badge: '/AgriShamba-logo.png',
+          tag: channelId,
+          renotify: true,
+        });
+        return true;
+      }
     }
   } catch (err) {
     console.warn('[Notifications] Failed to schedule notification:', err.message);

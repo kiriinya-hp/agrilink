@@ -52,7 +52,8 @@ import {
   Tag,
   ChevronDown,
   ChevronUp,
-  Wrench
+  Wrench,
+  X
 } from 'lucide-react';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -383,7 +384,13 @@ function MainApp({ onReplayIntro }) {
       type: type === 'error' ? 'ALERT' : 'ESCROW',
       createdAt: new Date().toISOString()
     });
-    setTimeout(() => setNotification(null), 6000);
+    // Trigger phone native status bar notification & audio chime
+    scheduleNativeNotification({
+      title: type === 'error' ? 'Security Alert' : 'AgriShamba Update',
+      body: msg,
+      extra: { type }
+    });
+    setTimeout(() => setNotification(null), 6500);
   };
 
   // Handle Email Verification Banner or Error notifications from URL query / session
@@ -1570,16 +1577,34 @@ function MainApp({ onReplayIntro }) {
         </div>
       )}
 
-      {/* Toast Notification */}
+      {/* High-Visibility Floating Toast Notification (Above mobile nav & modals) */}
       {notification && (
-        <div className="fixed bottom-6 right-6 z-50 max-w-md animate-bounce">
-          <div className={`p-4 rounded-xl shadow-xl flex items-start gap-3 border ${
+        <div className="fixed bottom-20 sm:bottom-6 left-3 right-3 sm:left-auto sm:right-6 z-[99999] max-w-md pointer-events-auto">
+          <div className={`p-4 rounded-2xl shadow-2xl flex items-start gap-3.5 border-2 ${
             notification.type === 'error'
-              ? 'bg-rose-50 text-rose-800 border-rose-200'
-              : 'bg-slate-900 text-white border-slate-800'
-          }`}>
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" />
-            <div className="text-xs font-medium">{notification.msg}</div>
+              ? 'bg-rose-950/98 text-white border-rose-500 shadow-rose-950/80'
+              : 'bg-slate-950/98 text-white border-emerald-500 shadow-emerald-950/80'
+          } backdrop-blur-xl animate-in fade-in slide-in-from-bottom-5 duration-300`}>
+            {notification.type === 'error' ? (
+              <AlertCircle className="w-5 h-5 text-rose-400 mt-0.5 shrink-0 animate-pulse" />
+            ) : (
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" />
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 mb-0.5 flex items-center gap-1.5">
+                <span>{notification.type === 'error' ? 'ALERT' : 'AGRISHAMBA UPDATE'}</span>
+                <span className="text-[9px] text-slate-400 font-mono">● LIVE</span>
+              </div>
+              <div className="text-xs sm:text-sm font-bold text-slate-100 leading-snug break-words">{notification.msg}</div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setNotification(null)}
+              className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800 transition-colors shrink-0"
+              title="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         </div>
       )}
